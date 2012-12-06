@@ -1,0 +1,10 @@
+#Development
+
+.buildpath
+.project
+.pydevproject
+
+
+# Python
+
+*.py[cod]

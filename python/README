@@ -1,0 +1,17 @@
+Python to convert MARC/XML Bibliographic records to BIBFRAME resources.
+
+The script outputs four JSON files.  The JSON is designed to be used
+with Simile Exhibit.   The script can be run simply as:
+
+	python readmarcxml.py /path/to/marc/xml/file
+	
+The output files will be saved in html/data/ as file names beginning with the 
+word "default."  You may also specify a base file name, but the resulting 
+files will still be saved to html/data.
+
+Changes
+
+	Dec 6 2012
+		Initial publication.
+		
+		

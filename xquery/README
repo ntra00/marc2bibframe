@@ -1,0 +1,50 @@
+XQuery utility to convert MARC/XML Bibliographic records to BIBFRAME resources.
+
+
+Xquery scripts are provided for MarkLogic, Saxon, and Zorba.
+
+
+Parameters (HTTP for ml.xqy; external for saxon.xqy; external for zorba.xqy):
+
+	marcxmluri 		- Path to MARC/XML file.  File can be retrieved over 
+					  HTTP (begin http://) or from the filesystem.
+	baseuri 		- Base URI for generated resources.
+	serialization 	- rdfxml, ntriples, json  (rdfxml is default)
+
+
+
+Specific Processor Notes
+
+	ml.xqy - intended for the MarkLogic Database and Application 
+		Server (http://community.marklogic.com/docs).  This expects an HTTP 
+		application server.  Set up an application server with the location 
+		of this package 
+		as the root and (purely as an example) go to 
+
+	http://hostname:port/ml.xqy?marcxmluri=http://location/of/marcxml.xml&serialization=ntriples&baseuri=http://base-uri/
+
+
+	saxon.xqy can be used with the Saxon XSLT and Xquery Processoer.  This 
+		has been tested using the Saxon processor in Eclipse and Oxygen.  
+		Saxon can be run from the command line or through either of the two 
+		previously mentioned applications.  For more about Saxon see 
+		http://saxon.sourceforge.net/  
+	
+	java -cp /path/to/saxon9he.jar net.sf.saxon.Query saxon.xqy marcxmluri=/path/to/marc/xml/file baseuri=http://my-base-uri/ serialization=rdfxml
+
+
+	zorba.xqy can be used with the Zorba Xquery processor.  
+		For more about see http://www.zorba-xquery.com/  Run from the 
+		command line with:
+	
+	zorba -i -q file:///location/of/zorba.xqy -e marcxmluri:="http://location/of/marcxml.xml" -e serialization:="rdfxml" -e baseuri:="http://base/"
+
+
+	
+
+Changes
+
+	Dec 6 2012
+		Initial publication.
+		
+		

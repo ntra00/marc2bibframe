@@ -1,0 +1,12 @@
+Utilities to transform MARC/XML Bibliographic Records to BIBFRAME Resources.
+
+Python and Xquery versions are provided.  Both, however, present differing
+transformations of MARC/XML Bibliographic data.  They do not apply the same logic.
+
+The Python was developed by Zepheira LLC; the XQuery version was developed by
+Library of Congress Network Development and MARC Standards Office.
+
+These transformations are under development and do not at this time propose
+a canonical transformation of MARC Bib data to BIBFRAME resources.  They
+are made available for evaluation and comment.
+
