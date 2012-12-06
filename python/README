@@ -9,6 +9,9 @@ The output files will be saved in html/data/ as file names beginning with the
 word "default."  You may also specify a base file name, but the resulting 
 files will still be saved to html/data.
 
+After transforming a batch of MARC/XML BIB records, open the "exhibit.html"
+in the html/ directory to view the JSON output in a friendlier manner.
+
 This has been tested with Python version 2.7.3
 
 Amara (http://wiki.xml3k.org/Amara/Install) is a prerequisite.  (Amara
