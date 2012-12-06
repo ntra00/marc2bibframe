@@ -9,6 +9,11 @@ The output files will be saved in html/data/ as file names beginning with the
 word "default."  You may also specify a base file name, but the resulting 
 files will still be saved to html/data.
 
+This has been tested with Python version 2.7.3
+
+Amara (http://wiki.xml3k.org/Amara/Install) is a prerequisite.  (Amara
+will require python-dev to build.)
+
 Changes
 
 	Dec 6 2012
