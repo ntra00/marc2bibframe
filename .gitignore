@@ -8,3 +8,10 @@
 # Python
 
 *.py[cod]
+*.annotations.json
+*.object.json
+*.instance.json
+*.work.json
+
+
+
