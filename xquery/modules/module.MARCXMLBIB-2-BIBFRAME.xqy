@@ -1134,7 +1134,12 @@ declare function marcbib2bibframe:generate-related-work
     let $title := marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,$titleFields)] , ' '))
     
     let $name := 
-        if ($d/marcxml:subfield[@code="a"] and $d/@tag="740" and $d/@ind2="2") then
+        if (
+               $d/marcxml:subfield[@code="a"] and 
+               $d/@tag="740" and 
+               $d/@ind2="2" and
+               $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1]
+            ) then
             marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])
         else if ($d/marcxml:subfield[@code="a"] and $d/@tag!="740") then
             marcbib2bibframe:get-name($d)
