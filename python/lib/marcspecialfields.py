@@ -158,10 +158,9 @@ def process_008(info):
         d='contains biographical information')
     
     #info = field008
-    #ARE YOU FRIGGING KIDDING ME?! NON-Y2K SAFE?!
     year = info[0:2]
     try:
-        century = '19' if int(year) > 30 else '20' #I guess we can give an 18 year berth before this breaks ;)
+        century = '19' if int(year) > 30 else '20'
         yield 'date_008', '{}{}-{}-{}'.format(century, year, info[2:4], info[4:6])
     except ValueError:
         pass
