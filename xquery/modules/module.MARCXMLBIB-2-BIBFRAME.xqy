@@ -1067,7 +1067,7 @@ declare function marcbib2bibframe:generate-instances(
             for $i in $marcxml/marcxml:datafield[@tag eq "028"]
             return marcbib2bibframe:generate-instance-from-pubnum($i, $workID):)
         else                    
-            for $i in $marcxml/marcxml:datafield[@tag eq "260"]
+            for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]
             return marcbib2bibframe:generate-instance-from260($i, $workID),
             
         if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
@@ -1540,7 +1540,7 @@ declare function marcbib2bibframe:get-subject(
     let $subjectType := fn:string($marcbib2bibframe:subject-types/subject[@tag=$d/@tag])
     let $details :=
    
-        if (fn:matches(fn:string($d/@tag),"(600|610|611|630|648|650|651|655|751|752)")) then
+        if (fn:matches(fn:string($d/@tag),"(600|610|611|630|648|650|651|655|751)")) then
             let $last2Tag := fn:substring(fn:string($d/@tag), 2)
             (: 
                 The controlfields and the leader are bogus, 
@@ -1578,6 +1578,59 @@ declare function marcbib2bibframe:get-subject(
                 )
             return $details
        
+       else if (fn:matches(fn:string($d/@tag),"(662|752)")) then
+            (: 
+                Note: 662 can include relator codes/terms, with which something
+                will have to be done.
+            :)
+            let $aLabel := fn:string-join($d/marcxml:subfield[fn:matches(fn:string(@code),"(a|b|c|d|f|g|h)")], ". ") 
+            let $components := 
+                for $c in $d/marcxml:subfield[fn:matches(fn:string(@code),"(a|b|c|d|f|g|h)")]
+                return
+                    if ( xs:string($c/@code) eq "a" ) then
+                        element madsrdf:Country {
+                            element madsrdf:authoritativeLabel { xs:string($c) }
+                        }
+                    else if ( xs:string($c/@code) eq "b" ) then
+                        element madsrdf:State {
+                            element madsrdf:authoritativeLabel { xs:string($c) }
+                        }
+                    else if ( xs:string($c/@code) eq "c" ) then
+                        element madsrdf:County {
+                            element madsrdf:authoritativeLabel { xs:string($c) }
+                        }
+                    else if ( xs:string($c/@code) eq "d" ) then
+                        element madsrdf:City {
+                            element madsrdf:authoritativeLabel { xs:string($c) }
+                        }
+                    else if ( xs:string($c/@code) eq "f" ) then
+                        element madsrdf:CitySection {
+                            element madsrdf:authoritativeLabel { xs:string($c) }
+                        }
+                    else if ( xs:string($c/@code) eq "g" ) then
+                        element madsrdf:Geographic {
+                            element madsrdf:authoritativeLabel { xs:string($c) }
+                        }
+                    else if ( xs:string($c/@code) eq "h" ) then
+                        element madsrdf:ExtraterrestrialArea {
+                            element madsrdf:authoritativeLabel { xs:string($c) }
+                        }
+                    else  
+                        ()
+            let $details :=
+                ( 
+                    element rdf:type {
+                        attribute rdf:resource { "http://www.loc.gov/mads/rdf/v1#HierarchicalGeographic"}
+                    },
+                    element bf:label { xs:string($aLabel) },
+                    element madsrdf:authoritativeLabel { xs:string($aLabel) },
+                    element madsrdf:componentList {
+                        attribute rdf:parseType {"Collection"},
+                        $components 
+                    }                   
+                )
+            return $details
+           
        else
            (
                element bf:label {fn:string-join($d/marcxml:subfield[fn:not(@code="6")], " ")},
