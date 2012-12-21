@@ -172,6 +172,7 @@ declare variable $marcxml2madsrdf:elementTypeMap := (
         <elementType tag_suffix="30" code="a" ancillary="t">madsrdf:TitleElement</elementType>
         <elementType tag_suffix="30" code="a" ancillary="l">madsrdf:LanguageElement</elementType>
         <elementType tag_suffix="30" code="a" ancillary="s">madsrdf:SubTitleElement</elementType>
+        <elementType tag_suffix="30" code="a" ancillary="k">madsrdf:GenreFormElement</elementType>
         <elementType tag_suffix="30" code="v">madsrdf:GenreFormElement</elementType>
         <elementType tag_suffix="30" code="x">madsrdf:TopicElement</elementType>
         <elementType tag_suffix="30" code="y">madsrdf:TemporalElement</elementType>
