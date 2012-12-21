@@ -67,7 +67,15 @@ declare variable $marcxmluri as xs:string := xdmp:get-request-field("marcxmluri"
 declare variable $serialization as xs:string := xdmp:get-request-field("serialization","rdfxml");
 
 
-let $marcxml := xdmp:document-get($marcxmluri)//marcxml:record
+let $marcxml := 
+    xdmp:document-get(
+            $marcxmluri, 
+            <options xmlns="xdmp:document-get">
+                <format>xml</format>
+            </options>
+        )
+       
+let $marcxml := $marcxml//marcxml:record
 
 let $resources :=
     for $r in $marcxml
