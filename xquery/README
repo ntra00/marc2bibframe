@@ -6,9 +6,9 @@ Xquery scripts are provided for MarkLogic, Saxon, and Zorba.
 
 Parameters (HTTP for ml.xqy; external for saxon.xqy; external for zorba.xqy):
 
-	marcxmluri 		- Path to MARC/XML file.  File can be retrieved over 
-					  HTTP (begin http://) or from the filesystem.
-	baseuri 		- Base URI for generated resources.
+	marcxmluri 	- Path to MARC/XML file.  File can be retrieved over 
+				  HTTP (begin http://) or from the filesystem.
+	baseuri 	- Base URI for generated resources.
 	serialization 	- rdfxml, ntriples, json  (rdfxml is default)
 
 
@@ -37,13 +37,19 @@ Specific Processor Notes
 		For more about see http://www.zorba-xquery.com/  Run from the 
 		command line with:
 	
-	zorba -i -q file:///location/of/zorba.xqy -e marcxmluri:="http://location/of/marcxml.xml" -e serialization:="rdfxml" -e baseuri:="http://base/"
+	zorba -i -f -q zorba.xqy -e marcxmluri:="http://location/of/marcxml.xml" -e serialization:="rdfxml" -e baseuri:="http://base/"
 
 
 	
 
 Changes
 
+	Dec 21 2012
+		(Some) Support for 7XXs
+		Support for 880s
+		Added HierarchicalGeorgraphic support
+		Do something with 264.
+		
 	Dec 6 2012
 		Initial publication.
 		
