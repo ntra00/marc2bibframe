@@ -71,7 +71,7 @@ declare variable $serialization as xs:string external;
 
 
 let $marcxml := 
-    if ( fn:starts-with($marcxmluri, "http://" ) ) then
+    if ( fn:starts-with($marcxmluri, "http://" ) or fn:starts-with($marcxmluri, "https://" ) ) then
         let $http-response := http:get-node($marcxmluri) 
         return $http-response[2]
     else
