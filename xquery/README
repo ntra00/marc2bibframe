@@ -9,8 +9,7 @@ Parameters (HTTP for ml.xqy; external for saxon.xqy; external for zorba.xqy):
 	marcxmluri 	- Path to MARC/XML file.  File can be retrieved over 
 				  HTTP (begin http://) or from the filesystem.
 	baseuri 	- Base URI for generated resources.
-	serialization 	- rdfxml, rdfxml-raw, ntriples, json, exhibitJSON  
-			  (rdfxml is default)
+	serialization 	- rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
 			  rdfxml=flattened RDF/XML, everything has an identifier
 			  rdfxml-raw=Verbose, cascaded output.
 
