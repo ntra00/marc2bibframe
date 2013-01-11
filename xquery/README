@@ -9,7 +9,9 @@ Parameters (HTTP for ml.xqy; external for saxon.xqy; external for zorba.xqy):
 	marcxmluri 	- Path to MARC/XML file.  File can be retrieved over 
 				  HTTP (begin http://) or from the filesystem.
 	baseuri 	- Base URI for generated resources.
-	serialization 	- rdfxml, ntriples, json  (rdfxml is default)
+	serialization 	- rdfxml, rdfxml-raw, ntriples, json, exhibitJSON  (rdfxml is default)
+					  rdfxml=flattened RDF/XML, everything has been given an identifier
+					  rdfxml-raw=Verbose, cascaded output.
 
 
 
@@ -40,9 +42,42 @@ Specific Processor Notes
 	zorba -i -f -q zorba.xqy -e marcxmluri:="http://location/of/marcxml.xml" -e serialization:="rdfxml" -e baseuri:="http://base/"
 
 
+
+
+Exhibit Display
+
+	To get the Exhibit display to work for the Xquery, set the serialization
+	parameter to "exhibitJSON".
+	
+	The Exhibit JSON output should be saved as a file named
+	
+		data.json
+	
+	in the html/data directory.  You can mainly copy and paste this into 
+	the correctly named file or, if running the command line, pipe the output 
+	to html/data/data.json.
+	
+	After, simply open the exhibit.html file in 
+	a browser.
+	
+	Note:  For Zorba and Saxon, you will need to add a runtime parameter
+	to the command.
+	
+	For Saxon, add: '!method=text'
+	E.g.: java -cp /path/to/saxon9he.jar net.sf.saxon.Query saxon.xqy '!method=text' [ other params, as above ]
+	
+	For Zorba, add: -r
+	E,g,: zorba -i -r -f -q zorba.xqy [ other params, as above ]
+	
 	
 
+
 Changes
+
+	Jan 11 2013
+		Exhibit JSON output plus Exhibit display.
+		Added addiional support for 630, 730, 740, 830 relationships.
+		Bug fixes to work through Stanford MARC files.
 
 	Dec 21 2012
 		(Some) Support for 7XXs
