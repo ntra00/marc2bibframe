@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    <title>MARC21 Bib Records as BIBFRAME Resources</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link href="./css/bootstrap.css" rel="stylesheet" />
+    <link href="./css/bootstrap-responsive.css" rel="stylesheet" />
+    <link href="./css/style.css" rel="stylesheet" />
+    
+    <link rel="exhibit/data" href="./data/data.json" />
+
+    <link rel="exhibit/data" href="./data/schema.json" />
+
+    <script src="http://api.simile.zepheira.com/exhibit/3.0.0/exhibit-api.js"></script>
+
+    <script type="text/javascript" src="./js/jquery.js"></script>
+    <script type="text/javascript" src="./js/bootstrap-collapse.js"></script>
+
+    <script type="text/javascript">
+      $('.accordion').collapse()
+
+      $('.accordion').on('show', function() {
+      $('.icon').removeClass('icon-plus').addClass('icon-minus');
+      });
+
+      // Reverse it for hide:
+      $('.accordion').on('hide', function() {
+      $('.icon').removeClass('icon-minus').addClass('icon-plus');
+      });
+
+    </script>
+
+  </head>
+  
+  <body>
+    
+    <!-- focus this exhibit on Creative Works -->
+
+    <div ex:role="exhibit-collection" ex:itemTypes="Work"></div>
+
+    <!-- nav bar -->
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="/">BIBFRAME
+            <span class="tagline">
+              <span style="padding-left: 20px; font-size: 70%; color: grey;">New Bibliographic Framework</span>
+            </span>
+          </a> 
+        </div>
+      </div>
+    </div>
+    
+    <div class="body container-fluid">
+      <div class="this-nav row-fluid">
+        <div class="span12" style="margin-top: 50px;">
+          <br />
+        </div>
+      </div>
+      <h2>MARC21 Bib Records as BIBFRAME Resources</h2>
+      <br />
+      <div class="row-fluid">
+		  
+        <div class="span3">
+          <div class="well facets">
+            <div ex:role="facet" ex:facetclass="TextSearch" ex:facetLabel="Search"></div>
+            <br />
+            <!-- <div ex:role="facet" ex:expression=".instance.resourceType" ex:facetLabel="Resource Type" ex:sortMode="count"></div> -->
+            <!-- <div ex:role="facet" ex:expression=".instance.isbnType" ex:facetLabel="Book Type" ex:sortMode="count"></div> -->
+            <div ex:role="facet" ex:expression=".bf-creator.label" ex:facetLabel="Creators" ex:sortMode="count"></div>
+            <div ex:role="facet" ex:expression=".bf-subject.label" ex:facetLabel="Subjects" ex:sortMode="count"></div>
+            <div ex:role="facet" ex:expression=".bf-instance.bf-contributor.label" ex:facetLabel="Contributors" ex:sortMode="count"></div>
+            <div ex:role="facet" ex:expression=".bf-instance.bf-provider.label" ex:facetLabel="Providers/Publishers" ex:sortMode="count"></div>
+          </div>
+        </div>
+
+        <div class="span9">
+          <div class="results" ex:role="viewPanel">
+            <div ex:role="view" ex:label="What">
+				<!-- Work display lens -->
+				<div ex:role="lens" ex:itemTypes="Work" style="display: none">
+					<div class="titleWork"><span ex:content=".authoritativeLabel"></span></div>
+					<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div>
+					<table class="table table-condensed">
+						<tr ex:if-exists=".bf-creator">
+							<td class="property span2">Creator</td>
+							<td>
+								<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+							</td>
+						</tr>
+						<tr ex:if-exists=".bf-summary">
+							<td class="property span2">Summary</td>
+							<td><div ex:content=".summary" class="value summary"></div></td>
+						</tr>                    
+						<tr ex:if-exists=".bf-formatedContentsNote">
+							<td class="property span2">Contents</td>
+							<td><div ex:content=".formatedContentsNote" class="value contents"></div></td>
+						</tr>
+						<tr ex:if-exists=".bf-note">
+							<td class="property span2">Note(s)</td>
+							<td>
+							<ul class="allNotes" ex:content=".bf-note">
+								<li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+							</ul>
+							</td>
+						</tr>                    
+                  <tr ex:if-exists=".bf-subject">
+                    <td class="property span2">Subject(s)</td>
+                    <td>
+						<ul ex:content=".bf-subject" class="value subject"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span> <span class="authorityLink idlc" ex:if-exists=".hasAuthorityLink"><a ex:href-content=".hasAuthorityLink">(<i class="icon-star"></i>)</a></span> <span class="authorityLink idlc" ex:if-exists=".idlcFromHeuristic"><a ex:href-content=".idlcFromHeuristic">(<i class="icon-star"></i>)</a></span> <span class="authorityLink viaf" ex:if-exists=".viafFromHeuristic"><a ex:href-content=".viafFromHeuristic">(<i class="icon-ok"></i>)</a></span> 
+                          <span ex:if-exists=".generalSubdivision"> <span class="divider">/</span> <span class="subdivision general" ex:content=".generalSubdivision"></span></span>
+                          <span ex:if-exists=".geographicSubdivision"> <span class="divider">/</span> <span class="subdivision geographic" ex:content=".geographicSubdivision"></span></span>
+                          <span ex:if-exists=".chronologicalSubdivision"> <span class="divider">/</span> <span class="subdivision chronological" ex:content=".chronologicalSubdivision"></span></span>
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+					<tr ex:if-exists=".bf-callNumber">
+						<td class="property span2">Call Number</td>
+                        <td class="value">
+							<span class="isbn" ex:content=".bf-callNumber"></span></span> 
+						</td>
+					</tr>
+					<tr ex:if-exists=".identifiers-dewey">
+						<td class="property span2">Dewey Call Number</td>
+						<td class="value">
+							<span class="isbn" ex:content=".identifiers-dewey"></span></span> 
+						</td>
+					</tr>
+					<tr ex:if-exists=".bf-relatedWork">
+						<td class="property span2">Related Work(s)</td>
+						<td>
+							<ul ex:content=".bf-relatedWork" class="value instance">
+								<li>
+									<div class="titleWork"><span ex:content=".authoritativeLabel"></span></div>
+									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div>
+									<table class="table table-condensed">
+										<tr ex:if-exists=".bf-creator">
+											<td class="property span2">Creator</td>
+											<td>
+												<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+											</td>
+										</tr>
+									</table>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr ex:if-exists=".bf-includes">
+						<td class="property span2">Includes Work(s)</td>
+						<td>
+							<ul ex:content=".bf-includes" class="value instance">
+								<li>
+									<div class="titleWork"><span ex:content=".authoritativeLabel"></span></div>
+									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div>
+									<table class="table table-condensed">
+										<tr ex:if-exists=".bf-creator">
+											<td class="property span2">Creator</td>
+											<td>
+												<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+											</td>
+										</tr>
+									</table>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr ex:if-exists=".bf-instance">
+                    <td class="property span2">Instance(s)</td>
+					<td>
+                      <ul ex:content=".bf-instance" class="value instance">
+                        <li>
+                          <div class="titleInstance">
+                            <i ex:class-subcontent="icon-default icon-{{.resourceType}}"  ex:title-subcontent="{{.resourceType}}"></i>
+
+                            <span ex:if="exists(.uri)">
+                              <span class="title"><a ex:href-content=".uri"><span ex:content="!bf-instance.bf-title"></span> </a></span>
+                            </span>
+
+                            <span ex:if="not(exists(.uri))">
+                              <span class="title"><span ex:content="!bf-instance.bf-title"></span> </span></span>
+                            </span>
+                          </div>
+                          
+                          <div class="row-fluid">
+
+                            <div class="span8">
+                              
+                              <table class="table table-condensed">
+								  <tr ex:if-exists=".bf-contributor">
+									<td class="property span2">Contributor</td>
+									<td>
+										<ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+									</td>
+								</tr>
+                                <tr ex:if-exists=".bf-callNumber">
+                                  <td class="property span2">Call Number</td>
+                                  <td class="value">
+                                    <span class="isbn" ex:content=".bf-callNumber"></span></span> 
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".identifiers-dewey">
+                                  <td class="property span2">Dewey Call Number</td>
+                                  <td class="value">
+                                    <span class="isbn" ex:content=".identifiers-dewey"></span></span> 
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".bf-provider">
+                                  <td class="property span2">Publisher</td>
+                                  <td class="value">
+                                    <span class="publishedAt" ex:content=".bf-placePub.label"></span> 
+                                    <span class="publisher" ex:content=".bf-provider.label"></span> 
+                                    <span class="publishedOn" ex:content=".bf-pubDate"></span> 
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".bf-isbn">
+                                  <td class="property span2">ISBN</td>
+                                  <td class="value">
+                                    <span class="isbn" ex:content=".bf-isbn"></span> <span class="isbnType" ex:content=".isbnType"></span> 
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".bf-edition">
+                                  <td class="property span2">Edition</td>
+                                  <td class="value">
+                                    <span class="publishedOn" ex:content=".bf-edition"></span> 
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".bf-dimensions">
+                                  <td class="property span2">Dimensions</td>
+                                  <td class="value">
+                                    <span class="physicalDescription" ex:content=".bf-dimensions"></span> 
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".bf-extent">
+                                  <td class="property span2">Extent</td>
+                                  <td class="value">
+                                    <span class="physicalDescription" ex:content=".bf-extent"></span> 
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".bf-note">
+                                  <td class="property span2">Note(s)</td>
+                                  <td>
+                                    <ul class="value allNotes" ex:content=".bf-note">
+                                      <li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+                                    </ul>
+                                  </td>
+                                </tr>
+                              </table>
+                              
+                            </div>
+
+                            <div class="span4">
+                              
+                              <!-- annotation pane -->
+                              
+                              <div class="accordion" ex:id-subcontent="accordion-id{{.label}}">
+
+                                <div ex:if-exists="!holds" class="accordion-group well">
+
+                                  <div class="accordion-heading">
+                                    <a class="accordion-toggle" data-toggle="collapse" ex:data-parent-subcontent="#accordion-id{{.label}}" ex:href-subcontent="#collapseOne-id{{.label}}">
+                                      <i class="icon icon-comment"></i> Holdings
+                                    </a>
+                                  </div>
+                                  <div ex:id-subcontent="collapseOne-id{{.label}}" class="accordion-body collapse">
+                                    <div class="accordion-inner">
+                                      <span ex:content="!holds.access"></span></br>
+                                      <span ex:content="!holds.shelving"></span></br>
+                                      <span ex:content="!holds.shelvingDetails"></span></br>                                      
+                                      <a ex:href-content="!holds.institution.link"><span ex:content="!holds.institution.label"></span></a><br /> 
+                                      <span ex:content="!holds.institution.address"></span><br />                            
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div ex:if-exists="!pictureOf" class="accordion-group well">
+                                  <div class="accordion-heading">
+                                    <a class="accordion-toggle" data-toggle="collapse" ex:data-parent-subcontent="#accordion-id{{.label}}" ex:href-subcontent="#collapseTwo-id{{.label}}">
+                                      <i class="icon icon-comment"></i> Images
+                                    </a>
+                                  </div>
+                                  <div ex:id-subcontent="collapseTwo-id{{.label}}" class="accordion-body collapse">
+                                    <div class="accordion-inner">
+                                      <div class="thumbnail">
+                                        <a ex:href-content="!pictureOf.link"><img ex:src-content="!pictureOf.thumbnail" /></a><br />
+                                        <span>credit: <a ex:href-content="!pictureOf.person.link"><span ex:content="!pictureOf.person.label"></span></a></span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                              </div>
+                              
+                            </div> <!-- span3 -->
+
+                          </div> <!-- row-fluid -->
+                          
+                        </li>
+                      </ul>
+                    </td>
+                </table>
+		
+	      </div>
+	      
+            </div> <!-- end List View -->
+	    
+          </div> <!-- viewPanel -->
+          
+        </div> <!-- span -->
+        
+      </div> <!-- row fluid -->
+              
+    </div> <!-- container -->
+    
+    <div class="footer">
+      <div class="container">
+        <p>BIBFRAME is a collaborative effort of <a href = "http://www.loc.gov/">US Library of Congress</a>, <a href="http://zepheira.com/">Zepheira</a> and, now, you!</p>
+      </div>
+    </div>
+    
+  </body>
+</html>

@@ -1,0 +1,178 @@
+
+.specific-types-display {
+ padding-top: 10px;
+}
+
+.specific-types-display ul {
+ padding-top: 10px;
+}
+
+.specific-types-display ul li {
+ font-size: 115%;
+ font-weight: bold;
+ padding: 5px 0px 5px 0px;
+}
+
+
+.section-text {
+ font-weight: bold;
+ padding: 10px 10px 15px 10px;
+ font-size: 115%;
+}
+
+
+.footer .container p {
+	border-top: 1px solid grey;
+	margin-top: 30px;
+	padding-top: 30px;
+	text-align: center;
+	color: grey;
+}        
+
+
+.overview .prose p {
+padding-left: 20px;
+font-size: 120%;
+line-height: 150%;
+}
+
+.overview .prose ul {
+padding-top: 10px;
+font-size: 120%;
+line-height: 150%;
+}
+
+.overview .prose ul li {
+margin-left: 30px;
+line-height: 150%;
+}
+
+
+ul
+{
+ list-style-type: none;
+ padding: 0px;
+ margin: 0px;
+}
+
+ul.instance li {
+ padding-top: 3px;
+}
+
+
+.name {
+ padding-left: 5px;
+ padding-right: 5px;
+}
+
+
+.publishedOn {
+padding-left: 2px;
+padding-right: 2px;
+font-style: italic;
+}
+
+.publisher {
+padding-left: 2px;
+padding-right: 2px;
+color: slategrey;
+}
+
+.property {
+font-weight: bold;
+color: slategrey;
+}
+
+.subject .divider {
+padding-left: 3px;
+padding-right: 3px;
+font-weight: bold;
+color: slategrey;
+}
+
+.titleWork {
+  line-height: 120%;
+  font-weight: bold;
+  font-size: 140%;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.titleInstance {
+  font-weight: bold;
+  font-size: 120%;                 
+  line-height: 120%;
+  padding-bottom: 5px;
+}
+
+.table {
+  margin-top: 10px;
+}
+
+/* annotation section */
+
+.accordion .accordion-group {
+  margin-bottom: 5px;
+  margin-left: 20px;
+}
+
+.accordion-body .accordion-inner {
+ padding-left: 15px;
+ padding-right: 15px;
+ padding-top: 5px;
+ padding-bottom: 5px;
+
+}
+
+.accordion-heading {
+ font-weight: bold;
+}
+
+/* icons for MARC classes (builds off of bootstrap icon patterns) */
+
+.icon-Person {                        /* icon-user */
+  background-position: -168px 0;
+}
+
+.icon-Topic {                           /* icon-tag */
+  background-position: 0 -48px;
+}
+
+.icon-Organization {                           /* icon-home */
+  background-position: 0 -24px;
+}
+
+.icon-Place {                                   /* icon-map-marker */
+  background-position: -24px -72px;
+}
+
+.icon-Geographic {                                   /* icon-map-marker */
+  background-position: -24px -72px;
+}
+
+/* icons for MARC type */
+
+.icon-Article {                                   /* icon-book */
+  background-position: -48px -48px;
+}
+
+.icon-Report {                                   /* icon-book */
+  background-position: -48px -48px;
+}
+
+.icon-Site {                                   /* icon-list-alt */
+  background-position: -264px -24px;
+}
+
+.icon-Collection {                                   /* icon-th */
+  background-position: -240px 0;
+}
+
+.icon-Meeting {                                         /* icon-list-alt */
+  background-position: -264px -24px;
+}
+
+.icon-default {                                   /* icon-book as default */
+  background-position: -48px -48px;
+}
+

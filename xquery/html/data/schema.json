@@ -1,0 +1,12 @@
+{
+"types": {
+    "WorkRecord": {
+        "label": "Work",
+        "pluralLabel":  "Works"
+        }
+    },
+    "Work": {
+        "label": "Work",
+        "pluralLabel":  "Works"
+	}
+}
