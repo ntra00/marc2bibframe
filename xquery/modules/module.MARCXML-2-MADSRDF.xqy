@@ -18,10 +18,10 @@ xquery version "1.0";
 :       MADS/RDF record, and one without any linked relationships.
 :
 : Change Log:
-    2012 Aug 28 Nate Trail added collection for undifferentiated names (008/32='b') 
-    2012 Sep 12 Nate Trail added collection for FRBR Work and FRBR Expression, and changed the "may subdivide Geographically" label and name
-    2012 Sep 20 Nate Trail added collection for FRBR Expression for musical arrangements
-    2012 Oct 16 Nate Trail suppressed $6 from labels (880 mapping)
+	2012 Aug 28 Nate Trail added collection for undifferentiated names (008/32='b') 
+	2012 Sep 12 Nate Trail added collection for FRBR Work and FRBR Expression, and changed the "may subdivide Geographically" label and name
+	2012 Sep 20 Nate Trail added collection for FRBR Expression for musical arrangements
+	2012 Oct 16 Nate Trail suppressed $6 from labels (880 mapping)
 :)
    
 (:~
@@ -649,16 +649,16 @@ as element(rdf:RDF)
         else ()
         
      let $frbr_kind:= (:100, 110, 100 with $t is a title or nametitle 130 with anything is a title. if it has a language or arrangement, it's an expression, otherwise, it's a work:)
-            if ($authorityType="madsrdf:Title" or $authorityType="madsrdf:NameTitle") then (:its at least a work:)                  
+            if ($authorityType="madsrdf:Title" or $authorityType="madsrdf:NameTitle") then (:its at least a work:)         	    	
                 ( (:$l=language, $o=arrangment for music:) 
                     if ($df1xx/marcxml:subfield[@code="l" or @code="o"]) then (:expression:)
                         element madsrdf:isMemberOfMADSCollection { 
-                            attribute rdf:resource {'http://id.loc.gov/authorities/names/collection_FRBRExpression'}
-                        }
-                    else
-                        element madsrdf:isMemberOfMADSCollection { 
-                            attribute rdf:resource {'http://id.loc.gov/authorities/names/collection_FRBRWork'}
-                        }
+			                attribute rdf:resource {'http://id.loc.gov/authorities/names/collection_FRBRExpression'}
+			            }
+			        else
+			        	element madsrdf:isMemberOfMADSCollection { 
+			                attribute rdf:resource {'http://id.loc.gov/authorities/names/collection_FRBRWork'}
+			            }
                 )
             else () 
     (: commenting out for the time being :)
