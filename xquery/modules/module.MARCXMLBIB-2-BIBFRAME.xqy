@@ -298,7 +298,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 </notes>
 );
 
-(:$related fields must have $t except 740 ($a is title) :)
+(:$related fields must have $t except 630,730,830 , 767? 740 ($a is title),  :)
 declare variable $marcbib2bibframe:relationships := 
 (    
     <relationships>
@@ -310,6 +310,7 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type pattern="740" ind2="2" property="contains">isContainedIn</type>		
 		    <type pattern="762" property="subSeries">hasParts</type>	
 		    <type pattern="765" property="translationOf">hasTranslation</type>
+		    <type pattern="767" property="hasTranslation">translationOf</type>
 		    <type pattern="772" ind2=" " property="supplements">isSupplemented</type>
 		    <type pattern="772" ind2="0" property="hasParent">isParentOf</type>		
 		    <type pattern="772" property="memberOf">host</type>
@@ -654,8 +655,8 @@ declare function marcbib2bibframe:generate-880-label
                 }
             else if ($node-name="title") then 
                 let $subfs := 
-                    if ( fn:matches($d/@tag, "(245|242|243|246)") ) then
-                        "(a|b|h|k|n|p)"
+                    if ( fn:matches($d/@tag, "(245|242|243|246|630|730|740|830)") ) then
+                        "(a|b|f|h|k|n|p)"
                     else
                         "(t|f|k|m|n|p|s)"
                 return
@@ -1129,10 +1130,10 @@ declare function marcbib2bibframe:generate-related-work
         $d as element(marcxml:datafield), 
         $type as element() 
     )
-{ 	 
+{    
 
     let $titleFields := 
-        if ($d/@tag="740") then
+        if (fn:matches($d/@tag,"(630|730|740|830)")) then
             "(a|n|p)"
         else
             "(t|f|k|m|n|o|p|s)"
@@ -1146,7 +1147,8 @@ declare function marcbib2bibframe:generate-related-work
             $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1]
            ) then
             marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])
-        else if ($d/marcxml:subfield[@code="a"] and $d/@tag!="740") then
+        (:else if (  $d/marcxml:subfield[@code="a"] and $d/@tag!="740") then:)
+        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(630|730|740|830)")) ) then
             marcbib2bibframe:get-name($d)
         else ()
         
@@ -1174,12 +1176,40 @@ declare function marcbib2bibframe:generate-related-work
             $aLabelWork880
             
     return 
- 	element {fn:concat("bf:",fn:string($type/@property))} {
-		element bf:Work {
-		(:inverse relationship could go here, but you need the bibframeWork/@rdf:about
-			element {fn:concat("bf:",fn:string($type))} {
-				attribute rdf:resource {"/bf:Work/@rdf:about goes here"}
-				},:)
+    element {fn:concat("bf:",fn:string($type/@property))} {
+        element bf:Work {
+        (:inverse relationship could go here, but you need the bibframeWork/@rdf:about
+            element {fn:concat("bf:",fn:string($type))} {
+                attribute rdf:resource {"/bf:Work/@rdf:about goes here"}
+                },:)
+
+        (:    if (fn:matches($d/@tag,"(630|730|740|830)")) then 
+                element bf:title {clean-string(fn:string($d/marcxml:subfield[@code="a"]))}
+            else
+                element bf:title {clean-string(fn:string($d/marcxml:subfield[@code="t"]))},             
+                marcbib2bibframe:generate-880-label($d,"title"),
+                for $s in $d/marcxml:subfield[@code="p" or @code="n"] 
+                return 
+                    element bf:subTitle {
+                        fn:string($s)
+                    },:)
+
+            if ($d/marcxml:subfield[@code="w" or @code="x"]) then
+                for $s in $d/marcxml:subfield[@code="w" or @code="x" ]
+                  let $iStr := fn:string($s)
+                return
+                        if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
+                            element identifiers:oclcnum { fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }
+                        else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
+                            element identifiers:lccn {  fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")) }                
+                        else if (fn:string($s/@code="x")) then
+                            element identifiers:issn {  fn:normalize-space($iStr) }                                                 
+                else ()
+       else 
+           if ($d/marcxml:subfield[@code="a"] and fn:not(   fn:matches($d/@tag,"(630|730|740|830)") )) then
+                     marcbib2bibframe:get-name($d)
+                    else (),
+
             element madsrdf:authoritativeLabel {$aLabel},
             $aLabelWork880,
             element bf:title {$title},
@@ -1194,11 +1224,11 @@ declare function marcbib2bibframe:generate-related-work
                     else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
                         element identifiers:lccn {  fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")) }
                     else 
-                        element identifiers:id { fn:normalize-space($iStr) }   	                	
-			else ()
+                        element identifiers:id { fn:normalize-space($iStr) }                        
+            else ()
 
-			}
-		}
+            }
+        }
 };
 
 (:~
@@ -1237,6 +1267,10 @@ declare function marcbib2bibframe:related-works
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@pattern))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
 				return marcbib2bibframe:generate-related-work($d,$type)
 				
+            else if (fn:matches($type/@pattern,"(630|730|830)")) then 
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@pattern))][marcxml:subfield[@code="a"]]       
+                return marcbib2bibframe:generate-related-work($d,$type)                             
+            
             else 	
                 for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@pattern),@tag)][marcxml:subfield[@code="t"]]		
 				return marcbib2bibframe:generate-related-work($d,$type)
