@@ -58,25 +58,6 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
         ) 
         as xs:string
 {
-
-    (: 
-        Good golly.  How to do this?
-        1) Isolate Works, Instances, IndexEntities (Authorities), Annotations
-            a) Give them all identifiers
-        2) Go through Works
-            a) Match Instances to Instances
-            b) Match IndexEntities to IndexEntities
-        3) Go through Instances
-            a) Match IndexEntities (such as Places) to IndexEntities
-            b) Match Annotations to Annotations
-        4) Go through Instances
-        5) Serialize to JSON
-        6) Save.
-        7) This will be memory intensive
-        
-        OK, so 1-4 ended up being its own module.  Very well.
-        Serialize to Exhibit JSON it is.
-    :)
     
     let $resources := 
         for $c in $rdfxml/*[fn:name()]
