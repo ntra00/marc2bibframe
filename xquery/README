@@ -53,15 +53,14 @@ Exhibit Display
 	
 		data.json
 	
-	in the html/data directory.  You can mainly copy and paste this into 
+	in the html/data directory.  You can copy and paste this into 
 	the correctly named file or, if running the command line, pipe the output 
 	to html/data/data.json.
 	
-	After, simply open the exhibit.html file in 
-	a browser.
+	Afterwards, simply open the exhibit.html file in a browser.
 	
 	Note:  For Zorba and Saxon, you will need to add a runtime parameter
-	to the command.
+	to the command to instruct the processor to omit the XML declaration.
 	
 	For Saxon, add: '!method=text'
 	E.g.: java -cp /path/to/saxon9he.jar net.sf.saxon.Query saxon.xqy '!method=text' [ other params, as above ]
