@@ -4,6 +4,8 @@
 .project
 .pydevproject
 
+# XQuery
+data.json
 
 # Python
 
