@@ -1756,9 +1756,9 @@ declare function marcbib2bibframe:get-name(
             "bf:Organization"
         else if ( fn:ends-with(xs:string($d/@tag), "11") ) then
             "bf:Meeting"
-            else if ( fn:string($d/@tag)= "720" and fn:string($d/@ind1=1))  then
+        else if ( fn:string($d/@tag)= "720" and fn:string($d/@ind1)="1")  then
             "bf:Person" (:????:)
-            else if ( fn:string($d/@tag)= "720" and fn:string($d/@ind1=2))  then
+        else if ( fn:string($d/@tag)= "720" and fn:string($d/@ind1)="2")  then
             "bf:Organization" (:may be a meeting:)
         else 
             "bf:name"
