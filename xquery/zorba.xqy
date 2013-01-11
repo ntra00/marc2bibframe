@@ -40,6 +40,8 @@ import schema namespace parseoptions    =   "http://www.zorba-xquery.com/modules
 import module namespace marcbib2bibframe = "info:lc/id-modules/marcbib2bibframe#" at "modules/module.MARCXMLBIB-2-BIBFRAME.xqy";
 import module namespace rdfxml2nt = "info:lc/id-modules/rdfxml2nt#" at "modules/module.RDFXML-2-Ntriples.xqy";
 import module namespace rdfxml2json = "info:lc/id-modules/rdfxml2json#" at "modules/module.RDFXML-2-JSON.xqy";
+import module namespace bfRDFXML2exhibitJSON = "info:lc/bf-modules/bfRDFXML2exhibitJSON#" at "modules/module.RDFXML-2-ExhibitJSON.xqy";
+import module namespace RDFXMLnested2flat = "info:lc/bf-modules/RDFXMLnested2flat#" at "modules/module.RDFXMLnested-2-flat.xqy";
 
 (: NAMESPACES :)
 declare namespace marcxml       = "http://www.loc.gov/MARC21/slim";
@@ -65,7 +67,7 @@ declare variable $baseuri as xs:string external;
 declare variable $marcxmluri as xs:string external;
 
 (:~
-:   This variable is for desired serialzation.  Expected values are: rdfxml (default), ntriples, json
+:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
 :)
 declare variable $serialization as xs:string external;
 
@@ -90,16 +92,24 @@ let $resources :=
     let $bibframe :=  marcbib2bibframe:marcbib2bibframe($r,$httpuri)
     return $bibframe/child::node()[fn:name()]
     
-let $rdfxml := 
+let $rdfxml-raw := 
         element rdf:RDF {
             $resources
         }
+        
+let $rdfxml := 
+    if ( $serialization ne "rdfxml-raw" ) then
+        RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
+    else
+        $rdfxml-raw 
         
 let $response :=  
     if ($serialization eq "ntriples") then 
         rdfxml2nt:rdfxml2ntriples($rdfxml)
     else if ($serialization eq "json") then 
         rdfxml2json:rdfxml2json($rdfxml)
+    else if ($serialization eq "exhibitJSON") then
+        bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON($rdfxml, $baseuri)
     else
         $rdfxml
 
