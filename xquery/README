@@ -77,7 +77,7 @@ Changes
 		Exhibit JSON output plus Exhibit display.
 		Default serialization is flattened RDF/XML (original, 
 			verbose version is "raw")
-		Added addiional support for 630, 730, 740, 830 relationships.
+		Added additional support for 630, 730, 740, 830 relationships.
 		Bug fixes to work through Stanford MARC files.
 
 	Dec 21 2012
