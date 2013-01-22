@@ -1515,7 +1515,7 @@ declare function marcbib2bibframe:generate-work(
             let $gac:=fn:replace(fn:string($d),"-","") 
             return
                 element bf:subject {
-                    attribute rdf:about { fn:concat("http://id.loc.gov/vocabulary/geographicAreas/", $gac) }
+                    attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/geographicAreas/", $gac) }
             }
             		
     let $biblink:= 
