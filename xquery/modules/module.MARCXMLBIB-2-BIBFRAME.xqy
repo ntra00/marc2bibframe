@@ -1512,7 +1512,7 @@ declare function marcbib2bibframe:generate-work(
 						
  	let $gacs:= 
             for $d in $marcxml/marcxml:datafield[@tag = "043"]/marcxml:subfield[@code="a"] 
-            let $gac:=fn:replace(fn:string($d),"-","") 
+            let $gac := fn:normalize-space(fn:replace(fn:string($d),"-","")) 
             return
                 element bf:subject {
                     attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/geographicAreas/", $gac) }
