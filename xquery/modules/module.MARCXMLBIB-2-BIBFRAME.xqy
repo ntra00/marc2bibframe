@@ -1449,7 +1449,7 @@ declare function marcbib2bibframe:generate-work(
         for $c in $marcxml/marcxml:datafield[fn:string(@tag)="072"]
         return    element bf:otherclass {
 	                    	element bf:Classification { 
-	                    		attribute rdf:resource {"http://www.loc.gov/standards/sourcelist/subject-category.html"},
+	                    		(: attribute rdf:resource {"http://www.loc.gov/standards/sourcelist/subject-category.html"}, :)
 	                    		element bf:label {fn:string-join($c/marcxml:subfield[fn:matches(@code,"(a|x)")]," ")},
 	                    		element bf:source {fn:string($c/marcxml:subfield[@code="2"])}	                    
 	                    	}
