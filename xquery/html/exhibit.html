@@ -88,7 +88,8 @@
 						<tr ex:if-exists=".bf-creator">
 							<td class="property span2">Creator</td>
 							<td>
-								<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+								<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+								<span ex:if="exists(.uri)"><span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span></li></ul>
 							</td>
 						</tr>
 						<tr ex:if-exists=".bf-summary">
@@ -110,11 +111,19 @@
                   <tr ex:if-exists=".bf-subject">
                     <td class="property span2">Subject(s)</td>
                     <td>
-						<ul ex:content=".bf-subject" class="value subject"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span> <span class="authorityLink idlc" ex:if-exists=".hasAuthorityLink"><a ex:href-content=".hasAuthorityLink">(<i class="icon-star"></i>)</a></span> <span class="authorityLink idlc" ex:if-exists=".idlcFromHeuristic"><a ex:href-content=".idlcFromHeuristic">(<i class="icon-star"></i>)</a></span> <span class="authorityLink viaf" ex:if-exists=".viafFromHeuristic"><a ex:href-content=".viafFromHeuristic">(<i class="icon-ok"></i>)</a></span> 
-                          <span ex:if-exists=".generalSubdivision"> <span class="divider">/</span> <span class="subdivision general" ex:content=".generalSubdivision"></span></span>
-                          <span ex:if-exists=".geographicSubdivision"> <span class="divider">/</span> <span class="subdivision geographic" ex:content=".geographicSubdivision"></span></span>
-                          <span ex:if-exists=".chronologicalSubdivision"> <span class="divider">/</span> <span class="subdivision chronological" ex:content=".chronologicalSubdivision"></span></span>
-                        </li>
+						<ul ex:content=".bf-subject" class="value subject">
+							<li>
+								<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+								<span ex:if="exists(.uri)">
+									<span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span>
+								</span>
+								<!--
+								<span class="name" ex:content=".label"></span> <span class="authorityLink idlc" ex:if-exists=".hasAuthorityLink"><a ex:href-content=".hasAuthorityLink">(<i class="icon-star"></i>)</a></span> <span class="authorityLink idlc" ex:if-exists=".idlcFromHeuristic"><a ex:href-content=".idlcFromHeuristic">(<i class="icon-star"></i>)</a></span> <span class="authorityLink viaf" ex:if-exists=".viafFromHeuristic"><a ex:href-content=".viafFromHeuristic">(<i class="icon-ok"></i>)</a></span> 
+								<span ex:if-exists=".generalSubdivision"> <span class="divider">/</span> <span class="subdivision general" ex:content=".generalSubdivision"></span></span>
+								<span ex:if-exists=".geographicSubdivision"> <span class="divider">/</span> <span class="subdivision geographic" ex:content=".geographicSubdivision"></span></span>
+								<span ex:if-exists=".chronologicalSubdivision"> <span class="divider">/</span> <span class="subdivision chronological" ex:content=".chronologicalSubdivision"></span></span>
+								-->
+							</li>
                       </ul>
                     </td>
                   </tr>
@@ -160,7 +169,9 @@
 										<tr ex:if-exists=".bf-creator">
 											<td class="property span2">Creator</td>
 											<td>
-												<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
+												<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+												<span ex:if="exists(.uri)"><span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span></li></ul>
 											</td>
 										</tr>
 									</table>
@@ -193,7 +204,9 @@
 								  <tr ex:if-exists=".bf-contributor">
 									<td class="property span2">Contributor</td>
 									<td>
-										<ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+										<!-- <ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
+										<ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+										<span ex:if="exists(.uri)"><span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span></li></ul>
 									</td>
 								</tr>
                                 <tr ex:if-exists=".bf-callNumber">
