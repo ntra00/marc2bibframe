@@ -120,12 +120,12 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
     let $instances := 
         for $i in $instances/bf:Instance
 
-        let $i-ientities := $i/child::node()[
-            fn:name(child::node()[1])="bf:Person" or
-            fn:name(child::node()[1])="bf:Place" or
-            fn:name(child::node()[1])="bf:Topic" or
-            fn:name(child::node()[1])="bf:Genre" or
-            fn:name(child::node()[1])="bf:Organization"]
+        let $i-ientities := $i/bf:*[
+            fn:name(bf:*[1])="bf:Person" or
+            fn:name(bf:*[1])="bf:Place" or
+            fn:name(bf:*[1])="bf:Topic" or
+            fn:name(bf:*[1])="bf:Genre" or
+            fn:name(bf:*[1])="bf:Organization"]
         let $i-ientities := 
             for $ie in $i-ientities
             return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
@@ -179,7 +179,27 @@ declare function RDFXMLnested2flat:createIdentifiedResource(
             $baseuri as xs:string
         ) as element()*
 {
-    for $r at $pos in $resources
+
+    let $rs := 
+        if ( fn:count($resources/madsrdf:authoritativeLabel) > 0 ) then
+            let $rs-labels := 
+                for $r in $resources
+                let $l := ($r/madsrdf:authoritativeLabel|$r/bf:label)[1]
+                return $l
+            let $distinct-labels := fn:distinct-values($rs-labels)
+            let $rs := 
+                for $dl in $distinct-labels
+                return 
+                    if ($resources[madsrdf:authoritativeLabel=$dl][1]) then
+                        $resources[madsrdf:authoritativeLabel=$dl][1]
+                    else
+                        $resources[bf:label=$dl][1]
+            return $rs
+        else
+            (: Probably have instances :)
+            $resources
+            
+    for $r at $pos in $rs
     let $n := fn:lower-case(fn:local-name($r))
     return
         element {fn:name($r)} { 
@@ -205,8 +225,8 @@ declare function RDFXMLnested2flat:createResourceOrNot(
             $haystack as element(rdf:RDF)
         ) as element()
 {
-    let $label := ($needle/child::node()[1]/madsrdf:authoritativeLabel|$needle/child::node()[1]/rdfs:label|$needle/child::node()[1]/bf:label)[1]
-    let $needle-found := $haystack/child::node()[child::node()=$label]
+    let $label := ($needle/bf:*[1]/madsrdf:authoritativeLabel|$needle/bf:*[1]/rdfs:label|$needle/bf:*[1]/bf:label)[1]
+    let $needle-found := $haystack/bf:*[child::node()=$label]
     return
         if ($needle-found[1]) then
             element {fn:name($needle)} {
