@@ -183,7 +183,7 @@ declare variable $marcbib2bibframe:identifiers :=
             <id tag="070" property="bf:nalCall">National Agricultural Library Call Number</id>
             <id tag="072" property="bf:subjectCategory" subfields="ax2">Subject Category Code</id>
             <id tag="080" property="identifiers:udcNum">Universal Decimal Classification Number</id>
-            <id tag="082" property="identifiers:dewey">Dewey Decimal Classification Number</id>
+            <id tag="082" property="bf:ddc">Dewey Decimal Classification Number</id>
             <id tag="083" property="bf:deweyplus">Additional Dewey Decimal Classification Number</id>
             <id tag="084" property="bf:otherClass">Other Classification Number</id>
             <id tag="085" property="bf:classComponents">Synthesized Classification Number Components</id>
