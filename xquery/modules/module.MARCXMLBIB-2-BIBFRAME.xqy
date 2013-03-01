@@ -806,130 +806,149 @@ declare function marcbib2bibframe:generate-identifiers(
             $marcbib2bibframe:identifiers//vocab-identifiers/property[@domain="Instance"]
         else 
             $marcbib2bibframe:identifiers//vocab-identifiers/property[@domain="Work"]
-    return 
-        (  
+    let $bfIdentifiers := 
             for $id in $identifiers[fn:not(@ind1)] (:all but 024 and 028:)
-		                                  
-          		for $this-tag in $marcxml/marcxml:datafield[@tag eq $id/@tag] (:for each matching marc datafield:)          		
-		(:if contains subprops, build class for $a else just prop w/$a:)
-		return 
-		( (:first, deal with the $a):) 
-		if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or 			
-			($this-tag/@tag="020" and fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(")  )   or			
-			($this-tag[@tag="037"][marcxml:subfield[@code="c"]]) 				
-			)
-			then 
-			(
-			element bf:Identifier{
-				 element bf:identifierScheme {				 
-				 	fn:string($id/@name)
-				 } ,
-				for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
-				  	return element bf:identifierAssigner {fn:string($sub)},
-				  for $sub in $this-tag/marcxml:subfield[@code="q" ]
-				  	return element bf:identifierQualifier {fn:string($sub)},
-				  for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"][fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ]
-				  	let $q:=fn:replace(fn:substring-after($sub,"(" ),"\)","")				  	
-				  	return 
-				  		element bf:identifierQualifier {
-				  		if (fn:matches($q,"(pbk|softcover)")) then
-							"paperback"
-						else if (fn:matches($q,"(hbk|hardcover|hc|hard)") ) then 
-							"hardback"
-						else if (fn:matches($q,"(ebook|eresource)") ) then
-							"electronic resource"
-						else if (fn:contains($q,"lib. bdg.") ) then
-							"library binding"			
-						else if (fn:matches($q,"(acid-free|acid free|alk)")) then
-							"acid free"						  		
-				  		else $q
-				  		},				  
-				element bf:identifierValue { 
-					if  ($this-tag[@tag="020"]/marcxml:subfield[@code="a"]) then
-						fn:substring-before($this-tag[@tag="020"]/marcxml:subfield[@code="a"],"(" )					
-                        		 	else
-						fn:string($this-tag/marcxml:subfield[@code="a"])
-					}
-				
-			}
-			)
-		else
-		(:just the property: should include 035 oclc 
-		($this-tag[@tag="035"][fn:contains(fn:string(marcxml:subfield[@code="a"]), "(OCoLC)")])
-		:)
-			if ( fn:contains(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "(OCoLC)" ) ) then
-		  		element {"bf:oclc-number"} {			  
-	                      		 	fn:normalize-space(fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", ""))
-	                      		 	}
-                   		 else   if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"doi")
-                   		 ) then                   		 
-                   		 	  	element {"bf:doi"} {
-	                        			fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
-	                        		}
-	                       else 	if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"hdl" )) then
-                   		      		 	  element {"bf:hdl"} {
-	                        		fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
-	                        		}
-	                    	else (),
+            return
+                for $this-tag in $marcxml/marcxml:datafield[@tag eq $id/@tag] (:for each matching marc datafield:)          		
+                (:if contains subprops, build class for $a else just prop w/$a:)
+                return 
+                ( 
+                    (:first, deal with the $a):) 
+                    if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or 			
+                        ($this-tag/@tag="020" and fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(")  )   or			
+                        ($this-tag[@tag="037"][marcxml:subfield[@code="c"]]) 				
+			           ) then 
+                        element bf:Identifier {
+                            element bf:identifierScheme {				 
+                                fn:string($id/@name)
+                            },
+                            
+                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
+                            return element bf:identifierAssigner {fn:string($sub)},
+
+                            for $sub in $this-tag/marcxml:subfield[@code="q" ]
+                            return element bf:identifierQualifier {fn:string($sub)},
+
+                            for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"][fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ]
+                            let $q:=fn:replace(fn:substring-after($sub,"(" ),"\)","")				  	
+                            return 
+                                element bf:identifierQualifier {
+                                    if (fn:matches($q,"(pbk|softcover)")) then
+                                        "paperback"
+                                    else if (fn:matches($q,"(hbk|hardcover|hc|hard)") ) then 
+                                        "hardback"
+                                    else if (fn:matches($q,"(ebook|eresource)") ) then
+                                        "electronic resource"
+                                    else if (fn:contains($q,"lib. bdg.") ) then
+                                        "library binding"			
+                                    else if (fn:matches($q,"(acid-free|acid free|alk)")) then
+                                        "acid free"						  		
+                                    else $q
+                                },				  
+                            
+                            element bf:identifierValue { 
+                                if ($this-tag[@tag="020"]/marcxml:subfield[@code="a"]) then
+                                    fn:substring-before($this-tag[@tag="020"]/marcxml:subfield[@code="a"],"(" )					
+                                else
+                                    fn:string($this-tag/marcxml:subfield[@code="a"])
+                            }
+                        }
+                    else
+                        (:
+                            just the property: should include 035 oclc 
+                            ($this-tag[@tag="035"][fn:contains(fn:string(marcxml:subfield[@code="a"]), "(OCoLC)")]) 
+                        :)
+                        (
+                        if ( fn:contains(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "(OCoLC)" ) ) then
+                            element {"bf:oclc-number"} {			  
+                                fn:normalize-space(fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", ""))
+                            }
+                        else if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"doi")) then
+                            element {"bf:doi"} {
+                                fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
+                            }
+                        else if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"hdl" )) then
+                            element {"bf:hdl"} {
+                                fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
+                            }
+                        else (),
+	                    
 	                    (:then deal with the z's:)
 	                    if ( $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]) then                    
-    			element bf:Identifier{
-    			 	element bf:identifierScheme {	 fn:string($id/@name) } ,
-	                    		marcbib2bibframe:handle-cancels($this-tag)
-	                    }
+                            element bf:Identifier {
+                                element bf:identifierScheme { fn:string($id/@name) } ,
+                                marcbib2bibframe:handle-cancels($this-tag)
+                            }
 	                    else ()
-	             )
-		,
-          		for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(024|028)")]
-   	       	  let $this-id:= $identifiers[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1](: i1=7 has several:)   	       	  
-   	       	  return
-   	       	  if ($this-id) then(: if there are any 024s on this record in this domain (work/instance):) 
-   	       	    let $scheme:=   	       	  	
-	   	       	  	if ($this-tag/@ind1="7") then (:use the contents of $2 for the name: :)
-				 	fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"])
-				else (:use the $id name:)
-					fn:string($this-id[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1]/@name)
-			
-			(:if  024 has a c, it's qualified, needs a class  else just prop w/$a:)
-		   return 		
-			( 			
-			if (fn:contains(fn:string($this-tag/marcxml:subfield[@code="c"]), "(")   or $this-tag/marcxml:subfield[@code="q"] or  $this-tag/marcxml:subfield[@code="b"])  then			
-			element bf:Identifier{
-				element bf:identifierScheme {$scheme},		
-				for $sub in $this-tag/marcxml:subfield[@code="b"] 
-				  	return element bf:identifierAssigner{fn:string($sub)},
-				 for $sub in $this-tag[fn:contains(fn:string(marcxml:subfield[@code="c"]),"(") ]
-				  	return element bf:identifierQualifier {fn:replace(fn:substring-after($sub,"(" ),"\)","")},
-				  for $sub in $this-tag/marcxml:subfield[@code="q"] 
-				  	return element bf:identifierQualifier {fn:string($sub)},
-				element bf:identifierValue {(
-						fn:string($this-tag/marcxml:subfield[@code="a"]),						
-							if ($this-tag/marcxml:subfield[@code="d"] ) then
-								fn:concat("-",fn:string($this-tag/marcxml:subfield[@code="d"]))
-							else
-								()
-						)
-				}			
-			}			
-			else
-				let $property:= (:024 had a z only; no $a: bibid;17332794:)
-					if ($this-tag/@ind1="7") then
-					 	fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"])								
-					else	fn:concat("bf:",fn:string($this-id/@name))									
-			return	
-			  element {$property} {		                     
-		                        fn:normalize-space(fn:string($this-tag/marcxml:subfield[@code="a"]))
-		                    },
-	                    (:then deal with the z's:)
-	                      if ( $this-tag/marcxml:subfield[fn:matches(@code,"(m|y)")]) then                    
-    			element bf:Identifier{
-    			 	element bf:identifierScheme {$scheme},		
-	                    		marcbib2bibframe:handle-cancels($this-tag)
-	                    }
-	                    else ()	
-		) (:end 024:)
-		else () (:end if datafields 024 in this domain:)
-	)
+	                    ),
+
+                    for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(024|028)")]
+                    let $this-id:= $identifiers[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1](: i1=7 has several:)   	       	  
+                    return
+                        if ($this-id) then(: if there are any 024s on this record in this domain (work/instance):) 
+                            let $scheme:=   	       	  	
+                                if ($this-tag/@ind1="7") then (:use the contents of $2 for the name: :)
+                                    fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"])
+                                else (:use the $id name:)
+                                    fn:string($this-id[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1]/@name)
+                            
+                            (:if  024 has a c, it's qualified, needs a class  else just prop w/$a:)
+                            return
+                            if (
+                                fn:contains(fn:string($this-tag/marcxml:subfield[@code="c"]), "(") or 
+                                $this-tag/marcxml:subfield[@code="q"] or 
+			                     $this-tag/marcxml:subfield[@code="b"]
+			                 ) then	
+                                element bf:Identifier{
+                                    element bf:identifierScheme {$scheme},		
+                            
+                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
+                                    return element bf:identifierAssigner{fn:string($sub)},
+        
+                                    for $sub in $this-tag[fn:contains(fn:string(marcxml:subfield[@code="c"]),"(") ]
+                                    return element bf:identifierQualifier {fn:replace(fn:substring-after($sub,"(" ),"\)","")},
+        
+                                    for $sub in $this-tag/marcxml:subfield[@code="q"] 
+                                    return element bf:identifierQualifier {fn:string($sub)},
+            
+                                    element bf:identifierValue {
+                                        fn:string($this-tag/marcxml:subfield[@code="a"]),						
+                                        if ($this-tag/marcxml:subfield[@code="d"] ) then
+                                            fn:concat("-",fn:string($this-tag/marcxml:subfield[@code="d"]))
+                                        else
+								            ()
+				                    }
+                                }	
+                            else
+                                let $property:= (:024 had a z only; no $a: bibid;17332794:)
+                                    if ($this-tag/@ind1="7") then
+                                        fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"])								
+                                    else 
+                                        fn:concat("bf:",fn:string($this-id/@name))					
+                                return
+                                    (
+                                        element {$property} {		                     
+                                            fn:normalize-space(fn:string($this-tag/marcxml:subfield[@code="a"]))
+                                        },
+                                        (:then deal with the z's:)
+                                        if ( $this-tag/marcxml:subfield[fn:matches(@code,"(m|y)")]) then                    
+                                            element bf:Identifier{
+                                                element bf:identifierScheme {$scheme},		
+                                                marcbib2bibframe:handle-cancels($this-tag)
+                                            }
+                                        else ()
+                                    )
+                        else ()
+		                  (:end 024:)
+	           )
+	
+	return 
+        for $bfi in $bfIdentifiers
+        return 
+            if (fn:name($bfi) eq "bf:Identifier") then
+                element bf:identifier {$bfi}
+            else
+                $bfi
 };
 
 (:~
@@ -1784,41 +1803,59 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
  			let $sub-codes:= fn:distinct-values($marc-note/marcxml:subfield[@code!="t"]/@code)
 			let $return-codes := "gru"			
 			let $set:=
-				for $title in $marc-note/marcxml:subfield[@code="t"]				
-					return 
-						element part {
-							element madsrdf:MainTitleElement {element madsrdf:elementValue {fn:string($title)},
-							(:get each following sibling that's not a title
-					where the first preceding title of it is the same as this title:)
-						 	for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]				
-								let $elname:=
-								 	if ($subfield/@code="g") then "madsrdf:TitleElement" 
-                                    else if ($subfield/@code="r") then "madsrdf:responsibility" 
-                                    else if ($subfield/@code="u") then "rdf:resource" 
-                                    else fn:string($subfield/@code)
-											
-								return 
-									element {$elname } {
-											element madsrdf:elementValue {
-											fn:replace(fn:string($subfield),"-","")
-											(:$title/following-sibling::marcxml:subfield[@code=$code][1][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]:)																					
-									}
-								}						
-								}
-							}
+				for $title in $marc-note/marcxml:subfield[@code="t"]
+				let $t := fn:replace(xs:string($title), " /", "")
+                let $details := 
+                    element details {
+                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
+                        let $elname:=
+                            if ($subfield/@code="g") then "bf:note" 
+                            else if ($subfield/@code="r") then "bf:contributor" 
+                            else if ($subfield/@code="u") then "rdf:resource" 
+                            else fn:concat("bf:f505c" , fn:string($subfield/@code))
+                        return
+                            if ($elname eq "rdf:resource") then
+                                element {$elname} { attribute rdf:resource {fn:string($subfield)} }
+                            else
+                                element {$elname} {fn:replace(xs:string($subfield), " --", "")}
+                    }
+                return 
+                    element part {
+                        element madsrdf:authoritativeLabel {
+                            fn:string-join( ($details/bf:contributor, $t), ". " )
+                        },
+                        element madsrdf:elementList {
+                            attribute rdf:parseType {"Collection"},
+                            element madsrdf:MainTitleElement {
+                                element madsrdf:elementValue {$t}
+                            }
+                        },
+                        
+                        (:  
+                            get each following sibling that's not a title
+					        where the first preceding title of it is the same as this title
+                        :)
+                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]				
+                        let $elname:=
+                            if ($subfield/@code="g") then "bf:note" 
+                            else if ($subfield/@code="r") then "bf:contributor" 
+                            else if ($subfield/@code="u") then "rdf:resource" 
+                            else fn:concat("bf:f505c" , fn:string($subfield/@code))
+                        return
+                            if ($elname eq "rdf:resource") then
+                                element {$elname} { attribute rdf:resource {fn:string($subfield)} }
+                            else
+                                element {$elname} {fn:replace(xs:string($subfield), " --", "")}				
+                    }
 			return						
-				element bf:contains {									
-					for $item in $set
-						return
-							element bf:Work {
-								element madsrdf:authoritativeLabel {fn:string-join($item/*," ") },
-								element rdf:type {attribute rdf:resource {"http://bibframe.org/vocab/Part"}},
-								element madsrdf:elementList {
-									attribute  rdf:parseType {"Collection"},												
-									$item/*												
-									}
-								}																								
-				}
+                for $item in $set
+                return
+                    element bf:contains {   
+                        element bf:Work {
+                            element rdf:type {attribute rdf:resource {"http://bibframe.org/vocab/Part"}},
+                            $item/*
+                        }																								
+				    }
 						
  	let $gacs:= 
             for $d in $marcxml/marcxml:datafield[@tag = "043"]/marcxml:subfield[@code="a"] 
@@ -2386,9 +2423,9 @@ declare function marcbib2bibframe:generate-class(
                 (fn:count($this-tag/marcxml:subfield)=2  and $this-tag/marcxml:subfield[@code="b"] )
                ) then
                     let $property:=     
-                        if (fn:exists($classes[@level="property"][fn:contains(@tag,$this-tag/@tag)] ) ) then
+                        if (fn:exists($classes[@level="property"][fn:contains(@tag,$this-tag/@tag)])) then
                             fn:string( $classes[@level="property"][fn:contains(@tag,$this-tag/@tag)]/@name)
-                        else 
+                        else
                             "class"            	            	  	       
                     return	 
                         element  {fn:concat("bf:",$property)} {            	
@@ -2460,6 +2497,7 @@ declare function marcbib2bibframe:generate-class(
                     }
             	}            
 };
+
 (:~
 :   This function processes out the leader and control fields
 :
