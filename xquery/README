@@ -73,6 +73,9 @@ Exhibit Display
 
 Changes
 
+	Mar 1 2013
+		Output data in closer alignment with vocabulary terms.
+		
 	Jan 11 2013
 		Exhibit JSON output plus Exhibit display.
 		Default serialization is flattened RDF/XML (original, 
