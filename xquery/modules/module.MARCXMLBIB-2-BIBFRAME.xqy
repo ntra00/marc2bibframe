@@ -829,7 +829,7 @@ declare function marcbib2bibframe:generate-identifiers(
                             for $sub in $this-tag/marcxml:subfield[@code="q" ]
                             return element bf:identifierQualifier {fn:string($sub)},
 
-                            for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"][fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ]
+                            for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"] (: [fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ] :)
                             let $q:=fn:replace(fn:substring-after($sub,"(" ),"\)","")				  	
                             return 
                                 element bf:identifierQualifier {
@@ -846,11 +846,16 @@ declare function marcbib2bibframe:generate-identifiers(
                                     else $q
                                 },				  
                             
+                            (: 
+                                kefo - 1 march
+                                ALERT - I had to insert [1] to get this to work in a crunch.
+                                BUT this needs to be modified.
+                            :)
                             element bf:identifierValue { 
                                 if ($this-tag[@tag="020"]/marcxml:subfield[@code="a"]) then
                                     fn:substring-before($this-tag[@tag="020"]/marcxml:subfield[@code="a"],"(" )					
                                 else
-                                    fn:string($this-tag/marcxml:subfield[@code="a"])
+                                    fn:string($this-tag/marcxml:subfield[@code="a"][1])
                             }
                         }
                     else
