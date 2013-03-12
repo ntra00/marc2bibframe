@@ -630,7 +630,7 @@ declare function marcbib2bibframe:generate-instance-from260(
         else ()
 (:???? trash this???:)
     let $instance-identifiers :=
-        (                        
+             (             
            (: for $i in $d/../marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]
             	let $code := fn:normalize-space($i/parent::node()[1]/marcxml:subfield[@code eq "2"])
             	let $iStr := fn:normalize-space(xs:string($i))
@@ -649,8 +649,26 @@ declare function marcbib2bibframe:generate-instance-from260(
                 	else 
                     	element identifiers:id { fn:normalize-space($iStr) },:)
             marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"instance")
-            
+    
         )
+        
+     let $carrierType:=
+     	for $subfield  in $d/../marcxml:datafield[@tag="020"]/marcxml:subfield[@code="a"] [fn:contains(   text(),"(")]	
+                            let $carrier:=fn:replace(fn:substring-after($subfield,"(" ),"\)","")				  	
+                            return 
+                                element bf:carrierType {
+                                    if (fn:matches($carrier,"(pbk|softcover)")) then
+                                        "paperback"
+                                    else if (fn:matches($carrier,"(hbk|hardcover|hc|hard)") ) then 
+                                        "hardback"
+                                    else if (fn:matches($carrier,"(ebook|eresource)") ) then
+                                        "electronic resource"
+                                    else if (fn:contains($carrier,"lib. bdg.") ) then
+                                        "library binding"			
+                                    else if (fn:matches($carrier,"(acid-free|acid free|alk)")) then
+                                        "acid free"						  		
+                                    else $carrier
+                                }
     (:let $instance-classes:=marcbib2bibframe:generate-class($d/ancestor::marcxml:record,"instance"):)
     let $related-works:= marcbib2bibframe:related-works($d/ancestor::marcxml:record,$workID,"instance")
     let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
@@ -675,7 +693,8 @@ declare function marcbib2bibframe:generate-instance-from260(
             $physMapData,
             $physSerialData,
             $call-num,    
-            $instance-identifiers,            
+            $instance-identifiers,   
+            $carrierType,
             $physdesc,
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
@@ -829,7 +848,10 @@ declare function marcbib2bibframe:generate-identifiers(
                             for $sub in $this-tag/marcxml:subfield[@code="q" ]
                             return element bf:identifierQualifier {fn:string($sub)},
 
-                            for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"] (: [fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ] :)
+                       (: ntra moved identifierQualifier out to an instance property called carrierType 2013-03-01
+                       now need to rethink making bf:isbn instead!!!:)
+                  (:     for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"] 
+                  		(: [fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ] :)
                             let $q:=fn:replace(fn:substring-after($sub,"(" ),"\)","")				  	
                             return 
                                 element bf:identifierQualifier {
@@ -845,7 +867,7 @@ declare function marcbib2bibframe:generate-identifiers(
                                         "acid free"						  		
                                     else $q
                                 },				  
-                            
+                            :)
                             (: 
                                 kefo - 1 march
                                 ALERT - I had to insert [1] to get this to work in a crunch.
