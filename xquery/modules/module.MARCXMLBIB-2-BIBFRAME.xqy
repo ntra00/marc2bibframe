@@ -1315,8 +1315,7 @@ declare function marcbib2bibframe:generate-instance-from856(
                     $biblink
                 }
              else             	
-       			element bf:Annotation {
-                    
+       	    element bf:Annotation {                    
                     if (fn:string($link/marcxml:subfield[@code="3"]) ne "") then
                         element bf:label {
                             fn:string($link/marcxml:subfield[@code="3"])       					
@@ -1339,16 +1338,16 @@ declare function marcbib2bibframe:generate-instance-from856(
                                 $marcxml/marcxml:datafield[fn:starts-with(@tag , "70")]|
                                 $marcxml/marcxml:datafield[fn:starts-with(@tag , "71")]|
                                 $marcxml/marcxml:datafield[fn:starts-with(@tag , "72")]
-
-                        let $names := 
+		
+                      (:  let $names := :)
                     	    for $datafield in $df 
                     	    return marcbib2bibframe:get-name( $datafield )
-                        return 
+                        (:return 
                             for $n in $names
                             return
-                                element bf:name {
-                                    $names/* 
-                                }
+                                element bf:associatedAgent {
+                                    $n 
+                                }:)
                     else
                         element bf:annotationCreator {
                                 attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"} 
@@ -2279,7 +2278,8 @@ declare function marcbib2bibframe:get-name(
             "bf:Name"
 
     let $tag := xs:string($d/@tag)
-    let $property := 
+    let $desc-role:=if (fn:starts-with($tag , "10") or fn:starts-with($tag , "11")) then "primary" else () 
+    let $resourceRole := 
         if ($relatorCode ne "") then
             (: 
                 k-note, added substring call because of cruddy data.
@@ -2289,25 +2289,25 @@ declare function marcbib2bibframe:get-name(
             :)
             fn:concat("relators:" , $relatorCode)
         else if ( fn:starts-with($tag, "1") ) then
-            "bf:creator"
+            "creator"
         else if ( fn:starts-with($tag, "7") and $d/marcxml:subfield[@code="t"] ) then
-            "bf:creator"
+            "creator"
         else
-            "bf:contributor"
-            
+            "contributor"            
 
     return
-        element {$property} {
+       element bf:associatedAgent {
             element {$class} {            
                 element bf:label {$label},
                 element rdfs:label {$aLabel},
                 if ($d/@tag!='534') then element madsrdf:authoritativeLabel {$aLabel} else (),
                 marcbib2bibframe:generate-880-label($d,"name"),
                 $elementList,
-                $roles
+                $roles,
+                element bf:resourceRole {$resourceRole},
+                element bf:descriptionRole { $desc-role}
             }
         }
-
 };
 
 (:~
@@ -2651,8 +2651,8 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             	:) 
             	element bf:classNumber {fn:string($cl)},
             	
-                        if ($this-tag/@tag="050" and $this-tag/@ind2="0") then  element bf:classAssigner {"LC"}
-                        else if (fn:matches($this-tag/@tag,"(051)")) then element bf:classAssigner {"LC"}
+                        if ($this-tag/@tag="050" and $this-tag/@ind2="0") then  element bf:classAssigner {attribute rdf:about{"http://id.loc.gov/vocabulary/organizations/dlc"}}
+                        else if (fn:matches($this-tag/@tag,"(051)")) then element bf:classAssigner {attribute rdf:about{"http://id.loc.gov/vocabulary/organizations/dlc"}}
                         else if (fn:matches($this-tag/@tag,"(060|061)")) then element bf:classAssigner { "NLM"}            	 					
                         else if (fn:matches($this-tag/@tag,"(070|071)")) then element bf:classAssigner {"NAL"}
                         else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then element bf:classAssigner { fn:string($this-tag/marcxml:subfield[@code="q"])}
