@@ -2646,17 +2646,19 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                             }
                         else (),
                         
-                        for $sfa in $this-tag[fn:matches($classes[@name="classNumber"]/@tag,@tag)]/marcxml:subfield[@code="a"]
+                    (:    for $sfa in $this-tag[fn:matches($classes[@name="classNumber"]/@tag,@tag)]/marcxml:subfield[@code="a"]
             			return element bf:classNumber {fn:string($sfa)},
-            		
-                        if ($this-tag/@tag="050" and $this-tag/@ind2="0") then "LC"
+            	:) 
+            	element bf:classNumber {fn:string($cl)},
+            	
+                        if ($this-tag/@tag="050" and $this-tag/@ind2="0") then  element bf:classAssigner {"LC"}
                         else if (fn:matches($this-tag/@tag,"(051)")) then element bf:classAssigner {"LC"}
                         else if (fn:matches($this-tag/@tag,"(060|061)")) then element bf:classAssigner { "NLM"}            	 					
                         else if (fn:matches($this-tag/@tag,"(070|071)")) then element bf:classAssigner {"NAL"}
                         else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then element bf:classAssigner { fn:string($this-tag/marcxml:subfield[@code="q"])}
                         else (),             			
 			            	 
-            	 		if ( 
+            	 if ( 
             	 		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
             	 		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
             	 		   ) then  
@@ -2671,7 +2673,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
 							}
                         else (),
 						
-						for $sfc in $this-tag[fn:matches($classes[@name="classCopy"]/@tag,@tag)]/marcxml:subfield[@code="c"]
+		for $sfc in $this-tag[fn:matches($classes[@name="classCopy"]/@tag,@tag)]/marcxml:subfield[@code="c"]
                         return 
                             element bf:classCopy {fn:string($sfc)},
                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
