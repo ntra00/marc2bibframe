@@ -51,7 +51,7 @@ declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-02-28-T12:30";
+declare variable $marcbib2bibframe:last-edit :="2013-03-13-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">Text</type>
@@ -150,7 +150,7 @@ declare variable $marcbib2bibframe:identifiers :=
     ( 
     <identifiers>
         <instance-identifiers>
-            <field tag="010" property="bf:lccn">Library of Congress Control Number</field>
+            <field tag="010" property="bf:derivedFromLccn">Library of Congress Control Number</field>
             <field tag="018" property="bf:copyrightArticleFee">Copyright Article-Fee Code</field>
             <field tag="022" property="identifiers:issn">International Standard Serial Number</field>
             <field tag="024" ind1="0" property="identifiers:isrc">International Standard Recording Code</field>
@@ -193,7 +193,7 @@ declare variable $marcbib2bibframe:identifiers :=
             <field tag="024" ind1="3" property="identifiers:ean">International Article Number</field>
             <field tag="024" ind1="7" property="identifiers:sici">Serial Item and Contribution Identifier</field>(:!!!:)
             <field tag="027" property="identifiers:strn">Standard Technical Report Number</field>
-            <field tag="030" property="identifiers:coden">CODEN Designation</field>
+            <field tag="030" property="bf:coden">CODEN Designation</field>
             <field tag="031" property="bf:musicalIncipits">Musical Incipits Information</field>
             <field tag="033" property="bf:dateTimePlace">Date/Time and Place of an Event</field>
             <field tag="034" property="bf:cartographicData">Coded Cartographic Mathematical Data</field>
@@ -242,7 +242,7 @@ declare variable $marcbib2bibframe:identifiers :=
  <property name="music-publisher" label="other publisher number for music"   domain="Instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
  <property name="videorecording-identifier"   label="publisher assigned videorecording number"   domain="Instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
  <property name="publisher-number" label="other publisher assigned number"   domain="Instance"   marc="0285-/a"   tag="028"   ind1="5"   sfcodes="a"/>
- <property name="coden" label="CODEN" domain="Instance" marc="030--/a,z" tag="030"   sfcodes="a,z"/>
+ <property name="coden" label="CODEN" domain="Instance" marc="030--/a,z" tag="030"   sfcodes="a,z" uri="http://cassi.cas.org/coden/"/>
  <property name="postal-registration" label="postal registration number" domain="Instance"   marc="032--/a"   tag="032"   sfcodes="a"/>
  <property name="system-number" label="system control number" domain="Instance"   marc="035--/a,z"   tag="035"   sfcodes="a,z"/>
  <!--<property name="oclc-number" domain="Instance"   marc="035 - - /a,z prefix 'OCOLC'"   tag="035"   sfcodes="a,z"/> -->
@@ -321,9 +321,8 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>		
 		<note tag ="526" property="studyProgram">Study Program Information Note</note>
 		<note tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="additionalPhysicalForm">Additional Physical Form Available Note </note>
-		<note tag ="533"  comment="(develop link) (Delsey - Manifestation)" property="reproduction">Reproduction Note</note>
-<!-- moved to relateds;		
-		<note tag ="534" comment="(develop link)(Delsey - Manifestation)" sfcodes="b" property="originalVersion">Original Version Note</note>-->
+<!-- moved to relateds;			<note tag ="533"  comment="(develop link) (Delsey - Manifestation)" property="reproduction">Reproduction Note</note>
+ 		<note tag ="534" comment="(develop link)(Delsey - Manifestation)" sfcodes="b" property="originalVersion">Original Version Note</note>-->
 		<note tag ="535" property="originalLocation">Location of Originals/Duplicates Note</note>
 		<note tag ="536" property="funding">Funding Information Note</note>		
 		<note tag ="544" sfcodes="3dea" comment="(develop link?)" property="archiveLocation">Location of Other Archival Materials Note</note>
@@ -376,13 +375,13 @@ declare variable $marcbib2bibframe:relationships :=
             
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
 		    <type tag="740" ind2="2" property="contains">isContainedIn</type>		
-		    <type tag="762" property="subSeries">hasParts</type>	
+		    <type tag="762" property="subseries">hasParts</type>	
 		    <type tag="765" property="translationOf">hasTranslation</type>
 		    <type tag="767" property="translation">translationOf</type>
 		    <type tag="770" property="supplement">translationOf</type>
-		    <type tag="772" ind2=" " property="supplements">isSupplemented</type>
-		    <type tag="772" ind2="0" property="hasParent">isParentOf</type>		
-		    <type tag="772" property="memberOf">host</type>
+		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>
+		    <!--<type tag="772" ind2="0" property="hasParent">isParentOf</type>		
+		    <type tag="772" property="memberOf">host</type>-->
 		    <type tag="773" property="host">hasConstituent</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
 		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
@@ -408,16 +407,15 @@ declare variable $marcbib2bibframe:relationships :=
     		<type pattern="785" ind2="8"  property="changedBackTo">formerlyNamed</type>	
 		    	-->
 		    <type tag="786" property="dataSource"></type>
-		    		    <type tag="534" property="originalVersion"></type>
-		    originalVersion
-
+		    <type tag="533" property="reproduction"></type>
+		      <type tag="534" property="originalVersion"></type>
     		<type pattern="787" property="hasRelationship">relatedItem</type>					  	    	  	   
 	  	    <type tag="490" ind1="0" property="inSeries">hasParts</type>
 	  	    <type pattern ="510" property="references">isReferencedBy</type>
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|440|760|762|800|810|811|830)" property="inSeries">hasParts</type>	  	    
             <type tag="730"  property="relatedWork">relatedItem</type>
-            <type tag="830"  property="inSeries">series</type>
+            
               
         </work-relateds>
         <!-- Instance to Work relationships (none!) -->
@@ -497,7 +495,7 @@ declare function marcbib2bibframe:generate-instance-from260(
         }
         
     
-    let $title := 
+    let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|222|242)")]
             for $t in $titles
             return marcbib2bibframe:get-title($t)
@@ -542,7 +540,7 @@ declare function marcbib2bibframe:generate-instance-from260(
     let $providers :=
         for $a in fn:distinct-values($providers)
         return
-            element bf:provider {
+            element bf:associatedAgent {
                 element bf:Organization {
                     element bf:label {marcbib2bibframe:clean-string(fn:string($a))},
                       marcbib2bibframe:generate-880-label($d,"provider")
@@ -585,11 +583,7 @@ declare function marcbib2bibframe:generate-instance-from260(
         :)
         
     let $physBookData := ()
-        (:
-        for $i in $d/../marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"][1]
-        return element bf:isbn {xs:string($i)}
-        :)
-        
+      
     let $physMapData := 
         (
             for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "a" or @code eq "b" or @code eq "c"]  
@@ -626,49 +620,18 @@ declare function marcbib2bibframe:generate-instance-from260(
             ""
     let $call-num:=  (:??? fix:) 
         if ($d/../marcxml:datafield[@tag eq "050"]) then
-            element bf:callNumber { fn:normalize-space(fn:string-join($d/../marcxml:datafield[@tag eq "050"]," ")) }
+        (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$":)
+        for $call in $d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
+        
+            return element bf:callNumber { fn:normalize-space(fn:string-join($call," ")) }
         else ()
 (:???? trash this???:)
     let $instance-identifiers :=
-             (             
-           (: for $i in $d/../marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]
-            	let $code := fn:normalize-space($i/parent::node()[1]/marcxml:subfield[@code eq "2"])
-            	let $iStr := fn:normalize-space(xs:string($i))
-            	where $iStr ne ""
-            return
-                if ( $code ne "" ) then
-                    element {  $code } { $iStr }
-                else 
-                    element identifiers:id { $iStr },
-                    
-            for $i in $d/../marcxml:datafield[@tag eq "035"]/marcxml:subfield[@code eq "a"][fn:not( fn:contains(. , "DLC") )]            	
-            	let $iStr := xs:string($i)
-            	return
-                	if ( fn:contains($iStr, "(OCoLC)" ) ) then
-                    	element identifiers:oclcnum { fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }
-                	else 
-                    	element identifiers:id { fn:normalize-space($iStr) },:)
-            marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"instance")
-    
+             (                       
+            marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"instance")    
         )
         
-     let $carrierType:=
-     	for $subfield  in $d/../marcxml:datafield[@tag="020"]/marcxml:subfield[@code="a"] [fn:contains(   text(),"(")]	
-                            let $carrier:=fn:replace(fn:substring-after($subfield,"(" ),"\)","")				  	
-                            return 
-                                element bf:carrierType {
-                                    if (fn:matches($carrier,"(pbk|softcover)")) then
-                                        "paperback"
-                                    else if (fn:matches($carrier,"(hbk|hardcover|hc|hard)") ) then 
-                                        "hardback"
-                                    else if (fn:matches($carrier,"(ebook|eresource)") ) then
-                                        "electronic resource"
-                                    else if (fn:contains($carrier,"lib. bdg.") ) then
-                                        "library binding"			
-                                    else if (fn:matches($carrier,"(acid-free|acid free|alk)")) then
-                                        "acid free"						  		
-                                    else $carrier
-                                }
+
     (:let $instance-classes:=marcbib2bibframe:generate-class($d/ancestor::marcxml:record,"instance"):)
     let $related-works:= marcbib2bibframe:related-works($d/ancestor::marcxml:record,$workID,"instance")
     let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
@@ -683,7 +646,8 @@ declare function marcbib2bibframe:generate-instance-from260(
                 }
             else
                 (),               
-            $title,
+            $instance-title,
+            
             $names,
             $edition,
             $providers,
@@ -692,18 +656,17 @@ declare function marcbib2bibframe:generate-instance-from260(
             $physResourceData,            
             $physMapData,
             $physSerialData,
-            $call-num,    
-            $instance-identifiers,   
-            $carrierType,
+            $call-num,
+            $instance-identifiers,               
             $physdesc,
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
             },
             $notes,
             $related-works,
-            $derivedFrom      
-            
+            $derivedFrom                        
         }
+        
     
 };
 
@@ -813,6 +776,7 @@ declare function marcbib2bibframe:generate-880-label
 :
 ::   @param  $marcxml       element is the marcxml record
 :   @param  $resource      string is the "work" or "instance"
+: skip isbn; do it on generate-instance from isbn, since it's a splitter and yo udon't want multiple per instance
 :   @return bf:* as element()
 :)
 declare function marcbib2bibframe:generate-identifiers(
@@ -822,7 +786,7 @@ declare function marcbib2bibframe:generate-identifiers(
 {
     let $identifiers:= 
         if ($resource="instance") then 
-            $marcbib2bibframe:identifiers//vocab-identifiers/property[@domain="Instance"]
+            $marcbib2bibframe:identifiers//vocab-identifiers/property[@domain="Instance"][fn:not(@tag="020")]
         else 
             $marcbib2bibframe:identifiers//vocab-identifiers/property[@domain="Work"]
     let $bfIdentifiers := 
@@ -834,10 +798,10 @@ declare function marcbib2bibframe:generate-identifiers(
                 ( 
                     (:first, deal with the $a):) 
                     if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or 			
-                        ($this-tag/@tag="020" and fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(")  )   or			
+                        (:($this-tag/@tag="020" and fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(")  )   or:)			
                         ($this-tag[@tag="037"][marcxml:subfield[@code="c"]]) 				
 			           ) then 
-                        element bf:Identifier {
+                        element bf:IdentifierEntity{
                             element bf:identifierScheme {				 
                                 fn:string($id/@name)
                             },
@@ -849,7 +813,7 @@ declare function marcbib2bibframe:generate-identifiers(
                             return element bf:identifierQualifier {fn:string($sub)},
 
                        (: ntra moved identifierQualifier out to an instance property called carrierType 2013-03-01
-                       now need to rethink making bf:isbn instead!!!:)
+                       	:)
                   (:     for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"] 
                   		(: [fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ] :)
                             let $q:=fn:replace(fn:substring-after($sub,"(" ),"\)","")				  	
@@ -886,20 +850,40 @@ declare function marcbib2bibframe:generate-identifiers(
                             ($this-tag[@tag="035"][fn:contains(fn:string(marcxml:subfield[@code="a"]), "(OCoLC)")]) 
                         :)
                         (
-                        if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
-                            element {"bf:lccn"} {              
-                                fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"]))
+                           if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
+                            element bf:derivedFromLccn {    
+                            attribute rdf:about {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])))}         
+                                (:fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])):)
                             }
+		else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
+                            element bf:coden {    
+                            attribute rdf:about {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}         
+                                (:fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])):)
+                            }
+		(:else  if ( $this-tag[@tag="020"]/marcxml:subfield[@code="a"] ) then
+		let $clean-isbn:=	
+			marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize(fn:string($this-tag/marcxml:subfield[@code="a"]),"\(")[1]))
+	
+		return    element bf:isbn {    
+                            attribute rdf:about {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($clean-isbn),"/1")}         
+                                (:fn:normalize-space(xs:string($this-tag[@tag="020"]/marcxml:subfield[@code="a"])):)
+                            }:)
+
                         else if ( fn:contains(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "(OCoLC)" ) ) then
-                            element {"bf:oclc-number"} {			  
-                                fn:normalize-space(fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", ""))
+                            element bf:oclc-number {
+                            attribute rdf:about { fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(
+                            				fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "")
+                            				)
+                            				)                       }
+                            				
+                            (:    fn:normalize-space(fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "")):)
                             }
                         else if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"doi")) then
-                            element {"bf:doi"} {
+                            element bf:doi {
                                 fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
                             }
                         else if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"hdl" )) then
-                            element {"bf:hdl"} {
+                            element bf:hdl {
                                 fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
                             }
                         else (),
@@ -908,7 +892,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	                    if ( $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]) then
                             for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]     
                             return
-                                element bf:Identifier {
+                                element bf:IdentifierEntity {
                                     element bf:identifierScheme { fn:string($id/@name) },
                                     marcbib2bibframe:handle-cancels($this-tag, $sf)
                                 }
@@ -932,7 +916,7 @@ declare function marcbib2bibframe:generate-identifiers(
                                 $this-tag/marcxml:subfield[@code="q"] or 
 			                     $this-tag/marcxml:subfield[@code="b"]
 			                 ) then	
-                                element bf:Identifier{
+                                element bf:IdentifierEntity{
                                     element bf:identifierScheme {$scheme},		
                             
                                     for $sub in $this-tag/marcxml:subfield[@code="b"] 
@@ -949,8 +933,8 @@ declare function marcbib2bibframe:generate-identifiers(
                                         if ($this-tag/marcxml:subfield[@code="d"] ) then
                                             fn:concat("-",fn:string($this-tag/marcxml:subfield[@code="d"]))
                                         else
-								            ()
-				                    }
+				            ()
+			  }
                                 }	
                             else
                                 let $property:= (:024 had a z only; no $a: bibid;17332794:)
@@ -967,7 +951,7 @@ declare function marcbib2bibframe:generate-identifiers(
                                         if ( $this-tag/marcxml:subfield[fn:matches(@code,"(m|y)")]) then
                                             for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(m|y)")]
                                             return          
-                                                element bf:Identifier{
+                                                element bf:IdentifierEntity{
                                                     element bf:identifierScheme {$scheme},		
                                                     marcbib2bibframe:handle-cancels($this-tag, $sf)
                                                 }
@@ -980,7 +964,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	return 
         for $bfi in $bfIdentifiers
         return 
-            if (fn:name($bfi) eq "bf:Identifier") then
+            if (fn:name($bfi) eq "bf:IdentifierEntity") then
                 element bf:identifier {$bfi}
             else
                 $bfi
@@ -1137,61 +1121,62 @@ declare function marcbib2bibframe:generate-physdesc
 };
 
 (:~
-:   This is the function generates isbn-based instance resources.
-:
+:   This is the function generates isbn-based instance resources. (ie books???)
+:   ntra 2013-03-13
+	changed to just pass in the isbn string, in case it's not int hte data, plus marcxml:record instead of marcxml:subfield, for further processing
+	and moved $instance (generating the rest of the instance from the 260 out 
 :   @param  $d        element is the 020  $a
+:   @param  $isbn-string       is the isbn string; may have come from subfield or calculation
+:   @param  $isbn-extra       is the stuff after the number (eg pbk v. 12 )
+:  @param  $instance 	element bf:Instance is generated fromthe first 260  
 :   @return bf:* as element()
+
 :)
 declare function marcbib2bibframe:generate-instance-fromISBN(
-    $d as element(marcxml:subfield),
+    $d as element(marcxml:record),
+    $isbn-set as element (bf:set),   
+    $instance as element (bf:Instance),
     $workID as xs:string
     ) as element ()*
-{
-
-   (: let $isbn := 
-        element bf:isbn {
-            marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize(fn:string($d),"\(")[1]))              
-        }
-        
-    let $cancels:=
-        for $z in $d/../marcxml:subfield[@code eq "z"]
-        return
-            element bf:cancelled-isbn {xs:string($z)}                
-		
-    let $qualifier:=	
-        fn:replace(
-            fn:tokenize(fn:string($d),"\(")[2],
-            "\)",
-            ""
-        )
-    let $qualifier:=
-        if ( $qualifier ne "") then 
-            element bf:isbnData {$qualifier} 
-        else ()
-
-    let $binding:=
-        if (fn:matches($qualifier,"(pbk|softcover)")) then
-			"paperback"
-		else if (fn:matches($qualifier,"(hbk|hardcover|hc)") ) then 
-			"hardback"
-		else if (fn:matches($qualifier,"(ebook|eresource)") ) then
-			"electronic resource"
-		else if (fn:contains($qualifier,"lib. bdg.") ) then
-			"library binding"
-			
-		else ""
-		
-	let $paper:=
-		if (fn:matches($qualifier,"(acid-free|acid free|alk)")) then
-			"acid free"		
-		else "":)
     
+{
+ 
+let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
+let $volume:=marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2]))
+let $carrier:=
+	if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then 
+     		marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-set/marcxml:subfield[1],"\(")[2]))
+          else () 
+let $carrierType:=                                				  	                        
+                element bf:carrierType {
+                    if (fn:matches($carrier,"(pbk|softcover)","i")) then
+                        "paperback"
+                    else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
+                        "hardback"
+                    else if (fn:matches($carrier,"(ebook|eresource|e-isbn)","i") ) then
+                        "electronic resource"
+                    else if (fn:contains($carrier,"lib. bdg.") ) then
+                        "library binding"			
+                    else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
+                        "acid free"						  		
+                    else $carrier
+                }                               
+let $clean-isbn:= for $item in $isbn-set/*
+	    return 
+	        marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize( fn:string($item),"\(")[1]))
+let $isbn := 
+		for $i in $clean-isbn
+		let $element-name:=if (fn:string-length($i) gt 11  ) then "bf:isbn13" else "bf:isbn10" 
+			return element {$element-name} {    
+				attribute rdf:about {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}                                         
+	}    
     (:get the physical details:)
     (: We only ask for the first 260 :)
-	let $instance := 
-        for $i in $d/../../marcxml:datafield[@tag eq "260"][1]
+(: instance is now calculated before this function and passed in
+let $instance := 
+        for $i in $d/marcxml:datafield[@tag eq "260"][1]
         return marcbib2bibframe:generate-instance-from260($i, $workID)
-        
+:)
     let $instanceOf :=  
         element bf:instanceOf {
             attribute rdf:resource {$workID}
@@ -1199,26 +1184,17 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
 
     return 
         element bf:Instance {
-            if ( fn:exists($instance) ) then
-                (
-                    $instance/@*,
-                    $instance/*
-                )
-            else 
-                $instanceOf
-                (:,
-            
-            $isbn,				
-			$cancels,
-			$qualifier,
-				
-			if ( $binding ne "") then
-				element bf:binding {$binding}
-			else (),
-				
-			if ($paper ne "") then
-				element bf:paper {$paper}
-			else ():)
+        		$isbn,               	
+        		element bf:volume{ $volume},
+        		$carrierType,
+         
+   	         if ( fn:exists($instance) ) then
+	                (
+	                    $instance/@*,
+	                    $instance/*
+	                )
+	            else 
+	                $instanceOf           
 		}
      
 };
@@ -1400,7 +1376,7 @@ declare function marcbib2bibframe:generate-instance-from856(
 
 (:~
 :   This is the function generates instance resources.
-:
+: 
 :   @param  $marcxml        element is the MARCXML  
 :   @return bf:* as element()
 :)
@@ -1409,11 +1385,24 @@ declare function marcbib2bibframe:generate-instances(
     $workID as xs:string
     ) as element ()* 
 {  
-    (
-        if ( $marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"] ) then
-            for $i in $marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]
-            (:should only do this if the 020s are different:)
-	    	return marcbib2bibframe:generate-instance-fromISBN($i, $workID)
+let $isbn-sets:=
+	if ($marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]) then
+		marcbib2bibframe:process-isbns($marcxml) 
+	else ()
+
+    return    
+            (
+        if ( $isbn-sets//bf:set) then             
+        	(:use the first 260 to set up a book instance:)
+	let $instance:= 
+		for $i in $marcxml/marcxml:datafield[@tag eq "260"][1]
+            		return marcbib2bibframe:generate-instance-from260($i, $workID)        
+            for $set in $isbn-sets/bf:set            
+            
+            return (
+            for $i in $set/*
+	    	return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
+	    	)
 	   	(: always have a 260? 028s are handled in $instance-identifiers
 	   	else if ( $marcxml/marcxml:datafield[@tag eq "028"] ) then
             for $i in $marcxml/marcxml:datafield[@tag eq "028"]
@@ -1426,7 +1415,7 @@ declare function marcbib2bibframe:generate-instances(
             marcbib2bibframe:generate-instance-from856($marcxml, $workID)
         else 
             ()
-            
+                  
     )
 };
 (:~
@@ -1481,6 +1470,49 @@ declare function marcbib2bibframe:generate-notes(
                 			}        
         )
 };
+(:533 to reproduction
+:)
+declare function marcbib2bibframe:generate-related-reproduction
+
+    (
+        $d as element(marcxml:datafield) ,$type
+     
+    )
+{ 	 
+let $title:=if ($d/marcxml:subfield[@code="f"]) then
+fn:string($d/marcxml:subfield[@code="f"])
+else 
+	fn:string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])
+let $carrier:= if ($d/marcxml:subfield[@code="a"]) then fn:string($d/marcxml:subfield[@code="a"]) else if ($d/marcxml:subfield[@code="3"]) then $d/marcxml:subfield[@code="3"] else ()
+let $pubPlace:= for  $pl in $d/marcxml:subfield[@code="b"]
+			return element bf:pubPlace {fn:string($pl)}
+let $agent:= for  $aa in $d/marcxml:subfield[@code="c"] 
+			return element bf:associatedAgent {fn:string($aa)}
+let $pubDate:= fn:string($d/marcxml:subfield[@code="d"])
+let $extent:= fn:string($d/marcxml:subfield[@code="e"])
+let $coverage:= fn:string($d/marcxml:subfield[@code="m"])
+let $note:= fn:string($d/marcxml:subfield[@code="n"])
+return 
+	element {fn:concat("bf:",fn:string($type/@property))} {
+			element bf:Work{
+				element bf:title {$title},
+				element bf:carrier {$carrier}
+								 							
+				}, if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
+				element bf:Instance {
+					$pubPlace,
+					element bf:pubDate {$pubDate},
+					if ($extent) then element bf:extent {$extent} else (),
+					if ($coverage) then element bf:coverage {$coverage}  else (),
+					$agent,
+					if ($note) then  element bf:note {$note}  else (),
+					(:$3, $c, $b, $d, $e, $f, $m, $n, $5 in that order:)
+					element bf:relatedNote {fn:string-join ($d/*[fn:not(@code="a")]," - ")}
+				}
+				else ()
+			}
+};
+
 
 declare function marcbib2bibframe:generate-related-work
     (
@@ -1508,6 +1540,8 @@ declare function marcbib2bibframe:generate-related-work
             $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1]
            ) then
             marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])
+
+        
         (:else if (  $d/marcxml:subfield[@code="a"] and $d/@tag!="740") then:)
         (:
         Merge conflict.
@@ -1517,6 +1551,10 @@ declare function marcbib2bibframe:generate-related-work
         else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|800|810|811|510|630|730|740|830)")) ) then
             marcbib2bibframe:get-name($d)
         else ()
+        
+                
+        
+        
         
     let $aLabel := 
         fn:concat(
@@ -1543,39 +1581,20 @@ declare function marcbib2bibframe:generate-related-work
             
     return 
  	element {fn:concat("bf:",fn:string($type/@property))} {
-		element bf:Work {
-		(:inverse relationship could go here, but you need the bibframeWork/@rdf:about
-			element {fn:concat("bf:",fn:string($type))} {
-				attribute rdf:resource {"/bf:Work/@rdf:about goes here"}
-				},:)
-
-        (:    if (fn:matches($d/@tag,"(630|730|740|830)")) then 
-                element bf:title {clean-string(fn:string($d/marcxml:subfield[@code="a"]))}
-            else
-                element bf:title {clean-string(fn:string($d/marcxml:subfield[@code="t"]))},				
-                marcbib2bibframe:generate-880-label($d,"title"),
-                for $s in $d/marcxml:subfield[@code="p" or @code="n"] 
-				return 
-				    element bf:subTitle {
-				        fn:string($s)
-                    },:)
-
+		element bf:Work {		
             if ($d/marcxml:subfield[@code="w" or @code="x"]) then
                 for $s in $d/marcxml:subfield[@code="w" or @code="x" ]
   	              let $iStr := fn:string($s)
            	    return
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-	                        element identifiers:oclcnum { fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }
+	                        element bf:oclc-number {  attribute rdf:about {fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", ""))) }}
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-	                        element identifiers:lccn {  fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")) }                
+	                        element bf:derivedFromLccn { attribute rdf:about {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/", fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")))} }                
 	                    else if (fn:string($s/@code="x")) then
-	                        element identifiers:issn {  fn:normalize-space($iStr) }                           	                	
+	                        element bf:issn {attribute rdf:about {fn:concat("http://issn.org/issn/", fn:normalize-space($iStr)) } }                           	                	
 		        else ()
 	   else 
-		   if ($d/marcxml:subfield[@code="a"] and fn:not(   fn:matches($d/@tag,"(510|630|730|740|830)") )) then
-				 	 marcbib2bibframe:get-name($d)
-				 	else (),
-
+	   (),		
             element madsrdf:authoritativeLabel {$aLabel},
             $aLabelWork880,
             element bf:title {$title},
@@ -1586,17 +1605,55 @@ declare function marcbib2bibframe:generate-related-work
                 let $iStr := fn:string($s)
                 return
                     if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-                        element identifiers:oclcnum { fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }
+                        element bf:oclc-number{ fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }
                     else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-                        element identifiers:lccn {  fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")) }
+                        element bf:derivedFromLccn {  fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")) }
                     else 
-                        element identifiers:id { fn:normalize-space($iStr) }   	                	
+                        element bf:identifier { fn:normalize-space($iStr) }   	                	
 			else ()
 
 			}
 		}
 };
-
+(:~
+:   This is the function that finds and dedups isbns, delivering a complete set for generate-instancefrom isbn
+:  If the 020$a has a 10 or 13, they are matched in a set, if the opposite of a pair doesn't exist, it is calculated
+:   @param  $marcxml        element is the MARCXML record
+:   @return wrap as as wrapper for bf:set* as element() containing both marcxml:subfield [code=a] and bf:isbn calculated nodes
+:   	
+:)
+declare function marcbib2bibframe:process-isbns (
+	$marcxml as element (marcxml:record)
+) as element() {
+(:for books with isbns, generate all isbn10 and 13s from the data, list each pair on individual instances:)
+    let $isbns:=$marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]
+    let $isbn-sets:=
+            for $str in $isbns 
+            	let $isbn-str:=fn:normalize-space(fn:tokenize(fn:string($str),"\(")[1])
+            	return element bf:isbn-pair {
+            			marcbib2bibframe:get-isbn(
+            				marcbib2bibframe:clean-string( $isbn-str )
+            				)/*
+            			}
+	let $unique-pairs:=
+		for $isbn-set in $isbn-sets
+			return element set {$isbn-set//bf:isbn[1],   $isbn-set//bf:isbn[2],           	
+            			for $tag in $marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"][fn:contains(text(),$isbn-set//bf:isbn[1])  or fn:contains(text(),$isbn-set//bf:isbn[2]) ]
+            			return $tag
+            		}
+    return    
+             element wrap {for $set in $unique-pairs 
+            	return element bf:set { $set//marcxml:subfield,
+            			if (fn:count($set//marcxml:subfield)=2) then
+            				() (:both isbns are in the data:)
+            			else
+            			for $bf in $set//bf:isbn
+            				return if (fn:not(fn:matches($set/marcxml:subfield,$bf/text()))) then
+            					$bf
+            					else ()
+            		}
+            }
+};
 (:~
 :   This is the function generates related item works.
 : ex 710 constituent title with 880 : 15015234
@@ -1620,11 +1677,13 @@ declare function marcbib2bibframe:related-works
 
     let $relatedWorks := 
         for $type in $relateds/type
-        return 
+        	return 
             if ($type/@tag="740") then (: title is in $a :)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind1=$type/@ind1 or @ind2=$type/@ind2]		
                 return marcbib2bibframe:generate-related-work($d,$type)
-                
+     else if (fn:matches($type/@tag,"533")) then 
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]		
+				return marcbib2bibframe:generate-related-reproduction($d,$type)                
             else if ($type/@ind1) then
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind1=$type/@ind1][marcxml:subfield[@code="t"]]	
                 return marcbib2bibframe:generate-related-work($d,$type)
@@ -1696,10 +1755,7 @@ declare function marcbib2bibframe:generate-work(
     	       return marcbib2bibframe:get-title($t)
             }
         </titles>
-        	(:
-        	for $t in $titles
-        	return marcbib2bibframe:get-title($t)
-        	:) 
+        
         
     (: Let's create an authoritativeLabel for this :)
     let $aLabel := 
@@ -2179,7 +2235,7 @@ declare function marcbib2bibframe:get-name(
     let $label := if ($d/@tag!='534') then
     	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q'] , ' ')    	
     	else 
-    	$d/marcxml:subfield[@code='a' ]
+    	fn:string($d/marcxml:subfield[@code='a' ])
     	
     let $aLabel := $label
     
@@ -2394,7 +2450,71 @@ declare function marcbib2bibframe:get-uniformTitle(
             }        
             
 };
+(:~
+:   This function takes an ISBN string and 
+:   determines if it's 10 or 13, and returns both the 10 and 13 for this one.
+:
+:   @param  $s        is xs:String
+:   @return wrap/bf:isbn element()
+:)
 
+declare function marcbib2bibframe:get-isbn($isbn as xs:string ) as element() {
+(:
+let $isbn1:="9780792312307" (:produces 0792312309 ok:)
+let $isbn1:="0792312309" (:produces  9780792312307 ok:)
+let $isbn1:="0-571-08989-5" (:produces 9780571089895  ok:)
+let $isbn1:="0 571 08989 5" (:produces 9780571089895  ok:)
+verify here:http://www.isbn.org/converterpub.asp
+let $isbn:="paperback" (:produces "error"  ok:)
+:) 
+
+let $clean-isbn:=fn:replace($isbn,"[- ]+","")
+(:let $isbn-num:=replace($clean-isbn,"^[^0-9]*(\d+)[^0-9]*$","$1" ):) 
+(: test on isbn 10, 13, hyphens, empty, strings only :)
+
+let $isbn-num1:=  fn:replace($clean-isbn,"^[^0-9]*(\d+)[^0-9]*$","$1" ) 
+let $isbn-num:= if (fn:string-length($isbn-num1)=9) then fn:concat($isbn-num1,'X') else $isbn-num1
+
+(: test on isbn 10, 13, hyphens, empty, strings only :)
+
+return
+        if (fn:number($isbn-num) or fn:number($isbn-num1) ) then
+    
+	        if ( fn:string-length($isbn-num) = 10  ) then
+	            let $isbn12:= fn:concat("978",fn:substring($isbn-num,1,9))
+	            let $odds:= fn:number(fn:substring($isbn12,1,1)) + fn:number(fn:substring($isbn12,3,1)) +fn:number(fn:substring($isbn12,5,1)) + fn:number(fn:substring($isbn12,7,1)) +fn:number(fn:substring($isbn12,9,1)) +fn:number(fn:substring($isbn12,11,1))
+	            let $evens:= (fn:number(fn:substring($isbn12,2,1)) + fn:number(fn:substring($isbn12,4,1)) +fn:number(fn:substring($isbn12,6,1)) + fn:number(fn:substring($isbn12,8,1)) +fn:number(fn:substring($isbn12,10,1)) +fn:number(fn:substring($isbn12,12,1)) ) * 3      
+	            let $chk:= if (  (($odds + $evens) mod 10) = 0)
+        	                then 0 else 10 - (($odds + $evens) mod 10)
+        
+            return
+               	element  wrap {
+               			element bf:isbn {$isbn-num},
+               			element bf:isbn { fn:concat($isbn12,$chk)}
+               	}
+                 
+        else (: isbn13 to 10 :)
+
+            let $isbn9:=fn:substring($isbn-num,4,9) 
+            
+            let $sum:= (fn:number(fn:substring($isbn9,1,1)) * 1) 
+                        + (fn:number(fn:substring($isbn9,2,1)) * 2)
+                        + (fn:number(fn:substring($isbn9,3,1)) * 3)
+                        + (fn:number(fn:substring($isbn9,4,1)) * 4) 
+                        + (fn:number(fn:substring($isbn9,5,1)) * 5)
+                        + (fn:number(fn:substring($isbn9,6,1)) * 6)
+                        + (fn:number(fn:substring($isbn9,7,1)) * 7)
+                        + (fn:number(fn:substring($isbn9,8,1)) * 8)
+                        + (fn:number(fn:substring($isbn9,9,1)) * 9)
+             
+             let $check_dig:= if ( ($sum mod 11) = 10 ) then 'X'
+                              else ($sum mod 11)
+                              
+            return
+           element wrap {element bf:isbn {fn:concat($isbn9,$check_dig) } , element bf:isbn{$isbn-num}}                     
+           
+    else  element wrap {element bf:isbn {"error"},element bf:isbn {"error"}}
+};
 (:~
 :   This function takes a string and 
 :   attempts to clean it up 
@@ -2459,7 +2579,14 @@ declare function marcbib2bibframe:generate-class(
        $marcxml as element(marcxml:record),
     $resource as xs:string
     ) as element ()*    
-{
+{(: interesting: try this first?
+and move this to the function for classif...
+For the Classify service at OCLC, when it is LCC we use a regular
+expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbols, spaces, quotes, etc.
+
+-Steve Meyer 
+:)
+	  
     let $classes:= 
         if ($resource="instance") then (:no classes currently defined for instance ; this should never happen:)
             $marcbib2bibframe:classes//property[@domain="Instance"]
@@ -2481,8 +2608,22 @@ declare function marcbib2bibframe:generate-class(
                 084, 086  has $2
                 086 has $z  cancel
                 :)
+                    let $cl:=fn:string($this-tag/marcxml:subfield[@code="a"] )
+		let $validLCCs:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
+		let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
+		let $subclassCode := fn:replace($strip, "\d", "")			
+		let $valid-lcc:= 
+	            (: lc classes don't have a space after the alpha prefix, like DA1 vs "DA 1" :)
+	            if (
+	                fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and 
+	                $subclassCode = $validLCCs 
+	                ) then   								  
+	                fn:string($cl)
+	            else (:invalid content in 050:)
+	                () 
+	                
         return 
-            if (
+            if ( $valid-lcc and
                 fn:count($this-tag/marcxml:subfield)=1 and 
                 $this-tag/marcxml:subfield[@code="a"] or 
                 (fn:count($this-tag/marcxml:subfield)=2  and $this-tag/marcxml:subfield[@code="b"] )
@@ -2496,10 +2637,9 @@ declare function marcbib2bibframe:generate-class(
                         element  {fn:concat("bf:",$property)} {            	
                             fn:string($this-tag/marcxml:subfield[@code="a"])
                         }
-            else 
+            else if ($valid-lcc) then
                 element bf:class {
-                    element bf:ClassificationEntity {
-                        
+                    element bf:ClassificationEntity {                        
                         element bf:classScheme {
                             if (fn:matches($this-tag/@tag,"(050|051)")) then "lcc" 
 		            		else if (fn:matches($this-tag/@tag,"080")) then "udc"
@@ -2560,7 +2700,8 @@ declare function marcbib2bibframe:generate-class(
 							 		element bf:classTableSeq  {fn:string( $this-tag/marcxml:subfield[@code="y"])} 
                                 else ()
                     }
-            	}            
+            }
+            else ()
 };
 
 (:~
