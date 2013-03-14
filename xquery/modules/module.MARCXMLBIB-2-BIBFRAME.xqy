@@ -1470,6 +1470,7 @@ declare function marcbib2bibframe:generate-notes(
         )
 };
 (:533 to reproduction
+sample bib 723007
 :)
 declare function marcbib2bibframe:generate-related-reproduction
 
@@ -1478,10 +1479,8 @@ declare function marcbib2bibframe:generate-related-reproduction
      
     )
 { 	 
-let $title:=if ($d/marcxml:subfield[@code="f"]) then
-fn:string($d/marcxml:subfield[@code="f"])
-else 
-	fn:string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])
+let $title:=
+fn:string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])
 let $carrier:= if ($d/marcxml:subfield[@code="a"]) then fn:string($d/marcxml:subfield[@code="a"]) else if ($d/marcxml:subfield[@code="3"]) then $d/marcxml:subfield[@code="3"] else ()
 let $pubPlace:= for  $pl in $d/marcxml:subfield[@code="b"]
 			return element bf:pubPlace {fn:string($pl)}
@@ -1497,20 +1496,22 @@ return
 	element {fn:concat("bf:",fn:string($type/@property))} {
 			element bf:Work{
 				element bf:title {$title},
-				element bf:carrier {$carrier}
-								 							
-				}, if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
-				element bf:Instance {
-					$pubPlace,
-					element bf:pubDate {$pubDate},
-					if ($extent) then element bf:extent {$extent} else (),
-					if ($coverage) then element bf:coverage {$coverage}  else (),
-					$agent,
-					if ($note) then  $note  else (),
-					(:$3, $c, $b, $d, $e, $f, $m, $n, $5 in that order:)
-					element bf:relatedNote {fn:string-join ($d/*[fn:not(@code="a")]," - ")}
+				element bf:carrier {$carrier}, 
+				if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
+				element bf:hasInstance {
+					element bf:Instance {
+						$pubPlace,
+						element bf:pubDate {$pubDate},
+						if ($extent) then element bf:extent {$extent} else (),
+						if ($coverage) then element bf:coverage {$coverage}  else (),
+						$agent,
+						if ($note) then  $note  else (),
+						(:$3, $c, $b, $d, $e, $f, $m, $n, $5 in that order:)
+						element bf:relatedNote {fn:string-join ($d/*[fn:not(@code="a")]," - ")}
+					}
 				}
-				else ()
+				else ()				 							
+				}
 			}
 };
 
@@ -1803,9 +1804,9 @@ declare function marcbib2bibframe:generate-work(
         authoritativeLabel, thereby creating a type of expression.
     :)
     
-    let $language := fn:substring($cf008, 36, 3)
+    let $language := fn:normalize-space(fn:substring($cf008, 36, 3))
     let $language := 
-        if (fn:normalize-space($language) ne "") then
+        if ($language ne "" and $language ne "|||") then
             element bf:language {
                 attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/" , $language) }
             }
@@ -2335,6 +2336,7 @@ declare function marcbib2bibframe:get-resourcesTypes(
 :
 :   @param  $d        element is the marcxml:datafield  
 :   @return bf:uniformTitle
+: drop the $h from the work title????
 :)
 declare function marcbib2bibframe:get-title(
             $d as element(marcxml:datafield)
