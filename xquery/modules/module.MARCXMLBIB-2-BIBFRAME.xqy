@@ -103,7 +103,8 @@ declare variable $marcbib2bibframe:targetAudiences := (
 		<subject tag="657">Function</subject>
 		<subject tag="658">Objective</subject>
 		<subject tag="662">HierarchicalPlace</subject>		
-		<subject tag="653">UncontrolledTopic</subject>		
+		<!-- <subject tag="653">UncontrolledTopic</subject> -->
+		<subject tag="653">Topic</subject>
 		<subject tag="751">Place</subject>
 		<subject tag="752">HierarchicalPlace</subject>
 	</subjectTypes>
@@ -2276,7 +2277,7 @@ declare function marcbib2bibframe:get-name(
         else if ( fn:string($d/@tag)= "720" and fn:string($d/@ind1)="2")  then
             "bf:Organization" (:may be a meeting:)
         else 
-            "bf:Name"
+            "bf:Agent"
 
     let $tag := xs:string($d/@tag)
     let $desc-role:=if (fn:starts-with($tag , "10") or fn:starts-with($tag , "11")) then "primary" else () 
