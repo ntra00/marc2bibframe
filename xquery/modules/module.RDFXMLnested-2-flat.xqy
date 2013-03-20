@@ -75,6 +75,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             return RDFXMLnested2flat:createResourceOrNot($rw, $works)
 
         let $w-ientities := $w/child::node()[
+            fn:name(child::node()[1])="bf:Agent" or
             fn:name(child::node()[1])="bf:Person" or
             fn:name(child::node()[1])="bf:Place" or
             fn:name(child::node()[1])="bf:Topic" or
@@ -108,6 +109,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                 $w/@*,
                 $w/child::node()[
                     fn:name(child::node()[1])!="bf:Work" and
+                    fn:name(child::node()[1])!="bf:Agent" and
                     fn:name(child::node()[1])!="bf:Person" and
                     fn:name(child::node()[1])!="bf:Place" and
                     fn:name(child::node()[1])!="bf:Topic" and
@@ -126,6 +128,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
 
         let $i-ientities := $i/bf:*[
             fn:name(bf:*[1])="bf:Person" or
+            fn:name(bf:*[1])="bf:Agent" or
             fn:name(bf:*[1])="bf:Place" or
             fn:name(bf:*[1])="bf:Topic" or
             fn:name(bf:*[1])="bf:Genre" or
@@ -151,6 +154,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                 $i/child::node()[
                     fn:name(child::node()[1])!="bf:Work" and
                     fn:name(child::node()[1])!="bf:Person" and
+                    fn:name(child::node()[1])!="bf:Agent" and
                     fn:name(child::node()[1])!="bf:Place" and
                     fn:name(child::node()[1])!="bf:Topic" and
                     fn:name(child::node()[1])!="bf:Genre" and
@@ -269,7 +273,7 @@ declare function RDFXMLnested2flat:isolateAndIdentify
         else if ($isolate eq "Instance") then
             $rdfxml//bf:Instance
         else if ($isolate eq "IndexEntity") then
-            $rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC
+            $rdfxml//bf:Agent|$rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC
         else if ($isolate eq "Annotation") then
             $rdfxml//bf:Annotation
         else 
