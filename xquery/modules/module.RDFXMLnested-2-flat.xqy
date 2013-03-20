@@ -79,7 +79,9 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             fn:name(child::node()[1])="bf:Place" or
             fn:name(child::node()[1])="bf:Topic" or
             fn:name(child::node()[1])="bf:Genre" or
-            fn:name(child::node()[1])="bf:Organization"]
+            fn:name(child::node()[1])="bf:Organization" or
+            fn:name(child::node()[1])="bf:ClassificationEntity" or
+            fn:name(child::node()[1])="bf:LCC"]
         let $w-ientities := 
             for $ie in $w-ientities
             return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
@@ -110,7 +112,9 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                     fn:name(child::node()[1])!="bf:Place" and
                     fn:name(child::node()[1])!="bf:Topic" and
                     fn:name(child::node()[1])!="bf:Genre" and
-                    fn:name(child::node()[1])!="bf:Organization"],
+                    fn:name(child::node()[1])!="bf:Organization" and
+                    fn:name(child::node()[1])!="bf:ClassificationEntity" and
+                    fn:name(child::node()[1])!="bf:LCC"],
                 $w-ientities,
                 $w-works,
                 $w-instances,
@@ -125,7 +129,9 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             fn:name(bf:*[1])="bf:Place" or
             fn:name(bf:*[1])="bf:Topic" or
             fn:name(bf:*[1])="bf:Genre" or
-            fn:name(bf:*[1])="bf:Organization"]
+            fn:name(bf:*[1])="bf:Organization" or
+            fn:name(bf:*[1])="bf:ClassificationEntity" or
+            fn:name(bf:*[1])="bf:LCC"]
         let $i-ientities := 
             for $ie in $i-ientities
             return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
@@ -148,7 +154,9 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                     fn:name(child::node()[1])!="bf:Place" and
                     fn:name(child::node()[1])!="bf:Topic" and
                     fn:name(child::node()[1])!="bf:Genre" and
-                    fn:name(child::node()[1])!="bf:Organization"],
+                    fn:name(child::node()[1])!="bf:Organization" and
+                    fn:name(child::node()[1])!="bf:ClassificationEntity" and
+                    fn:name(child::node()[1])!="bf:LCC"],
                 $i-ientities,
                 $i-annotations
             }
@@ -184,7 +192,7 @@ declare function RDFXMLnested2flat:createIdentifiedResource(
         if ( fn:count($resources/madsrdf:authoritativeLabel) > 0 ) then
             let $rs-labels := 
                 for $r in $resources
-                let $l := ($r/madsrdf:authoritativeLabel|$r/bf:label)[1]
+                let $l := ($r/madsrdf:authoritativeLabel|$r/bf:label|$r/bf:label)[1]
                 return $l
             let $distinct-labels := fn:distinct-values($rs-labels)
             let $rs := 
@@ -261,7 +269,7 @@ declare function RDFXMLnested2flat:isolateAndIdentify
         else if ($isolate eq "Instance") then
             $rdfxml//bf:Instance
         else if ($isolate eq "IndexEntity") then
-            $rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization
+            $rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC
         else if ($isolate eq "Annotation") then
             $rdfxml//bf:Annotation
         else 
