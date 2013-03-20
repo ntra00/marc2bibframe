@@ -93,7 +93,7 @@ declare variable $marcbib2bibframe:targetAudiences := (
 		<subject tag="600">Person</subject>
 		<subject tag="610">Organization</subject>
 		<subject tag="611">Meeting</subject>
-		<subject tag="630">UniformTitle</subject>
+		<subject tag="630">Work</subject>
 		<subject tag="648">Chronological</subject>
 		<subject tag="650">Topic</subject>
 		<subject tag="651">Place</subject>
@@ -1482,7 +1482,12 @@ declare function marcbib2bibframe:generate-related-reproduction
 { 	 
 let $title:=
 fn:string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])
-let $carrier:= if ($d/marcxml:subfield[@code="a"]) then fn:string($d/marcxml:subfield[@code="a"]) else if ($d/marcxml:subfield[@code="3"]) then $d/marcxml:subfield[@code="3"] else ()
+let $carrier:= 
+    if ($d/marcxml:subfield[@code="a"]) then 
+        fn:string($d/marcxml:subfield[@code="a"]) 
+    else if ($d/marcxml:subfield[@code="3"]) then 
+        $d/marcxml:subfield[@code="3"] 
+    else ()
 let $pubPlace:= for  $pl in $d/marcxml:subfield[@code="b"]
 			return element bf:pubPlace {fn:string($pl)}
 let $agent:= for  $aa in $d/marcxml:subfield[@code="c"] 
@@ -1497,6 +1502,7 @@ return
 	element {fn:concat("bf:",fn:string($type/@property))} {
 			element bf:Work{
 				element bf:title {$title},
+				element bf:label {$title},
 				element bf:carrier {$carrier}, 
 				if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
 				element bf:hasInstance {
@@ -1851,23 +1857,70 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
         else
             ()
          
+	(:
 	let $abstract:= 
 		for $d in  $marcxml/marcxml:datafield[@tag="520"]
 			let $abstract-type:=
 				if ($d/@idn1="") then "Summary"
-					else if ($d/@idn1="0") then "Subject"
-					else if ($d/@idn1="1") then "Review"
-					else if ($d/@idn1="2") then "Scope"
-					else if ($d/@idn1="3") then "Abstract"
-					else if ($d/@idn1="4") then "ContentAdvice"
-					else 						"Abstract"
-				
+                else if ($d/@idn1="0") then "Description"
+				else if ($d/@idn1="1") then "Review"
+				else if ($d/@idn1="2") then "Description"
+				else if ($d/@idn1="3") then "Abstract"
+				else if ($d/@idn1="4") then "ContentAdvice"
+				else 						"Description"
 			return	
-			element bf:abstract {
-				element {fn:concat("bf:",$abstract-type)} {
-					element bf:label {fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")}
-				}      
-			}
+                element bf:abstract {
+				    element {fn:concat("bf:",$abstract-type)} {
+					   element bf:label {fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")}
+				    }      
+                }
+    :)
+    (:
+        # - Summary
+        0 - Subject
+        1 - Review
+        2 - Scope and Content
+        3 - Abstract
+        4 - ContentAdvice
+        8 - No display constant generated
+    :)
+    let $abstract:= 
+        for $d in  $marcxml/marcxml:datafield[@tag="520"]
+        let $abstract-type:=
+            if ($d/@idn1="") then "ContentDescription"
+            else if ($d/@idn1="0") then "ContentDescription"
+            else if ($d/@idn1="1") then "Review"
+            else if ($d/@idn1="2") then "ContentDescription"
+            else if ($d/@idn1="3") then "Abstract"
+            else if ($d/@idn1="4") then "ContentAdvice"
+            else                        "ContentDescription"
+        return
+            element bf:hasAnnotation {
+                element {fn:concat("bf:" , $abstract-type)} {
+                    element rdf:type {
+                        attribute rdf:resource {"http://bibframe.org/vocab/Annotation"}
+                    },
+                        
+                    element bf:label { fn:concat($abstract-type, " Annotation") },
+                        
+                    if (xs:string($d/marcxml:subfield[@code="c"][1]) ne "") then
+                        for $sf in $d/marcxml:subfield[@code="c"]
+                        return element bf:annotationAssertedBy { xs:string($sf) }
+                    else
+                        element bf:annotationAssertedBy { "http://id.loc.gov/vocabulary/organizations/dlc" },
+                        
+                    for $sf in $d/marcxml:subfield[@code="u"]
+                    return element bf:hasBody { xs:string($sf) },
+                        
+                    element bf:hasBody { fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"") },
+                        
+                    element bf:annotates {
+                        attribute rdf:resource {$workID}
+                    }
+                }
+            }
+            
+                
 	let $lcc:= 
         	for $c in $marcxml/marcxml:datafield[fn:string(@tag)="050"]
 (:
