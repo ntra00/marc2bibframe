@@ -86,10 +86,23 @@
 					<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div>
 					<table class="table table-condensed">
 						<tr ex:if-exists=".bf-creator">
-							<td class="property span2">Creator</td>
+							<td class="property span2">Creator(s)</td>
 							<td>
-								<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
-								<span ex:if="exists(.uri)"><span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span></li></ul>
+								<ul ex:content=".bf-creator" class="value creator">
+									<li>
+										<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+											<span ex:if="exists(.uri)">
+												<span class="name">
+													<a ex:href-content=".uri"><span ex:content=".label"></span></a>
+												</span>
+											</span>
+											<span ex:if-exists=".bf-resourceRole">
+												<span class="name">
+													(<span ex:content=".bf-resourceRole"></span>)
+												</span>
+											</span>
+									</li>
+								</ul>
 							</td>
 						</tr>
 						<tr ex:if-exists=".bf-summary">
@@ -108,25 +121,37 @@
 							</ul>
 							</td>
 						</tr>                    
-                  <tr ex:if-exists=".bf-subject">
-                    <td class="property span2">Subject(s)</td>
-                    <td>
-						<ul ex:content=".bf-subject" class="value subject">
-							<li>
-								<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
-								<span ex:if="exists(.uri)">
-									<span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span>
-								</span>
-								<!--
-								<span class="name" ex:content=".label"></span> <span class="authorityLink idlc" ex:if-exists=".hasAuthorityLink"><a ex:href-content=".hasAuthorityLink">(<i class="icon-star"></i>)</a></span> <span class="authorityLink idlc" ex:if-exists=".idlcFromHeuristic"><a ex:href-content=".idlcFromHeuristic">(<i class="icon-star"></i>)</a></span> <span class="authorityLink viaf" ex:if-exists=".viafFromHeuristic"><a ex:href-content=".viafFromHeuristic">(<i class="icon-ok"></i>)</a></span> 
-								<span ex:if-exists=".generalSubdivision"> <span class="divider">/</span> <span class="subdivision general" ex:content=".generalSubdivision"></span></span>
-								<span ex:if-exists=".geographicSubdivision"> <span class="divider">/</span> <span class="subdivision geographic" ex:content=".geographicSubdivision"></span></span>
-								<span ex:if-exists=".chronologicalSubdivision"> <span class="divider">/</span> <span class="subdivision chronological" ex:content=".chronologicalSubdivision"></span></span>
-								-->
-							</li>
-                      </ul>
-                    </td>
-                  </tr>
+						<tr ex:if-exists=".bf-subject">
+							<td class="property span2">Subject(s)</td>
+							<td>
+								<ul ex:content=".bf-subject" class="value subject">
+									<li>
+										<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+										<span ex:if="exists(.uri)">
+											<span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span>
+										</span>
+										<!--
+										<span class="name" ex:content=".label"></span> <span class="authorityLink idlc" ex:if-exists=".hasAuthorityLink"><a ex:href-content=".hasAuthorityLink">(<i class="icon-star"></i>)</a></span> <span class="authorityLink idlc" ex:if-exists=".idlcFromHeuristic"><a ex:href-content=".idlcFromHeuristic">(<i class="icon-star"></i>)</a></span> <span class="authorityLink viaf" ex:if-exists=".viafFromHeuristic"><a ex:href-content=".viafFromHeuristic">(<i class="icon-ok"></i>)</a></span> 
+										<span ex:if-exists=".generalSubdivision"> <span class="divider">/</span> <span class="subdivision general" ex:content=".generalSubdivision"></span></span>
+										<span ex:if-exists=".geographicSubdivision"> <span class="divider">/</span> <span class="subdivision geographic" ex:content=".geographicSubdivision"></span></span>
+										<span ex:if-exists=".chronologicalSubdivision"> <span class="divider">/</span> <span class="subdivision chronological" ex:content=".chronologicalSubdivision"></span></span>
+										-->
+									</li>
+								</ul>
+							</td>
+						</tr>
+						<tr ex:if-exists=".bf-class">
+							<td class="property span2">Classification</td>
+							<td>
+								<ul ex:content=".bf-class" class="value subject">
+									<li>
+										<span ex:if="exists(.uri)">
+											<span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span>
+										</span>
+									</li>
+								</ul>
+							</td>
+						</tr>
 					<tr ex:if-exists=".bf-callNumber">
 						<td class="property span2">Call Number</td>
                         <td class="value">
@@ -158,20 +183,67 @@
 							</ul>
 						</td>
 					</tr>
-					<tr ex:if-exists=".bf-includes">
-						<td class="property span2">Includes Work(s)</td>
+					<tr ex:if-exists=".bf-contains">
+						<td class="property span2">Contains Work(s)</td>
 						<td>
-							<ul ex:content=".bf-includes" class="value instance">
+							<ul ex:content=".bf-contains" class="value instance">
 								<li>
 									<div class="titleWork"><span ex:content=".authoritativeLabel"></span></div>
 									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div>
 									<table class="table table-condensed">
 										<tr ex:if-exists=".bf-creator">
-											<td class="property span2">Creator</td>
+											<td class="property span2">Creator(s)</td>
 											<td>
 												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
-												<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
-												<span ex:if="exists(.uri)"><span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span></li></ul>
+												<ul ex:content=".bf-creator" class="value creator">
+													<li>
+														<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+														<span ex:if="exists(.uri)">
+															<span class="name">
+																<a ex:href-content=".uri"><span ex:content=".label"></span></a>
+															</span>
+														</span>
+														<span ex:if-exists=".bf-resourceRole">
+															<span class="name">
+																(<span ex:content=".bf-resourceRole"></span>)
+															</span>
+														</span>
+													</li>
+												</ul>
+											</td>
+										</tr>
+									</table>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr ex:if-exists=".bf-annotation">
+						<td class="property span2">Annotation(s)</td>
+						<td>
+							<ul ex:content=".bf-annotation" class="value instance">
+								<li>
+									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-label"></span></a></span></div>
+									<table class="table table-condensed">
+										<tr ex:if-exists=".bf-annotationBody">
+											<td class="property span2">Link(s)</td>
+											<td>
+												<ul class="value creator">
+													<li>
+														<span class="name">
+															<a ex:href-content=".bf-annotationBody"><span ex:content=".bf-annotationBody"></span></a>
+														</span>
+													</li>
+												</ul>
+											</td>
+										</tr>
+										<tr ex:if-exists=".bf-hasBody">
+											<td class="property span2">Text</td>
+											<td>
+												<ul class="value creator">
+													<li>
+														<span class="name"><span ex:content=".bf-hasBody"></span></span>
+													</li>
+												</ul>
 											</td>
 										</tr>
 									</table>
@@ -241,6 +313,12 @@
                                     <span class="publishedOn" ex:content=".bf-edition"></span> 
                                   </td>
                                 </tr>
+                                <tr ex:if-exists=".bf-carrier">
+                                  <td class="property span2">Carrier</td>
+                                  <td class="value">
+                                    <span class="physicalDescription" ex:content=".bf-carrier"></span> 
+                                  </td>
+                                </tr>
                                 <tr ex:if-exists=".bf-dimensions">
                                   <td class="property span2">Dimensions</td>
                                   <td class="value">
@@ -307,7 +385,7 @@
                                 
                               </div>
                               
-                            </div> <!-- span3 -->
+                            </div> <!-- span -->
 
                           </div> <!-- row-fluid -->
                           
