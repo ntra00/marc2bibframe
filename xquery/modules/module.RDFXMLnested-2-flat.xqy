@@ -96,7 +96,13 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                     attribute rdf:resource {xs:string($rw/@rdf:about)}
                 }
                   
-        let $w-annotations := $instances/bf:Annotation[bf:annotates[@rdf:resource eq $w-id]]
+        let $w-aentities := $w/bf:annotation[
+            fn:name(child::node()[1]) eq "bf:Annotation" or 
+            fn:name(child::node()[1]) eq "bf:ContentDescription" or 
+            fn:name(child::node()[1]) eq "bf:Review" or 
+            fn:name(child::node()[1]) eq "bf:Abstract" or 
+            fn:name(child::node()[1]) eq "bf:ContentAdvice"]
+        let $w-annotations := $annotations/child::node()[bf:annotates[@rdf:resource eq $w-id]]
         let $w-annotations := 
             for $rw in $w-annotations
             return 
@@ -116,7 +122,12 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                     fn:name(child::node()[1])!="bf:Genre" and
                     fn:name(child::node()[1])!="bf:Organization" and
                     fn:name(child::node()[1])!="bf:ClassificationEntity" and
-                    fn:name(child::node()[1])!="bf:LCC"],
+                    fn:name(child::node()[1])!="bf:LCC" and
+                    fn:name(child::node()[1])!="bf:Annotation" and
+                    fn:name(child::node()[1])!="bf:ContentDescription" and
+                    fn:name(child::node()[1])!="bf:Review" and
+                    fn:name(child::node()[1])!="bf:Abstract" and
+                    fn:name(child::node()[1])!="bf:ContentAdvice"],
                 $w-ientities,
                 $w-works,
                 $w-instances,
@@ -165,7 +176,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                 $i-annotations
             }
             
-    let $annotations := $annotations/bf:Annotation
+    let $annotations := $annotations/bf:*
     let $ientities := $ientities/*
     
     return 
@@ -275,7 +286,7 @@ declare function RDFXMLnested2flat:isolateAndIdentify
         else if ($isolate eq "IndexEntity") then
             $rdfxml//bf:Agent|$rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC
         else if ($isolate eq "Annotation") then
-            $rdfxml//bf:Annotation
+            $rdfxml//bf:Annotation|$rdfxml//bf:ContentDescription|$rdfxml//bf:Review|$rdfxml//bf:Abstract|$rdfxml//bf:ContentAdvice
         else 
             ()
     let $resources := RDFXMLnested2flat:createIdentifiedResource($resources, $baseuri)
