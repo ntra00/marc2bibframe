@@ -80,7 +80,8 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
                     else if ($p/madsrdf:authoritativeLabel or $p/bf:label or $p/rdfs:label) then
                         let $label := ($p/madsrdf:authoritativeLabel|$p/bf:label|$p/rdfs:label)[1]
                         return fn:concat('"', fn:replace(xs:string($label), '"', '\\"') , '"')
-                    else if (xs:string($p/@rdf:parseType)="Collection") then
+                    (: else if (xs:string($p/@rdf:parseType)="Collection") then :)
+                    else if ($p/child::node()[fn:name()]/child::node()[fn:name()]) then
                         let $list-items := 
                             for $i in $p/*[fn:name()]
                             let $t := fn:local-name($i)
