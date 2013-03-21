@@ -1350,7 +1350,7 @@ declare function marcbib2bibframe:generate-instance-from856(
                                     $n 
                                 }:)
                     else
-                        element bf:annotationCreator {
+                        element bf:annotationAssertedBy {
                                 attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"} 
                             },
                     
@@ -1884,27 +1884,29 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
     let $abstract:= 
         for $d in  $marcxml/marcxml:datafield[@tag="520"]
         let $abstract-type:=
-            if ($d/@idn1="") then "ContentDescription"
-            else if ($d/@idn1="0") then "ContentDescription"
+            if ($d/@idn1="") then "Content Description"
+            else if ($d/@idn1="0") then "Content Description"
             else if ($d/@idn1="1") then "Review"
-            else if ($d/@idn1="2") then "ContentDescription"
+            else if ($d/@idn1="2") then "Content Description"
             else if ($d/@idn1="3") then "Abstract"
-            else if ($d/@idn1="4") then "ContentAdvice"
-            else                        "ContentDescription"
+            else if ($d/@idn1="4") then "Content Advice"
+            else                        "Content Description"
         return
             element bf:annotation {
-                element {fn:concat("bf:" , $abstract-type)} {
+                element bf:Annotation {
                     element rdf:type {
-                        attribute rdf:resource {"http://bibframe.org/vocab/Annotation"}
+                        attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , fn:replace($abstract-type, " ", "") ) }
                     },
                         
-                    element bf:label { fn:concat($abstract-type, " Annotation") },
+                    element bf:label { $abstract-type },
                         
                     if (xs:string($d/marcxml:subfield[@code="c"][1]) ne "") then
                         for $sf in $d/marcxml:subfield[@code="c"]
                         return element bf:annotationAssertedBy { xs:string($sf) }
                     else
-                        element bf:annotationAssertedBy { "http://id.loc.gov/vocabulary/organizations/dlc" },
+                        element bf:annotationAssertedBy { 
+                            attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc" }
+                        },
                         
                     for $sf in $d/marcxml:subfield[@code="u"]
                     return element bf:hasBody { xs:string($sf) },
