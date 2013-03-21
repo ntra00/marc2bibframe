@@ -1895,7 +1895,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
             else if ($d/@idn1="4") then "ContentAdvice"
             else                        "ContentDescription"
         return
-            element bf:hasAnnotation {
+            element bf:annotation {
                 element {fn:concat("bf:" , $abstract-type)} {
                     element rdf:type {
                         attribute rdf:resource {"http://bibframe.org/vocab/Annotation"}
