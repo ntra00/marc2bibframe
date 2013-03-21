@@ -249,7 +249,7 @@ declare function RDFXMLnested2flat:createResourceOrNot(
         ) as element()
 {
     let $label := ($needle/bf:*[1]/madsrdf:authoritativeLabel|$needle/bf:*[1]/rdfs:label|$needle/bf:*[1]/bf:label)[1]
-    let $needle-found := $haystack/bf:*[child::node()=$label]
+    let $needle-found := $haystack/bf:*[child::node()=xs:string($label)]
     return
         if ($needle-found[1]) then
             element {fn:name($needle)} {
