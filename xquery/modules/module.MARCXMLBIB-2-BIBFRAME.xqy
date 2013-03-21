@@ -2342,16 +2342,20 @@ declare function marcbib2bibframe:get-name(
                 Actually, I'm going to undo this because this is a cataloging error
                 and we want those caught.  was fn:substring($relatorCode, 1, 3))
             :)
-            fn:concat("relators:" , $relatorCode)
+            fn:concat("bf:" , $relatorCode)
         else if ( fn:starts-with($tag, "1") ) then
-            "creator"
+            "bf:creator"
         else if ( fn:starts-with($tag, "7") and $d/marcxml:subfield[@code="t"] ) then
-            "creator"
+            "bf:creator"
         else
-            "contributor"            
+            "bf:contributor"
+            
+    let $resourceRoleTerms := 
+        for $r in $d/marcxml:subfield[@code="e"]
+        return element bf:resourceRole {$r}
 
     return
-       element bf:associatedAgent {
+       element {$resourceRole} {
             element {$class} {            
                 element bf:label {$label},
                 element rdfs:label {$aLabel},
@@ -2359,7 +2363,7 @@ declare function marcbib2bibframe:get-name(
                 marcbib2bibframe:generate-880-label($d,"name"),
                 $elementList,
                 $roles,
-                element bf:resourceRole {$resourceRole},
+                $resourceRoleTerms,
                 element bf:descriptionRole { $desc-role}
             }
         }
