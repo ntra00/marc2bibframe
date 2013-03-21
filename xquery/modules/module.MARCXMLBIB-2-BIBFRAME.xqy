@@ -1531,12 +1531,12 @@ declare function marcbib2bibframe:generate-related-work
 { 	 
 
     let $titleFields := 
-        if (fn:matches($d/@tag,"(630|730|740|830)")) then
+        if (fn:matches($d/@tag,"(440|630|730|740|830)")) then
             "(a|n|p)"            
         else if (fn:matches($d/@tag,"(534)")) then
             "(t|b|f)"
         else if (fn:matches($d/@tag,"(510)")) then
-        "(a|b|c)"
+            "(a|b|c)"
         else
             "(t|f|k|m|n|o|p|s)"
     let $title := marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,$titleFields)] , ' '))
@@ -1557,12 +1557,9 @@ declare function marcbib2bibframe:generate-related-work
         else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(630|730|740|830)")) ) then
             marcbib2bibframe:get-name($d)
         :)
-        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|800|810|811|510|630|730|740|830)")) ) then
+        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|800|810|811|510|630|730|740|830)")) ) then
             marcbib2bibframe:get-name($d)
         else ()
-        
-                
-        
         
         
     let $aLabel := 
