@@ -2759,7 +2759,11 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         element  {fn:concat("bf:",$property)} {            	
                             fn:string($this-tag/marcxml:subfield[@code="a"])
                         }
-            else if ($valid-lcc) then
+            else if (
+                ($valid-lcc and fn:matches($this-tag/@tag,"(050|051)"))
+                    or 
+                fn:not(fn:matches($this-tag/@tag,"(050|051)"))
+                ) then
                 element bf:class {
                     element bf:ClassificationEntity {                        
                         element bf:classScheme {
