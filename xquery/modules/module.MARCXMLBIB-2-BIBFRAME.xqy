@@ -853,12 +853,12 @@ declare function marcbib2bibframe:generate-identifiers(
                         (
                            if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
                             element bf:derivedFromLccn {    
-                            attribute rdf:about {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])))}         
+                            attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])))}         
                                 (:fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])):)
                             }
 		else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
                             element bf:coden {    
-                            attribute rdf:about {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}         
+                            attribute rdf:resource {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}         
                                 (:fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])):)
                             }
 		(:else  if ( $this-tag[@tag="020"]/marcxml:subfield[@code="a"] ) then
@@ -872,7 +872,7 @@ declare function marcbib2bibframe:generate-identifiers(
 
                         else if ( fn:contains(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "(OCoLC)" ) ) then
                             element bf:oclc-number {
-                            attribute rdf:about { fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(
+                            attribute rdf:resource { fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(
                             				fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "")
                             				)
                             				)                       }
@@ -1169,7 +1169,7 @@ let $isbn :=
 		for $i in $clean-isbn
 		let $element-name:=if (fn:string-length($i) gt 11  ) then "bf:isbn13" else "bf:isbn10" 
 			return element {$element-name} {    
-				attribute rdf:about {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}                                         
+				attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}                                         
 	}    
     (:get the physical details:)
     (: We only ask for the first 260 :)
@@ -1596,11 +1596,11 @@ declare function marcbib2bibframe:generate-related-work
   	              let $iStr := fn:string($s)
            	    return
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-	                        element bf:oclc-number {  attribute rdf:about {fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", ""))) }}
+	                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", ""))) }}
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-	                        element bf:derivedFromLccn { attribute rdf:about {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/", fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")))} }                
+	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/", fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")))} }                
 	                    else if (fn:string($s/@code="x")) then
-	                        element bf:issn {attribute rdf:about {fn:concat("http://issn.org/issn/", fn:normalize-space($iStr)) } }                           	                	
+	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:normalize-space($iStr)) } }                           	                	
 		        else ()
 	   else 
 	   (),		
@@ -2782,10 +2782,10 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             	       element bf:classNumber {fn:string($cl)},
             	       element bf:label {fn:string($cl)},
             	
-                       if ($this-tag/@tag="050" and $this-tag/@ind2="0") then  element bf:classAssigner {attribute rdf:about{"http://id.loc.gov/vocabulary/organizations/dlc"}}
-                       else if (fn:matches($this-tag/@tag,"(051)")) then element bf:classAssigner {attribute rdf:about{"http://id.loc.gov/vocabulary/organizations/dlc"}}
-                       else if (fn:matches($this-tag/@tag,"(060|061)")) then element bf:classAssigner { "NLM"}            	 					
-                       else if (fn:matches($this-tag/@tag,"(070|071)")) then element bf:classAssigner {"NAL"}
+                       if ($this-tag/@tag="050" and $this-tag/@ind2="0") then  element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"}}
+                       else if (fn:matches($this-tag/@tag,"(051)")) then element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"}}
+                       else if (fn:matches($this-tag/@tag,"(060|061)")) then element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dnln"}}
+                       else if (fn:matches($this-tag/@tag,"(070|071)")) then element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dnal"}}
                        else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then element bf:classAssigner { fn:string($this-tag/marcxml:subfield[@code="q"])}
                        else (),             			
 			            	 
