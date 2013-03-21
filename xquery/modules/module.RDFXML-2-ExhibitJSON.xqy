@@ -88,7 +88,7 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
                             let $els := 
                                 for $e in $i/*[fn:name()]
                                 let $n := fn:replace(fn:name($e), ":", "-")
-                                return fn:concat('"', $n , '": "', fn:replace(xs:string($e), '"', '\\"'), '"')
+                                return fn:concat('"', $n , '": "', fn:normalize-space(fn:replace(xs:string($e), '"', '\\"')), '"')
                             return
                                 fn:concat('{ 
                                     "type": ', fn:concat('"', $t , '"'), ', 
@@ -96,7 +96,7 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
                                     }')
                         return fn:concat('[', fn:string-join($list-items, ', '), ']')
                     else
-                        fn:concat('"', fn:replace(xs:string($p), '"', '\\"') , '"')
+                        fn:concat('"', fn:normalize-space(fn:replace(xs:string($p), '"', '\\"')) , '"')
             let $ps := 
                 if ( fn:count($ps) eq 1 ) then
                     fn:concat('"', fn:replace($name, ":", "-") , '": ', $ps)
