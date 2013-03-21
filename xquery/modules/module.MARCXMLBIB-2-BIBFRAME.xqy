@@ -1969,6 +1969,7 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
 			let $set:=
 				for $title in $marc-note/marcxml:subfield[@code="t"]
 				let $t := fn:replace(xs:string($title), " /", "")
+                (:
                 let $details := 
                     element details {
                         for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
@@ -1983,10 +1984,33 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
                             else
                                 element {$elname} {fn:replace(xs:string($subfield), " --", "")}
                     }
+                :)
+                let $details := 
+                    element details {
+                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
+                        let $elname:=
+                            if ($subfield/@code="g") then "bf:note" 
+                            else if ($subfield/@code="r") then "bf:creator" 
+                            else if ($subfield/@code="u") then "rdf:resource" 
+                            else fn:concat("bf:f505c" , fn:string($subfield/@code))
+                        let $sfdata := fn:replace(xs:string($subfield), " --", "")
+                        return
+                            if ($elname eq "rdf:resource") then
+                                element {$elname} { attribute rdf:resource {$sfdata} }
+                            else if ($elname eq "bf:creator") then
+                                if ( fn:contains($sfdata, ";") ) then
+                                    (: we have multiples :)
+                                    for $c in fn:tokenize($sfdata, ";")
+                                    return marcbib2bibframe:get-name-fromSOR($c,"bf:creator")
+                                else
+                                    marcbib2bibframe:get-name-fromSOR($sfdata,"bf:creator")
+                            else
+                                element {$elname} {$sfdata}
+                    }
                 return 
                     element part {
                         element madsrdf:authoritativeLabel {
-                            fn:string-join( ($details/bf:contributor, $t), ". " )
+                            fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )
                         },
                         element madsrdf:elementList {
                             attribute rdf:parseType {"Collection"},
@@ -1995,10 +2019,13 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
                             }
                         },
                         
+                        $details/*
+                        
                         (:  
                             get each following sibling that's not a title
 					        where the first preceding title of it is the same as this title
                         :)
+                        (:
                         for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]				
                         let $elname:=
                             if ($subfield/@code="g") then "bf:note" 
@@ -2009,7 +2036,8 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
                             if ($elname eq "rdf:resource") then
                                 element {$elname} { attribute rdf:resource {fn:string($subfield)} }
                             else
-                                element {$elname} {fn:replace(xs:string($subfield), " --", "")}				
+                                element {$elname} {fn:replace(xs:string($subfield), " --", "")}
+                        :)		
                     }
 			return						
                 for $item in $set
@@ -2368,6 +2396,48 @@ declare function marcbib2bibframe:get-name(
             }
         }
 };
+
+(:~
+:   This function generates a name from a Statement of 
+:   Responsibility of string.  It's going to take work.
+:
+:   @param  $c     is the string to parse
+:   @param  $prop       is the name of the prop to create   
+:   @return element  
+:)
+declare function marcbib2bibframe:get-name-fromSOR(
+        $c as xs:string,
+        $prop as xs:string)
+{
+        let $role :=
+            if ( fn:contains($c, " by") ) then
+                if ( fn:normalize-space(fn:replace($c, " by", "")) eq "" ) then
+                    ""
+                else
+                    fn:concat(fn:substring-before($c, " by"), " by")
+            else
+                ""
+        let $role := fn:normalize-space($role)
+        
+        let $name :=
+            if ( fn:contains($c, " by") ) then
+                fn:substring-after($c, " by")
+            else
+                $c
+        let $name := fn:normalize-space($name)
+        return
+            element {$prop} {
+                element bf:Agent {
+                    element bf:label {$name},
+                    element rdfs:label {$name},
+                    if ($role ne "") then
+                        element bf:resourceRole {$role}
+                    else
+                        ()
+                }
+            }
+
+}; 
 
 (:~
 :   This is the function generates a work resource.
