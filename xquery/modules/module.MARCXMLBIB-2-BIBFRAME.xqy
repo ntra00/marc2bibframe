@@ -541,7 +541,7 @@ declare function marcbib2bibframe:generate-instance-from260(
     let $providers :=
         for $a in fn:distinct-values($providers)
         return
-            element bf:associatedAgent {
+            element bf:provider {
                 element bf:Organization {
                     element bf:label {marcbib2bibframe:clean-string(fn:string($a))},
                       marcbib2bibframe:generate-880-label($d,"provider"),
@@ -1331,12 +1331,7 @@ declare function marcbib2bibframe:generate-instance-from856(
                       (:  let $names := :)
                     	    for $datafield in $df 
                     	    return marcbib2bibframe:get-name( $datafield )
-                        (:return 
-                            for $n in $names
-                            return
-                                element bf:associatedAgent {
-                                    $n 
-                                }:)
+                
                     else
                         element bf:annotationAssertedBy {
                                 attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"} 
@@ -2327,9 +2322,7 @@ declare function marcbib2bibframe:get-name(
         }
     else () (: 534 $a is not parsed:)
     
-    let $roles := 
-        for $r in $d/marcxml:subfield[@code='e']
-        return element bf:role {xs:string($r)}
+  
         
     let $class := 
         if ( fn:ends-with(xs:string($d/@tag), "00") ) then
@@ -2369,14 +2362,14 @@ declare function marcbib2bibframe:get-name(
 
     return
 
-       element bf:associatedAgent {
+       element {$resourceRole} {
             element {$class} {            
                 element bf:label {$label},
                 element rdfs:label {$aLabel},
                 if ($d/@tag!='534') then element madsrdf:authoritativeLabel {$aLabel} else (),
                 marcbib2bibframe:generate-880-label($d,"name"),
                 $elementList,
-                $roles,
+             
                 $resourceRoleTerms,
                 element bf:descriptionRole { $desc-role}
             }
