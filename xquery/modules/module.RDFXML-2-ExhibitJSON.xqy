@@ -80,8 +80,23 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
                     else if ($p/madsrdf:authoritativeLabel or $p/bf:label or $p/rdfs:label) then
                         let $label := ($p/madsrdf:authoritativeLabel|$p/bf:label|$p/rdfs:label)[1]
                         return fn:concat('"', fn:replace(xs:string($label), '"', '\\"') , '"')
+                    (: else if (xs:string($p/@rdf:parseType)="Collection") then :)
+                    else if ($p/child::node()[fn:name()]/child::node()[fn:name()]) then
+                        let $list-items := 
+                            for $i in $p/*[fn:name()]
+                            let $t := fn:local-name($i)
+                            let $els := 
+                                for $e in $i/*[fn:name()]
+                                let $n := fn:replace(fn:name($e), ":", "-")
+                                return fn:concat('"', $n , '": "', fn:normalize-space(fn:replace(xs:string($e), '"', '\\"')), '"')
+                            return
+                                fn:concat('{ 
+                                    "type": ', fn:concat('"', $t , '"'), ', 
+                                    ', fn:string-join($els, ", &#10;"), '
+                                    }')
+                        return fn:concat('[', fn:string-join($list-items, ', '), ']')
                     else
-                        fn:concat('"', fn:replace(xs:string($p), '"', '\\"') , '"')
+                        fn:concat('"', fn:normalize-space(fn:replace(xs:string($p), '"', '\\"')) , '"')
             let $ps := 
                 if ( fn:count($ps) eq 1 ) then
                     fn:concat('"', fn:replace($name, ":", "-") , '": ', $ps)
