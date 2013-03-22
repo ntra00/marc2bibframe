@@ -51,7 +51,7 @@ declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-03-13-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-03-15-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">Text</type>
@@ -126,7 +126,7 @@ declare variable $marcbib2bibframe:classes := (
 <vocab>
     <class>ClassificationEntity</class>
     <property name="classNumber" label="classification number" domain="Work" marc="050,051,055,060,061,070,071,080,082,083,084,086--/a" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="a"/>
-    <property name="classItem" label="classification item number" domain="Holding" marc="050,051,055,060,061,070,071,080,082,083,084,086--/b" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="b"/>
+    <property name="classItem" label="classification item number" domain="Holding" marc="050|051,055,060,061,070,071,080,082,083,084,086--/b" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="b"/>
     <property name="classCopy" label="Copy part of call number" domain="Work" marc="051,061,071--/c" tag="(051|061|071)" sfcodes="c"/>
     <property name="classNumberSpanEnd" label="classification span end for class number" domain="Work" marc="083--/c" tag="083" sfcodes="c"/>
     <property name="classTableSeq" label="DDC table sequence number" domain="Work" marc="083--/y" tag="083" sfcodes="y"/>
@@ -275,8 +275,8 @@ declare variable $marcbib2bibframe:physdesc-list:=
         		<field tag="307" codes="ab" property="hoursAvailable"> Hours Available</field>
         		<field tag="310" codes="ab">Current Publication Frequency </field>
         		<field tag="321" codes="ab"> Former Publication Frequency </field>
-        		<field tag="337" codes="ab23"> Media Type </field>
-        		<field tag="338" codes="ab23"> Carrier Type </field>
+        		<field tag="337" codes="ab23">Media Type </field>
+        		<field tag="338" codes="ab23">Carrier Type </field>
         		<field tag="340" codes="abcdefhijkmno023"> Physical Medium </field>
         		<field tag="342" codes="abcdefghijklmnopqrstuvw2"> Geospatial Reference Data </field>
         		<field tag="343" codes="abcdefghi">Planar Coordinate Data </field>
@@ -543,7 +543,8 @@ declare function marcbib2bibframe:generate-instance-from260(
             element bf:associatedAgent {
                 element bf:Organization {
                     element bf:label {marcbib2bibframe:clean-string(fn:string($a))},
-                      marcbib2bibframe:generate-880-label($d,"provider")
+                      marcbib2bibframe:generate-880-label($d,"provider"),
+                      element bf:resourceRole {"publisher"}
                 }
             }
     
@@ -621,9 +622,8 @@ declare function marcbib2bibframe:generate-instance-from260(
     let $call-num:=  (:??? fix:) 
         if ($d/../marcxml:datafield[@tag eq "050"]) then
         (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$":)
-        for $call in $d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
-        
-            return element bf:callNumber { fn:normalize-space(fn:string-join($call," ")) }
+        for $call in $d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]        
+            return element bf:callNumber { fn:concat("actually goes on holdings: ",fn:normalize-space(fn:string-join($call," "))) }
         else ()
 (:???? trash this???:)
     let $instance-identifiers :=
@@ -812,30 +812,12 @@ declare function marcbib2bibframe:generate-identifiers(
                             for $sub in $this-tag/marcxml:subfield[@code="q" ]
                             return element bf:identifierQualifier {fn:string($sub)},
 
-                       (: ntra moved identifierQualifier out to an instance property called carrierType 2013-03-01
-                       	:)
-                  (:     for $sub in $this-tag[@tag="020"]/marcxml:subfield[@code="a"] 
-                  		(: [fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(") ] :)
-                            let $q:=fn:replace(fn:substring-after($sub,"(" ),"\)","")				  	
-                            return 
-                                element bf:identifierQualifier {
-                                    if (fn:matches($q,"(pbk|softcover)")) then
-                                        "paperback"
-                                    else if (fn:matches($q,"(hbk|hardcover|hc|hard)") ) then 
-                                        "hardback"
-                                    else if (fn:matches($q,"(ebook|eresource)") ) then
-                                        "electronic resource"
-                                    else if (fn:contains($q,"lib. bdg.") ) then
-                                        "library binding"			
-                                    else if (fn:matches($q,"(acid-free|acid free|alk)")) then
-                                        "acid free"						  		
-                                    else $q
-                                },				  
-                            :)
+               
                             (: 
                                 kefo - 1 march
                                 ALERT - I had to insert [1] to get this to work in a crunch.
                                 BUT this needs to be modified.
+                                ntra:?? 020$a is Not repeatable should not need [1]!!
                             :)
                             element bf:identifierValue { 
                                 if ($this-tag[@tag="020"]/marcxml:subfield[@code="a"]) then
@@ -1142,7 +1124,12 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
 {
  
 let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
-let $volume:=marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2]))
+let $volume:=fn:replace(marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2])),"\)","")
+let $voume-info:=
+	if ($volume ) then		
+		for $vol in fn:tokenize(fn:string($d//marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$volume)][1]
+		return if  (fn:contains($vol,$volume)) then element bf:partTitle {fn:concat("experimental 505a parsing/matching to isbn:",$vol)} else ()
+	else ()
 let $carrier:=
 	if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then 
      		marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-set/marcxml:subfield[1],"\(")[2]))
@@ -1185,9 +1172,10 @@ let $instance :=
     return 
         element bf:Instance {
         		$isbn,               	
-        		element bf:volume{ $volume},
+        		element bf:partLabel{ $volume},
         		$carrierType,
-         
+        		$voume-info,
+   	        		        
    	         if ( fn:exists($instance) ) then
 	                (
 	                    $instance/@*,
@@ -1196,7 +1184,7 @@ let $instance :=
 	            else 
 	                $instanceOf           
 		}
-     
+    
 };
 (:~
 :   This is the function generates publisher number-based instance resources.
@@ -1304,8 +1292,8 @@ declare function marcbib2bibframe:generate-instance-from856(
                 else  ()
             else ()
             
-   		return
-			 if ( $category="resource" ) then
+ 	return
+	 if ( $category="resource" ) then (:?? is this ever true? I don't see resource assigned for category above...:)
                 element bf:Instance {
                     element bf:label {fn:string($link/marcxml:subfield[@code="3"])},
                     element bf:link {fn:string($link/marcxml:subfield[@code="u"])},
@@ -1867,20 +1855,19 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
 					element bf:label {fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")}
 				}      
 			}
-	let $lcc:= 
-        	for $c in $marcxml/marcxml:datafield[fn:string(@tag)="050"]
+	let $validLCC:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
+	let $lcc:= 	
+	  for $c in $marcxml/marcxml:datafield[fn:string(@tag)="050"]
 (:
 For the Classify service at OCLC, when it is LCC we use a regular expression: "^[a-zA-Z]{1,3}[1-9].*$". -Steve Meyer 
 :)
-	        let $cl:=fn:string($c)
-			let $validLCC:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
-			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
-			let $subclassCode := fn:replace($strip, "\d", "")			
-			return 
+	      let $cl:=fn:string($c)			
+	      let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
+	     let $subclassCode := fn:replace($strip, "\d", "")			
+		return 
 	            (: lc classes don't have a space after the alpha prefix, like DA1 vs "DA 1" :)
-	            if (
-	                fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and 
-	                $subclassCode = $validLCC 
+	            if (fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and 
+	                   $subclassCode = $validLCC 
 	                ) then   								  
 	                element bf:class {
 	                    element bf:LCC {														 							
@@ -2279,7 +2266,7 @@ declare function marcbib2bibframe:get-name(
             "bf:Name"
 
     let $tag := xs:string($d/@tag)
-    let $desc-role:=if (fn:starts-with($tag , "10") or fn:starts-with($tag , "11")) then "primary" else () 
+    let $desc-role:=if (fn:starts-with($tag , "10") or fn:starts-with($tag , "11")) then "primary" else "secondary" 
     let $resourceRole := 
         if ($relatorCode ne "") then
             (: 
@@ -2297,7 +2284,8 @@ declare function marcbib2bibframe:get-name(
             "contributor"            
 
     return
-       element bf:associatedAgent {
+       (:element bf:associatedAgent {:)
+  element {fn:concat("bf:",$resourceRole)} {
             element {$class} {            
                 element bf:label {$label},
                 element rdfs:label {$aLabel},
