@@ -51,27 +51,26 @@ declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-03-15-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-03-29-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
-        <type leader6="a">Text</type>
+        <type leader6="a">LanguageMaterial</type>
         <type leader6="c">NotatedMusic</type>
         <type leader6="d">NotatedMusic</type>
         <type leader6="d">Manuscript</type>
-        <type leader6="e">Cartographic</type>
-        <type leader6="f">Cartographic</type>
-        <type leader6="f">Manuscript</type>
+         <type leader6="e">Cartography</type>
+        <type leader6="f">Cartography</type>
+         <type leader6="f">Manuscript</type>
         <type leader6="g">MovingImage</type>
         <type leader6="i">Audio</type>
-        <type leader6="j">MusicRecording</type>
+        <type leader6="j">Audio</type>
         <type leader6="k">StillImage</type>
-        <type leader6="m">SoftwareApplication</type>
-        <type leader6="o" marcnote="Kit">Collection</type>
+        <type leader6="m">SoftwareOrMultimedia</type>
+        <type leader6="o">MixedMaterial</type>
         <type leader6="p">MixedMaterial</type>
-        <type leader6="r">Artifact</type>
-        <type leader6="t">Text</type>
-        <type leader6="t">Manuscript</type>
-        <type leader7="c">Collection</type>
+        <type leader6="r">Three-DimensionalObject</type>
+        <type leader6="t">LanguageMaterial</type>
+        <type leader6="t">Manuscript</type>        
     </resourceTypes>
     );
     
@@ -552,9 +551,8 @@ declare function marcbib2bibframe:generate-instance-from260(
     let $pubdate :=
         for $a in $d/marcxml:subfield[@code eq "c"]
         return element bf:pubDate {marcbib2bibframe:clean-string(xs:string($a))}
-        
-    let $types := marcbib2bibframe:get-resourcesTypes($d/../marcxml:leader)
-    let $mainType := xs:string($types[1])
+    
+    
 
     let $physResourceData := ()
     (: 
@@ -1446,7 +1444,7 @@ declare function marcbib2bibframe:generate-notes(
  					else ()
 			return
                 			element {fn:concat("bf:",fn:string($note/@property))} {						
-                    				if ($marc-note/@tag!="504") then
+                    				if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:contains($return-codes,@code)]) then
                     					fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]," ")))                    
                     				else 
                     					fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
@@ -1725,7 +1723,9 @@ declare function marcbib2bibframe:generate-work(
     let $types := marcbib2bibframe:get-resourcesTypes($marcxml/marcxml:leader)
         
     let $mainType := "Work"
-     
+     (:ldr06:   :)    
+    let $work-subclasses := marcbib2bibframe:get-resourcesTypes($marcxml/marcxml:leader)
+    
     let $uniformTitle := 
         for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
         return marcbib2bibframe:get-uniformTitle($d)
@@ -1808,15 +1808,18 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
             let $aud := xs:string($marcbib2bibframe:targetAudiences/type[@cf008-22 eq $audience]) 
             return
                 if (
-                    $aud ne "" and
+                    $aud ne ""
+                       (: What others would have audience? :)
+                    (:??  ntra: I think audience s.b. there regardless of the subclass of work and anyway, mainType is Work
+                    and
                     (
-                        $mainType eq "Text" or
-                        $mainType eq "SoftwareApplication" or
+                        $mainType eq "LanguageMaterial" or
+                        $mainType eq "SoftwareOrMultimedia" or
                         $mainType eq "StillImage" or
                         $mainType eq "NotatedMusic" or
                         $mainType eq "MusicRecording"
-                        (: What others would have audience? :)
-                    )
+                     
+                    ):)
                 ) then
                     element bf:audience {
                         attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/targetAudiences/" , $aud) }
