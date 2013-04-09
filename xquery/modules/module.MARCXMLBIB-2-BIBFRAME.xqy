@@ -51,7 +51,7 @@ declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-03-29-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-09-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -316,7 +316,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="514" property="dataQuality">Data Quality Note</note>
 		<note tag ="516" property="dataType">Type of Computer File or Data Note</note>
 		<note tag ="518" property="venue">Date/Time and Place of an Event Note</note>
-		<note tag ="521" property="targetAudience">Target Audience Note</note>
+		<!-- has its own function<note tag ="521" property="targetAudience">Target Audience Note</note>-->
 		<note tag ="522" property="geographic">Geographic Coverage Note</note>
 		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>		
 		<note tag ="526" property="studyProgram">Study Program Information Note</note>
@@ -371,10 +371,10 @@ declare variable $marcbib2bibframe:relationships :=
         <!-- Work to Work relationships -->
         <work-relateds>
             <type tag="(700|710|711|720)" ind2="2" property="constituent">isIncludedIn</type>
-            <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedWork">relatedWork</type>        		            
-            
+            <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedWork">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
-		    <type tag="740" ind2="2" property="contains">isContainedIn</type>		
+		    <type tag="740" ind2="2" property="contains">isContainedIn</type>
+		    <type tag="760" property="subseriesOf">hasParts</type>	
 		    <type tag="762" property="subseries">hasParts</type>	
 		    <type tag="765" property="translationOf">hasTranslation</type>
 		    <type tag="767" property="translation">translationOf</type>
@@ -386,16 +386,16 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
 		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
 		    <type tag="777" property="issuedWith">issuedWith</type>
-		    <type tag="780" property="preceding">continuationOf</type>
-		    <!--<type tag="780" ind2="0" property="continues">continuationOf</type>
+		<!--       <type tag="780" property="preceding">continuationOf</type>-->
+		    <type tag="780" ind2="0" property="continues">continuationOf</type>
 		    <type tag="780" ind2="2" property="continues">continuationOf</type>
 		    <type tag="780" ind2="1" property="continuesInPart">partiallyContinuedBy</type>
 		    <type tag="780" ind2="3" property="continuesInPart">partiallyContinuedBy</type>
-		    <type tag="780" ind2="4" property="mergerOf">preceding</type>
+		    <type tag="780" ind2="4" property="unionOf">preceding</type>
 		    <type tag="780" ind2="5" property="absorbed">isAbsorbedBy</type>
-		    <type tag="780" ind2="7" property="separatedFrom">formerlyIncluded</type>-->
-		    <type tag="785" property="succeeding">continuedBy</type>
-		<!--   
+		    <type tag="780" ind2="7" property="separatedFrom">formerlyIncluded</type>
+		<!--    <type tag="785" property="succeeding">continuedBy</type>-->
+		   
 		 <type tag="785" ind2="0"  property="continuedBy">continues</type>
 		    <type tag="785" ind2="1" property="continuedInPartBy">partiallyContinues</type>	
 		    <type tag="785" ind2="2"  property="continuedBy">continues</type>
@@ -405,7 +405,7 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="785" ind2="6"  property="splitInto">splitFrom</type>
 		   <type tag="785" ind2="7"  property="mergedInto">mergedFrom</type>	
     		<type pattern="785" ind2="8"  property="changedBackTo">formerlyNamed</type>	
-		    	-->
+		
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
 		      <type tag="534" property="originalVersion"></type>
@@ -413,7 +413,7 @@ declare variable $marcbib2bibframe:relationships :=
 	  	    <type tag="490" ind1="0" property="inSeries">hasParts</type>
 	  	    <type pattern ="510" property="references">isReferencedBy</type>
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
-	  	    <type tag="(400|410|411|440|760|762|800|810|811|830)" property="inSeries">hasParts</type>	  	    
+	  	    <type tag="(400|410|411|440|760|800|810|811|830)" property="series">hasParts</type>	  	    
             <type tag="730"  property="relatedWork">relatedItem</type>
             
               
@@ -1669,31 +1669,15 @@ declare function marcbib2bibframe:related-works
             if ($type/@tag="740") then (: title is in $a :)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind1=$type/@ind1 or @ind2=$type/@ind2]		
                 return marcbib2bibframe:generate-related-work($d,$type)
-     else if (fn:matches($type/@tag,"533")) then 
+     	else if (fn:matches($type/@tag,"533")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]		
 				return marcbib2bibframe:generate-related-reproduction($d,$type)                
             else if ($type/@ind1) then
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind1=$type/@ind1][marcxml:subfield[@code="t"]]	
-                return marcbib2bibframe:generate-related-work($d,$type)
-                
+                return marcbib2bibframe:generate-related-work($d,$type)                
             else if ($type/@ind2) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
 				return marcbib2bibframe:generate-related-work($d,$type)
-            (:
-            Merge conflict 1
-            else if (fn:matches($type/@pattern,"(630|730|830)")) then 
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@pattern))][marcxml:subfield[@code="a"]]		
-				return marcbib2bibframe:generate-related-work($d,$type)								
-            
-            :)
-            (:
-            Merge conflict 2
-   	        else if (fn:matches($type/@pattern,"(510|630|730|830)")) then 
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@pattern))][marcxml:subfield[@code="a"]]		
-				return marcbib2bibframe:generate-related-work($d,$type)
-	       else if (fn:matches($type/@pattern,"(534)")  and $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@pattern))][marcxml:subfield[@code="f"]] ) then 
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@pattern))][marcxml:subfield[@code="f"]](:	series:)	
-            :)
             else if (fn:matches($type/@tag,"(510|630|730|830)")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="a"]]		
 				return marcbib2bibframe:generate-related-work($d,$type)
@@ -1800,7 +1784,6 @@ declare function marcbib2bibframe:generate-work(
         else
             ()
 let $langs := marcbib2bibframe:get-languages ($marcxml)
-
             
     let $audience := fn:substring($cf008, 23, 1)
     let $audience := 
@@ -1821,13 +1804,14 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
                      
                     ):)
                 ) then
-                    element bf:audience {
+                    element bf:intendedAudience {
                         attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/targetAudiences/" , $aud) }
                     }
                 else ()
         else
             ()
-            
+     let $aud521:=marcbib2bibframe:get-521audience($marcxml/marcxml:datafield[@tag eq "521"])
+     
     (: Don't be surprised when genre turns into "form" :)
     let $genre := fn:substring($cf008, 24, 1)
     let $genre := 
@@ -1950,22 +1934,7 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
 			let $set:=
 				for $title in $marc-note/marcxml:subfield[@code="t"]
 				let $t := fn:replace(xs:string($title), " /", "")
-                (:
-                let $details := 
-                    element details {
-                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
-                        let $elname:=
-                            if ($subfield/@code="g") then "bf:note" 
-                            else if ($subfield/@code="r") then "bf:contributor" 
-                            else if ($subfield/@code="u") then "rdf:resource" 
-                            else fn:concat("bf:f505c" , fn:string($subfield/@code))
-                        return
-                            if ($elname eq "rdf:resource") then
-                                element {$elname} { attribute rdf:resource {fn:string($subfield)} }
-                            else
-                                element {$elname} {fn:replace(xs:string($subfield), " --", "")}
-                    }
-                :)
+              
                 let $details := 
                     element details {
                         for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
@@ -2065,6 +2034,7 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
             $aLabel,
             $aLabelsWork880,
             $names,
+            $aud521,
             $language,
             $abstract,
             $abstract-annotation,
@@ -2075,7 +2045,7 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
             $copyright,
             $lcc,                
             $work-identifiers,
-             $work-classes,
+            $work-classes,
             $work-notes,
             $complex-notes,
             $work-relateds,
@@ -2420,7 +2390,47 @@ declare function marcbib2bibframe:get-name-fromSOR(
             }
 
 }; 
+(:~
+:   This is the function gets the intendedaudience entity from 521.
+:
+:   @param  $tag        element is the datafield 521  
+:   @return bf:* as element()
+:)
+declare function marcbib2bibframe:get-521audience(
+    $tag as element(marcxml:datafield)
+    ) as item()*
+{
+let $type:=  if ($tag/@ind1="0") then "Audience: " else if ($tag/@ind1="0") then "Reading grade level" else if  ($tag/@ind1="1") then "Interest age level" else if  ($tag/@ind1="3") then "Interest grade level" else if  ($tag/@ind1="4") then "Special audience characteristics" else if  ($tag/@ind1="4") then "Motivation/interest level" else ()
+(:if type!=audience then you need entity:)
+return if ($type= "Audience: ") then
+	if ( fn:not($tag/marcxml:subfield[@code="b"]) ) then
+		element bf:intendedAudience {fn:concat($type,$tag/marcxml:subfield[@code="a"])}
+	else element bf:IntendedAudienceEntity {
+			element bf:audience {fn:concat($type,$tag/marcxml:subfield[@code="a"])},
+			element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}	
+	}
+	else if ($type!=() ) then (:you need audienceType:)
+		element bf:IntendedAudienceEntity {
+			if ($tag/marcxml:subfield[@code="a"]) then
+				element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])}
+			else (),	
+			element bf:audienceType {$type},
+			if ($tag/marcxml:subfield[@code="b"]) then
+				element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}
+			else ()	
+		}
+	else if ($tag/marcxml:subfield[@code="b"]) then
+		element bf:IntendedAudienceEntity {
+			if ($tag/marcxml:subfield[@code="a"]) then
+				element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])}
+			else (),
+				element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}
+		}
+	else   if ($tag/marcxml:subfield[@code="a"]) then
+	 	element bf:intendedAudience {fn:concat($type,$tag/marcxml:subfield[@code="a"])}
+	 else ()
 
+};
 (:~
 :   This is the function generates a work resource.
 :

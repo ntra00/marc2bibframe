@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets:mets xmlns:mets="http://www.loc.gov/METS/"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:lc="http://www.loc.gov/mets/profiles"
+	xmlns:pm="http://www.loc.gov/mets/profiles/printMaterial"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mods="http://www.loc.gov/mods/v3"
+	xmlns:rights="http://www.loc.gov/rights/"
+	OBJID="loc.natlib.ihas.200196598"
+	xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/mods.xsd"
+	PROFILE="lc:printMaterial">
+	<mets:metsHdr LASTMODDATE="2012-07-18T03:12:46.905-04:00"/>
+	<mets:dmdSec ID="MODS1">
+		<mets:mdWrap MDTYPE="MODS">
+			<mets:xmlData>
+				<mods:mods xmlns="http://www.loc.gov/mods/v3"
+					xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+					xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-4.xsd"
+					version="3.4">
+					<mods:titleInfo>
+						<mods:title>Florilegium Portense</mods:title>
+						<mods:subTitle>continens CXV selectissimas cantiones 4. 5. 6. 7. 8. vocum praestantissimorum aetatis nostrae autorum in illustri Gymnasio Portensiante &amp; post cibum sumtum nunc temporis usitatas : in nominis Deigloriam, ecclesiarum decus, &amp; s
+							tudiosae juventutis usum</mods:subTitle>
+					</mods:titleInfo>
+					<mods:name type="personal">
+						<mods:namePart>Bodenschatz, Erhard</mods:namePart>
+						<mods:namePart type="date">1576-1636</mods:namePart>
+					</mods:name>
+					<mods:name type="personal">
+						<mods:namePart>Bodenschatz, Erhard</mods:namePart>
+						<mods:namePart type="date">1576-1636</mods:namePart>
+					</mods:name>
+					<mods:typeOfResource>notated music</mods:typeOfResource>
+					<mods:originInfo>
+						<mods:place>
+							<mods:placeTerm type="code" authority="marccountry">gw</mods:placeTerm>
+						</mods:place>
+						<mods:place>
+							<mods:placeTerm type="text">Lipsiae</mods:placeTerm>
+						</mods:place>
+						<mods:publisher>Typis &amp; sumtibus Abrahami Lambergi &amp; Caspari Closemanni</mods:publisher>
+						<mods:dateIssued>MDCXVIII [1618]</mods:dateIssued>
+						<mods:dateIssued encoding="marc">1618</mods:dateIssued>
+						<mods:dateIssued encoding="marc">1618</mods:dateIssued>
+						<mods:edition>Editio altera ab ipso autore auctior &amp; emendatior reddita.</mods:edition>
+						<mods:issuance>monographic</mods:issuance>
+					</mods:originInfo>
+					<mods:language>
+						<mods:languageTerm type="code" authority="iso639-2b">lat</mods:languageTerm>
+					</mods:language>
+					<mods:physicalDescription>
+						<mods:form authority="marcform">print</mods:form>
+						<mods:extent>9 parts ; 19-21 cm.</mods:extent>
+					</mods:physicalDescription>
+					<mods:note>"Cantiones" (motets) for 8 male voices: discantus, altus, tenor, bassus, quinta vox, sexta vox, septima vox, octava vox and this "Basis generalis, these words having been mounted over the incorrectly printed "Octava Vox."</mods:note>
+					<mods:note>Alto I part has 3 sections of manuscripts tipped in.</mods:note>
+					<mods:note>Each vol. contains on verso of t.p. an "Anagramma" by M. Justinus Bertuch; a dedication signed: ... Osterbusae ... 1617 ... M. Erhardus Bodenschatz ... ; an " Index generalis" (by first line) ; an "Index specialis ... praecipuorum featorum
+						anni" ; three epigrams addressed to the "Musica Portensis" by M. Hieronymus Kromayer and an admonitory poem in distichs by M. Johannes Mülmannue.</mods:note>
+					<mods:note>The "Basis generalis" contains, in handwriting, the bass parts of two extra motets following CX and CXIII: Hodie nobis coelorum (taken from Jac. Handl's Opus musicum, C.I. no. XXVII) and Verbum caro factum est (without composer's name).</mods:note>
+						<mods:note>The collection of 115 compositions contains the composers: Bl. Ammon (1), G. Bassano (1), Andr. Berger (3), F. Bianciardus (1), M. Bischoff (1), Bodenschatz (2), Hier. Boschettus (9), Calvisius (2), Seraph Cantonue (1), Demantius (1), Duli
+							chius (1), Erbach (5), Jul. Eremita (1), Alb. Fabritius (5), Gabr. Fattorinus (1), Meleh. Franck (1), Andr. Cabrieli (3), Giov. Gabrieli (3), Jak. Callus (19), Rugg. Giovanelli (1), Joh. Gross (1), Ad. Gumpeltshaimer (1), H. Hartmann (1), Hasler (3), V. H
+							ausmann (1), Moritz von Hessen (1), Al. Horologius (1), Ingegneri (1), L. Marenzio (1), Tib. Massaini (2), J. Meiland (1), Cl. Merulo (1), Al Neander (1), Orlandus (9), A. Pevernage (1), Dom. Phinot (1), Hier. Praetorius (9), Mich. Praetorius (2), St. Ven
+							turi (1), Lud. Viadana (1), Caap. Vincenti (1), S.M. Vulpius (3), Th. Walliser (3), Fr. Weissenese (1), P. Zalamella (1), Nik. Zange (2), Anoymous (8).</mods:note>
+						<mods:note type="language">Latin text with the exception of 7 which are in German.</mods:note>					
+						<mods:subject authority="lcsh">
+							<mods:topic>Motets</mods:topic>
+						</mods:subject>
+						<mods:classification authority="lcc">M1490 .B7</mods:classification>
+						<mods:relatedItem type="isReferencedBy">
+							<mods:titleInfo>
+								<mods:title>RISM,</mods:title>
+							</mods:titleInfo>
+							<mods:note>B/I, 1618¹</mods:note>
+						</mods:relatedItem>
+						<mods:identifier type="lccn">2010456596</mods:identifier>
+						<mods:identifier type="membership">ballets</mods:identifier>
+						<mods:identifier type="index">ihas</mods:identifier>
+						<mods:identifier type="membership">m1490</mods:identifier> 
+						<mods:recordInfo>
+							<mods:descriptionStandard>aacr</mods:descriptionStandard>
+							<mods:recordContentSource authority="marcorg">DLC</mods:recordContentSource>
+							<mods:recordCreationDate encoding="marc">841120</mods:recordCreationDate>
+							<mods:recordChangeDate encoding="iso8601">20101123090403.0</mods:recordChangeDate>
+							<mods:recordIdentifier>10032092</mods:recordIdentifier>
+							<mods:recordOrigin>Converted from MARCXML to MODS version 3.4 using MARC21slim2MODS3-4.xsl
+								(Revision 1.78 2012/05/07)</mods:recordOrigin>
+						</mods:recordInfo>
+				</mods:mods>
+				
+			</mets:xmlData>
+		</mets:mdWrap>
+	</mets:dmdSec>
+	<mets:fileSec>
+		<mets:fileGrp USE="MASTER">
+			<mets:file ID="M0" GROUPID="G0" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0000.tif" /></mets:file>
+			<mets:file ID="M1" GROUPID="G1" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0001.tif" /></mets:file>
+			<mets:file ID="M2" GROUPID="G2" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0002.tif" /></mets:file>
+			<mets:file ID="M3" GROUPID="G3" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0003.tif" /></mets:file>
+			<mets:file ID="M4" GROUPID="G4" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0004.tif" /></mets:file>
+			<mets:file ID="M5" GROUPID="G5" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0005.tif" /></mets:file>
+			<mets:file ID="M6" GROUPID="G6" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0006.tif" /></mets:file>
+			<mets:file ID="M7" GROUPID="G7" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0007.tif" /></mets:file>
+			<mets:file ID="M8" GROUPID="G8" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200196598/0008.tif" /></mets:file>
+			<mets:file ID="M9" GROUPID="G9" MIMETYPE="image/tiff" SIZE="25000000"><mets:FLocat LOCTYPE="URL" xlink:href="http://natlib.loc.gov/natlib/ihas/warehouse/vaultscan.11/200
