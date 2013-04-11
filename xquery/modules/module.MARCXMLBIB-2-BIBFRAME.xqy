@@ -840,13 +840,11 @@ declare function marcbib2bibframe:generate-identifiers(
                         (
                            if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
                             element bf:derivedFromLccn {    
-                            attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])))}         
-                                (:fn:normalize-space(xs:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])):)
+                            attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
                             }
 		else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
                             element bf:coden {    
-                            attribute rdf:resource {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}         
-                                (:fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])):)
+                            attribute rdf:resource {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}                                         
                             }
 		(:else  if ( $this-tag[@tag="020"]/marcxml:subfield[@code="a"] ) then
 		let $clean-isbn:=	
@@ -1079,8 +1077,9 @@ declare function marcbib2bibframe:generate-publication
     ) as element ()*
 {
 if ($d/marcxml:subfield[fn:matches(@code,"(b|e)")]) then
- for $pub at $x in $d/marcxml:subfield[fn:matches(@code,"(b|e)")]
- 	return
+(: not sure why this is failing when there's a b and an e: 509288 ; currently set to [1] to move on:)
+ for $pub at $x in $d/marcxml:subfield[fn:matches(@code,"(b|e)")][1]
+ 	return 
 	element {if ($pub/@code="b" ) then "bf:publication" else "bf:manufacture " } {
 		element bf:ProviderEntity {
 	 		element bf:providerName {fn:string($pub)},
@@ -1098,7 +1097,6 @@ if ($d/marcxml:subfield[fn:matches(@code,"(b|e)")]) then
 	}
 	
 else if ($d/marcxml:subfield[fn:matches(@code,"(a|c)")]) then	
-
 	element bf:publication {
 		element bf:ProviderEntity {
 	 		for $pl in $d/marcxml:subfield[@code="a"]
@@ -1662,11 +1660,11 @@ declare function marcbib2bibframe:generate-related-work
   	              let $iStr := fn:string($s)
            	    return
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-	                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", ""))) }}
+	                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",marcbib2bibframe:clean-string(fn:replace($iStr, "\(OCoLC\)", ""))) }}
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/", fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")))} }                
+	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                
 	                    else if (fn:string($s/@code="x")) then
-	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:normalize-space($iStr)) } }                           	                	
+	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", marcbib2bibframe:clean-string($iStr)) } }                           	                	
 		        else ()
 	   else 
 	   (),		
@@ -1680,9 +1678,12 @@ declare function marcbib2bibframe:generate-related-work
                 let $iStr := fn:string($s)
                 return
                     if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-                        element bf:oclc-number{ fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }
+                        (:element bf:oclc-number{ fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }:)
+                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",marcbib2bibframe:clean-string(fn:replace($iStr, "\(OCoLC\)", ""))) }}
                     else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-                        element bf:derivedFromLccn {  fn:normalize-space(fn:replace($iStr, "\(DLC\)", "")) }
+                        (:element bf:derivedFromLccn {  fn:replace(fn:replace($iStr, "\(DLC\)", "")," ","") }:)
+                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:replace($iStr, "\(DLC\)", "")," ",""))}                   
+                        }
                     else 
                         element bf:identifier { fn:normalize-space($iStr) }   	                	
 			else ()
@@ -1898,7 +1899,10 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
                 else ()
         else
             ()
-     let $aud521:=marcbib2bibframe:get-521audience($marcxml/marcxml:datafield[@tag eq "521"])
+     let $aud521:= if ($marcxml/marcxml:datafield[@tag eq "521"]) then 
+     			for $tag in $marcxml/marcxml:datafield[@tag eq "521"]
+     				return marcbib2bibframe:get-521audience($tag) 
+     			else ()
      
     (: Don't be surprised when genre turns into "form" :)
     let $genre := fn:substring($cf008, 24, 1)
@@ -2392,7 +2396,7 @@ declare function marcbib2bibframe:get-name(
             
     let $resourceRoleTerms := 
         for $r in $d/marcxml:subfield[@code="e"]
-        return element bf:resourceRole {$r}
+        return element bf:resourceRole {fn:string($r)}
 
     return
 
@@ -2458,7 +2462,7 @@ declare function marcbib2bibframe:get-name-fromSOR(
 :   @return bf:* as element()
 :)
 declare function marcbib2bibframe:get-521audience(
-    $tag as element(marcxml:datafield)?
+    $tag as element(marcxml:datafield)
     ) as item()*
 {
 let $type:=  if ($tag/@ind1="0") then "Audience: " else if ($tag/@ind1="0") then "Reading grade level" else if  ($tag/@ind1="1") then "Interest age level" else if  ($tag/@ind1="3") then "Interest grade level" else if  ($tag/@ind1="4") then "Special audience characteristics" else if  ($tag/@ind1="4") then "Motivation/interest level" else ()
@@ -2515,25 +2519,25 @@ declare function marcbib2bibframe:get-resourceTypes(
     			where fn:matches($cf,$t/@cf007) 
     				return fn:string($t)    	
     (:let $sf336a :=:) ,
-    	for $field in fn:string($record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="a"])    		
+    	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="a"]    		
     		for $t in $marcbib2bibframe:resourceTypes/type[@sf336a]
-    			where fn:matches($field,$t/@sf336a) 
+    			where fn:matches(fn:string($field),$t/@sf336a) 
     				return fn:string($t),   				
 (:    let $sf336b := :)
-    	for $field in fn:string($record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="b"])    		
+    	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="b"]    		
     		for $t in $marcbib2bibframe:resourceTypes/type[@sf336b]
-    			where fn:matches($field,$t/@sf336b) 
+    			where fn:matches(fn:string($field),$t/@sf336b)
     				return fn:string($t), 
     				
     (:let $sf337a := :)
-    	for $field in fn:string($record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="a"])    		
+    	for $field in $record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="a"]		
     		for $t in $marcbib2bibframe:resourceTypes/type[@sf337a]
-    			where fn:matches($field,$t/@sf337a) 
+    			where fn:matches(fn:string($field),$t/@sf337a)
     				return fn:string($t) ,   	
 (:let $sf337b := :)
-    	for $field in fn:string($record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="b"])    		
+    	for $field in $record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="b"]    		
     		for $t in $marcbib2bibframe:resourceTypes/type[@sf337b]
-    			where fn:matches($field,$t/@sf337b) 
+    			where fn:matches(fn:string($field),$t/@sf337b)
     				return fn:string($t)  ,  	
     (:let $ldr6 :=:) 
     	for $t in $marcbib2bibframe:resourceTypes/type
@@ -2732,7 +2736,6 @@ declare function marcbib2bibframe:clean-string(
     $s as xs:string?
     ) as xs:string
 { 
-
 	if (fn:exists($s)) then
 		let $s:= fn:replace($s,"from old catalog","","i")
 	    let $s := fn:replace($s, "([\[\];]+)", "")
