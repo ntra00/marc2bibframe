@@ -1,5 +1,4 @@
 xquery version "1.0";
-
 (:
 :   Module Name: MARCXML BIB to bibframe
 :
@@ -51,26 +50,59 @@ declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-09-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-11-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
+        <type cf007="t">LanguageMaterial</type>       
+        <type sf336a="(text|tactile text)">LanguageMaterial</type>
+        <type sf336b="(txt|tct)">LanguageMaterial</type>
         <type leader6="c">NotatedMusic</type>
         <type leader6="d">NotatedMusic</type>
+        <type cf007="q">NotatedMusic</type>
+        <type sf336a="(notated music|tactile notated music)">NotatedMusic</type>
+        <type sf336b="(ntm|ccm)">NotatedMusic</type>`        
+        <type sf336a="(notated movement|tactile notated movement)">NotatedMovement</type>
+        <type sf336b="(ntv|tcn)">NotatedMovement</type>
         <type leader6="d">Manuscript</type>
+        <type leader6="f">Manuscript</type>
+        <type leader6="t">Manuscript</type>
          <type leader6="e">Cartography</type>
         <type leader6="f">Cartography</type>
-         <type leader6="f">Manuscript</type>
+        <type cf007="adr">Cartography</type>
+        <type sf336a="(cartographic dataset|cartographic image|cartographic moving image|cartographic tactile image|cartographic tactile three-dimensional form|cartographic three-dimensional form)">Cartography</type>
+        <type sf336b="(tcrd|cri|crm|crt|crn|crf)">Cartography</type>         
         <type leader6="g">MovingImage</type>
+        <type cf007="m">MovingImage</type>
+        <type cf007="v">MovingImage</type>
+        <type sf336a="(three-dimensional moving image|two-dimensional moving image|cartographic moving image)">MovingImage</type>
+        <type sf336b="(tdm|tdi)">MovingImage</type>
         <type leader6="i">Audio</type>
         <type leader6="j">Audio</type>
+        <type cf007="s">Audio</type>
+        <type sf336a="(performed music|sounds|spoken word)">Audio</type>
+        <type sf336b="(prm|snd|spw)">Audio</type>
+        <type sf337a="audio">Audio</type>
+        <type sf337b="s">Audio</type>
         <type leader6="k">StillImage</type>
+        <type sf336a="(still image|tactile image|cartographic image)">StillImage</type>
+        <type sf336b="(sti|tci|cri)">StillImage</type>
         <type leader6="m">SoftwareOrMultimedia</type>
+        <type sf336a="computer program">SoftwareOrMultimedia</type>
+        <type sf336b="cop">SoftwareOrMultimedia</type>
+        <type leader6="m">Dataset</type>
+        <type sf336a="(cartographic dataset|computer dataset)">Dataset</type>
+        <type sf336b="(crd|cod)">Dataset</type>
         <type leader6="o">MixedMaterial</type>
         <type leader6="p">MixedMaterial</type>
+        <type cf007="o">MixedMaterial</type>
         <type leader6="r">Three-DimensionalObject</type>
-        <type leader6="t">LanguageMaterial</type>
-        <type leader6="t">Manuscript</type>        
+        <type sf336a="(three-dimensional form|tactile three-dimensional form|three-dimensional moving image| cartographic three dimensional form|cartographic tactile three dimensional form)">Three-DimensionalObject</type>
+        <type sf336b="(tdf|tcf|tcm|crf|crn )">Three-DimensionalObject</type>
+        <type leader6="t">LanguageMaterial</type>        
+        <type cf007="f">Tactile</type>
+        <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Dataset</type>
+        <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Dataset</type>
     </resourceTypes>
     );
     
@@ -299,8 +331,7 @@ declare variable $marcbib2bibframe:physdesc-list:=
 	           <field tag="383" codes="abcde2"> Numeric Designation of Musical Work </field>
 	           <field tag="384" codes="a"> Key </field>
         	   </instance-physdesc>
-	           <work-physdesc>
-	           <field tag="336" codes="ab23"> Content Type </field>
+	           <work-physdesc>	           
 	       </work-physdesc>
         </physdesc>
     );
@@ -445,20 +476,22 @@ declare function marcbib2bibframe:marcbib2bibframe(
         else
             attribute rdf:about { $identifier }
 
-
     return
         if ($marcxml/marcxml:leader) then
             let $work := marcbib2bibframe:generate-work($marcxml, $about) 
             let $instances := marcbib2bibframe:generate-instances($marcxml, $about)
+            let $holdings := marcbib2bibframe:generate-holdings($marcxml, $about)
             return
                 element rdf:RDF {        attribute transformation-edition{$marcbib2bibframe:last-edit},
                     $work,
-                    $instances
+                    $instances,
                     (:,
-                      generate-controlfields($marcxml):) 
+                      generate-controlfields($marcxml):)
+                      $holdings
                 }
         else
-            element rdf:RDF {  attribute transformation-edition {$marcbib2bibframe:last-edit},
+            element rdf:RDF {
+            	attribute transformation-edition {$marcbib2bibframe:last-edit},
                 comment {"No leader - invalid MARC/XML input"}
             }
 };
@@ -513,6 +546,7 @@ declare function marcbib2bibframe:generate-instance-from260(
         for $e in $d/../marcxml:datafield[@tag eq "250"]
         return element bf:edition {fn:string-join($e/marcxml:subfield[fn:not(@code="6")], " ")}
         
+    let $publication:=marcbib2bibframe:generate-publication($d)
     let $place :=
         for $a in $d/marcxml:subfield[@code eq "a"]
         let $label:= marcbib2bibframe:clean-string(xs:string($a))        
@@ -554,47 +588,19 @@ declare function marcbib2bibframe:generate-instance-from260(
     
     
 
-    let $physResourceData := ()
-    (: 
-        Commented out the below because it was creating duplicate data.
-        marcbib2bibframe:generate-physdesc appears to replace all of the below
-    :)
-    (:
-        if ($mainType eq "Text" or
-            $mainType eq "Cartographic" or 
-            $mainType eq "Serial" or 
-            $mainType eq "NotatedMusic") then
-            
-            let $extent := 
-                for $e in $d/../marcxml:datafield[@tag eq "300"]/marcxml:subfield[@code eq "a"]
-                return element bf:extent {clean-string(xs:string($e))}
-            
-            let $otherPhysicalDetails := 
-                for $e in $d/../marcxml:datafield[@tag eq "300"]/marcxml:subfield[@code eq "b"]
-                return element bf:otherPhysicalDetails {clean-string(xs:string($e))}
-            
-            let $dimensions := 
-                for $e in $d/../marcxml:datafield[@tag eq "300"]/marcxml:subfield[@code eq "c"]
-                return element bf:dimensions {clean-string(xs:string($e))}
-                
-            return ($extent, $otherPhysicalDetails, $dimensions)
-            
-        else ()
-        :)
-        
-    let $physBookData := ()
-      
     let $physMapData := 
         (
-            for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "a" or @code eq "b" or @code eq "c"]  
-            return element bf:scale {xs:string($i)},
+            for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "a"]   
+            return element bf:scale {
+            		if (fn:string($i)="a") then "Linear scale" 
+            		else if (fn:string($i)="b") then "Angular scale" else if (fn:string($i)="z") then "Other scale type" else ()
+            		},
+	for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "b" or @code eq "c"]  
+            	return element bf:scale { fn:string($i)},
             
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "a"]
             return element bf:scale {xs:string($i)},
-            
-            for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "a"]
-            return element bf:scale {xs:string($i)},
-            
+                       
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "b"]
             return element bf:projection {xs:string($i)},
             
@@ -604,9 +610,10 @@ declare function marcbib2bibframe:generate-instance-from260(
             for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "d" or @code eq "e" or @code eq "f" or @code eq "g"]  
             return element bf:latLong {xs:string($i)}
         ) 
-            
-    let $physSerialData := ()
-            
+let             $physBookData:=()
+let $physSerialData:=()
+let $physResourceData:=()
+            (:this is not right yet  :)
     let $instanceType := 
         if ( fn:count($physBookData) > 0 ) then
             "PhysicalBook"
@@ -618,27 +625,29 @@ declare function marcbib2bibframe:generate-instance-from260(
             "PhysicalResource"
         else 
             ""
-    let $call-num:=  (:??? fix:) 
+    (: moved to generate-holdings :)
+   (: let $call-num:= 
         if ($d/../marcxml:datafield[@tag eq "050"]) then
-        (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$":)
-        for $call in $d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]        
-            return element bf:callNumber { fn:concat("actually goes on holdings: ",fn:normalize-space(fn:string-join($call," "))) }
-        else ()
+	        (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$":)
+	         if ($d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]) then	         	
+	        			for $call in $d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]        
+	            			return fn:normalize-space(fn:string-join($call," ")) 
+	            	
+		else ()
+        else ():)
 (:???? trash this???:)
     let $instance-identifiers :=
              (                       
             marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"instance")    
         )
-        
-
-    (:let $instance-classes:=marcbib2bibframe:generate-class($d/ancestor::marcxml:record,"instance"):)
-    let $related-works:= marcbib2bibframe:related-works($d/ancestor::marcxml:record,$workID,"instance")
+            
+    (: all relationships at work level:)
+    (:let $related-works:= marcbib2bibframe:related-works($d/ancestor::marcxml:record,$workID,"instance"):) 
     let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
         
     return 
-        element bf:Instance {
-        
+        element bf:Instance {        
             if ($instanceType ne "") then
                 element rdf:type {
                     attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , $instanceType) }
@@ -649,24 +658,22 @@ declare function marcbib2bibframe:generate-instance-from260(
             
             $names,
             $edition,
-            $providers,
+            $publication,
+            $providers,            
             $place,
             $pubdate,       
             $physResourceData,            
             $physMapData,
-            $physSerialData,
-            $call-num,
+            $physSerialData,            
             $instance-identifiers,               
             $physdesc,
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
             },
             $notes,
-            $related-works,
-            $derivedFrom                        
+         (:   $related-works,:)
+            $derivedFrom                      
         }
-        
-    
 };
 
 
@@ -1057,7 +1064,64 @@ declare function marcbib2bibframe:generate-identifiers-old(
 				}
 		)
 };
+(:~
+:   This is the function generates publication  data for instance 
+:	Returns bf: node of elname 
+: abc are repeatable!!! each repetition of b or c is another publication; should it be another instance????
+abc and def are parallel, so a and d are treated the same, etc, except the starting property name publication vs manufacture
+:   @param  $marcxml       element is the datafield 260
+:   @param  $resource      string is the "work" or "instance"
+:   @return bf:* 	   element()
+:)
+declare function marcbib2bibframe:generate-publication
+    (
+        $d as element(marcxml:datafield)        
+    ) as element ()*
+{
+if ($d/marcxml:subfield[fn:matches(@code,"(b|e)")]) then
+ for $pub at $x in $d/marcxml:subfield[fn:matches(@code,"(b|e)")]
+ 	return
+	element {if ($pub/@code="b" ) then "bf:publication" else "bf:manufacture " } {
+		element bf:ProviderEntity {
+	 		element bf:providerName {fn:string($pub)},
+			if ($d/marcxml:subfield[fn:matches(@code,"(a|d)")][$x]) then
+				element bf:providerPlace {fn:string($d/marcxml:subfield[fn:matches(@code,"(a|d)")][$x])}	
+			else (),
+			if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then
+				element bf:copyrightDate {fn:string($d/marcxml:subfield[@code="c"][$x])}
+			else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
+				element bf:providerDate {fn:string($d/marcxml:subfield[@code="c"][$x])}
+			else if ($d/marcxml:subfield[fn:matches(@code,"(c|f)")][$x] ) then
+				element bf:providerDate {fn:string($d/marcxml:subfield[fn:matches(@code,"(c|f)")][$x])}
+			else ()
+		}
+	}
+	
+else if ($d/marcxml:subfield[fn:matches(@code,"(a|c)")]) then	
 
+	element bf:publication {
+		element bf:ProviderEntity {
+	 		for $pl in $d/marcxml:subfield[@code="a"]
+				return element bf:providerPlace {fn:string($pl)},
+			for $pl in $d/marcxml:subfield[@code="c"]
+				return  if (fn:starts-with($pl,"c")) then				
+					element bf:providerDate {fn:string($pl)}
+				else 
+					element bf:copyrightDate {fn:string($pl)}		
+		}
+	}
+else if ($d/marcxml:subfield[fn:matches(@code,"(d|f)")]) then	
+	element bf:publication {
+		element bf:ProviderEntity {
+	 		for $pl in $d/marcxml:subfield[@code="d"]
+				return element bf:providerPlace {fn:string($pl)},
+			for $pl in $d/marcxml:subfield[@code="f"]							
+				return element bf:providerDate {fn:string($pl)}						
+		}
+	}
+else ()
+
+};
 (:~
 :   This is the function generates 3XX  data for instance or work, based on mappings in $physdesc-list
 :	Returns bf: node of elname 
@@ -1133,8 +1197,7 @@ let $carrier:=
 	if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then 
      		marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-set/marcxml:subfield[1],"\(")[2]))
           else () 
-let $carrierType:=                                				  	                        
-                element bf:carrierType {
+let $carrierType:=                                				  	                                  
                     if (fn:matches($carrier,"(pbk|softcover)","i")) then
                         "paperback"
                     else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
@@ -1146,7 +1209,7 @@ let $carrierType:=
                     else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
                         "acid free"						  		
                     else $carrier
-                }                               
+                                            
 let $clean-isbn:= for $item in $isbn-set/*
 	    return 
 	        marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize( fn:string($item),"\(")[1]))
@@ -1171,8 +1234,8 @@ let $instance :=
     return 
         element bf:Instance {
         		$isbn,               	
-        		element bf:partLabel{ $volume},
-        		$carrierType,
+        		if ($volume) then element bf:partLabel{ $volume} else (),
+        		if ($carrierType) then      element bf:carrierType {$carrierType} else (),
         		$voume-info,
    	        		        
    	         if ( fn:exists($instance) ) then
@@ -1354,7 +1417,39 @@ declare function marcbib2bibframe:generate-instance-from856(
               	}
      return $result
 };
-
+(:~
+:   This is the function generates holdings resources.
+: 
+:   @param  $marcxml        element is the MARCXML  
+:   @return bf:* as element()
+:)
+declare function marcbib2bibframe:generate-holdings(
+    $marcxml as element(marcxml:record),
+    $workID as xs:string
+    ) as element ()* 
+{  
+ let $call-num:=  
+        if ($marcxml/marcxml:datafield[@tag eq "050"]) then
+	        (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$":)
+	         if ($marcxml/marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]) then	         	
+	        			for $call in $marcxml/marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]        
+	            			return fn:normalize-space(fn:string-join($call," ")) 
+	            	
+		else ()
+        else ()
+return 
+        if ($call-num) then 
+         element bf:HoldingsAnnotation {
+            element bf:annotates {
+                attribute rdf:resource {$workID}
+            },
+         	for $c in fn:distinct-values($call-num) 
+         		return
+         			element bf:callNumber {$c}
+         }	
+         	else ()
+    
+};
 (:~
 :   This is the function generates instance resources.
 : 
@@ -1373,24 +1468,23 @@ let $isbn-sets:=
 
     return    
             (
-        if ( $isbn-sets//bf:set) then             
-        	(:use the first 260 to set up a book instance:)
+        if ( $isbn-sets//bf:set) then                     	
 	let $instance:= 
 		for $i in $marcxml/marcxml:datafield[@tag eq "260"][1]
-            		return marcbib2bibframe:generate-instance-from260($i, $workID)        
-            for $set in $isbn-sets/bf:set            
-            
-            return (
-            for $i in $set/*
-	    	return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
-	    	)
+            		return marcbib2bibframe:generate-instance-from260($i, $workID)
+            		
+            for $set in $isbn-sets/bf:set                           
+            	return (
+            		for $i in $set/*            			
+	    			return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
+	    		)
 	   	(: always have a 260? 028s are handled in $instance-identifiers
 	   	else if ( $marcxml/marcxml:datafield[@tag eq "028"] ) then
             for $i in $marcxml/marcxml:datafield[@tag eq "028"]
 	    	return marcbib2bibframe:generate-instance-from-pubnum($i, $workID):)
         else 	        		
             for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]
-            return marcbib2bibframe:generate-instance-from260($i, $workID),
+     	       return marcbib2bibframe:generate-instance-from260($i, $workID),
             
         if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
             marcbib2bibframe:generate-instance-from856($marcxml, $workID)
@@ -1531,13 +1625,7 @@ declare function marcbib2bibframe:generate-related-work
            ) then
             marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])
 
-        
-        (:else if (  $d/marcxml:subfield[@code="a"] and $d/@tag!="740") then:)
-        (:
-        Merge conflict.
-        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(630|730|740|830)")) ) then
-            marcbib2bibframe:get-name($d)
-        :)
+               
         else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|800|810|811|510|630|730|740|830)")) ) then
             marcbib2bibframe:get-name($d)
         else ()
@@ -1704,11 +1792,11 @@ declare function marcbib2bibframe:generate-work(
     ) as element () 
 {
     
-    let $types := marcbib2bibframe:get-resourcesTypes($marcxml/marcxml:leader)
+    let $types := marcbib2bibframe:get-resourceTypes($marcxml)
         
     let $mainType := "Work"
      (:ldr06:   :)    
-    let $work-subclasses := marcbib2bibframe:get-resourcesTypes($marcxml/marcxml:leader)
+    
     
     let $uniformTitle := 
         for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
@@ -1846,8 +1934,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
 			return	
 				element {fn:concat("bf:",$abstract-type)} {
 					fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")
-				}      
-			
+				}      			
 			
     let $abstract-annotation:= (: for now, do abstracts both as simple property and annotation:)
         for $d in  $marcxml/marcxml:datafield[@tag="520"]
@@ -1877,38 +1964,32 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
                         },
                         
                     for $sf in $d/marcxml:subfield[@code="u"]
-                    return element bf:hasBody { xs:string($sf) },
+                    return element bf:annotationBody { xs:string($sf) },
                         
-                    element bf:hasBody { fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"") },
+                    element bf:annotationBodyLiteral { fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"") },
                         
                     element bf:annotates {
                         attribute rdf:resource {$workID}
                     }
                 }
             }
-            
-	let $validLCC:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
+            (:this is now all handled in generate-class:)
+	(:let $validLCC:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
 	let $lcc:= 	
-	  for $c in $marcxml/marcxml:datafield[fn:string(@tag)="050"]
-(:
-For the Classify service at OCLC, when it is LCC we use a regular expression: "^[a-zA-Z]{1,3}[1-9].*$". -Steve Meyer 
-:)
+	 ( for $c in $marcxml/marcxml:datafield[fn:string(@tag)="050"]/marcxml:subfield[@code="a"]
 	      let $cl:=fn:string($c)			
 	      let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
-	     let $subclassCode := fn:replace($strip, "\d", "")			
-		return                 	
+	      let $subclassCode := fn:replace($strip, "\d", "")			
+		 (:for each 050:)                 	
 	            (: lc classes don't have a space after the alpha prefix, like DA1 vs "DA 1" :)
-	            if (fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and 
-	                   $subclassCode = $validLCC 
-	                ) then   								  
-	                element bf:class {
-	                    element bf:LCC {														 							
-	                        attribute rdf:about {fn:concat("http://id.loc.gov/authorities/classification/",fn:string($cl))},						
-							element bf:label {fn:string($cl)}	
-	                    }
-	                }
+	          return   if (fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and  $subclassCode = $validLCC 	      ) then   								  
+	            element bf:class-lcc {	             								 						
+	                        attribute rdf:about {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($cl))}														                
+	              }
 	            else (:invalid content in 050:)
 	                ()
+	        )        :)
+	        
     (:ex:5811630:)
  
 (:special condition of $b prevents this from being one of the std identifiers:)
@@ -1920,7 +2001,7 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
   
 	let $work-identifiers := marcbib2bibframe:generate-identifiers($marcxml,"work")
 	let $work-classes := marcbib2bibframe:generate-class($marcxml,"work")
-	(:let $physdesc:=generate-physdesc($d/ancestor::marcxml:record,"work"):)
+	
  	let $subjects:= 		 
  		for $d in $marcxml/marcxml:datafield[fn:matches(fn:string-join($marcbib2bibframe:subject-types//@tag," "),fn:string(@tag))]		
         			return marcbib2bibframe:get-subject($d)
@@ -1968,45 +2049,26 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
                             element madsrdf:MainTitleElement {
                                 element madsrdf:elementValue {$t}
                             }
-                        },
-                        
-                        $details/*
-                        
-                        (:  
-                            get each following sibling that's not a title
-					        where the first preceding title of it is the same as this title
-                        :)
-                        (:
-                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]				
-                        let $elname:=
-                            if ($subfield/@code="g") then "bf:note" 
-                            else if ($subfield/@code="r") then "bf:contributor" 
-                            else if ($subfield/@code="u") then "rdf:resource" 
-                            else fn:concat("bf:f505c" , fn:string($subfield/@code))
-                        return
-                            if ($elname eq "rdf:resource") then
-                                element {$elname} { attribute rdf:resource {fn:string($subfield)} }
-                            else
-                                element {$elname} {fn:replace(xs:string($subfield), " --", "")}
-                        :)		
+                        },                       
+                        $details/*                                 
                     }
-			return						
-                for $item in $set
-                return
-                    element bf:contains {   
-                        element bf:Work {
-                            element rdf:type {attribute rdf:resource {"http://bibframe.org/vocab/Part"}},
-                            $item/*
-                        }																								
-				    }
+		return						
+	                for $item in $set
+	                return
+	                    element bf:contains {   
+	                        element bf:Work {
+	                            element rdf:type {attribute rdf:resource {"http://bibframe.org/vocab/Part"}},
+	                            $item/*
+	                        }																								
+		     }
 						
  	let $gacs:= 
             for $d in $marcxml/marcxml:datafield[@tag = "043"]/marcxml:subfield[@code="a"] 
-            let $gac := fn:normalize-space(fn:replace(fn:string($d),"-","")) 
-            return
-                element bf:subject {
-                    attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/geographicAreas/", $gac) }
-            }
+            	let $gac := fn:normalize-space(fn:replace(fn:string($d),"-","")) 
+	            return
+	                element bf:subject {
+	                    attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/geographicAreas/", $gac) }
+	            }
             		
     let $biblink:= 
         element bf:derivedFrom {
@@ -2021,7 +2083,7 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},
-            for $t in $types
+            for $t in fn:distinct-values($types)
             return
                 element rdf:type {
                     attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
@@ -2043,9 +2105,8 @@ For the Classify service at OCLC, when it is LCC we use a regular expression: "^
             $subjects,
             $gacs,
             $copyright,
-            $lcc,                
-            $work-identifiers,
-            $work-classes,
+            $work-classes,            
+            $work-identifiers,            
             $work-notes,
             $complex-notes,
             $work-relateds,
@@ -2397,7 +2458,7 @@ declare function marcbib2bibframe:get-name-fromSOR(
 :   @return bf:* as element()
 :)
 declare function marcbib2bibframe:get-521audience(
-    $tag as element(marcxml:datafield)
+    $tag as element(marcxml:datafield)?
     ) as item()*
 {
 let $type:=  if ($tag/@ind1="0") then "Audience: " else if ($tag/@ind1="0") then "Reading grade level" else if  ($tag/@ind1="1") then "Interest age level" else if  ($tag/@ind1="3") then "Interest grade level" else if  ($tag/@ind1="4") then "Special audience characteristics" else if  ($tag/@ind1="4") then "Motivation/interest level" else ()
@@ -2405,11 +2466,13 @@ let $type:=  if ($tag/@ind1="0") then "Audience: " else if ($tag/@ind1="0") then
 return if ($type= "Audience: ") then
 	if ( fn:not($tag/marcxml:subfield[@code="b"]) ) then
 		element bf:intendedAudience {fn:concat($type,$tag/marcxml:subfield[@code="a"])}
-	else element bf:IntendedAudienceEntity {
+	else element bf:intendedAudience {
+		element bf:IntendedAudienceEntity {
 			element bf:audience {fn:concat($type,$tag/marcxml:subfield[@code="a"])},
 			element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}	
-	}
+	}}
 	else if ($type!=() ) then (:you need audienceType:)
+	element bf:intendedAudience {
 		element bf:IntendedAudienceEntity {
 			if ($tag/marcxml:subfield[@code="a"]) then
 				element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])}
@@ -2419,13 +2482,15 @@ return if ($type= "Audience: ") then
 				element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}
 			else ()	
 		}
+		}
 	else if ($tag/marcxml:subfield[@code="b"]) then
-		element bf:IntendedAudienceEntity {
+		element bf:intendedAudience {
+			element bf:IntendedAudienceEntity {
 			if ($tag/marcxml:subfield[@code="a"]) then
 				element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])}
 			else (),
 				element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}
-		}
+		}}
 	else   if ($tag/marcxml:subfield[@code="a"]) then
 	 	element bf:intendedAudience {fn:concat($type,$tag/marcxml:subfield[@code="a"])}
 	 else ()
@@ -2437,18 +2502,47 @@ return if ($type= "Audience: ") then
 :   @param  $marcxml        element is the MARCXML  
 :   @return bf:* as element()
 :)
-declare function marcbib2bibframe:get-resourcesTypes(
-    $leader as element(marcxml:leader)
+declare function marcbib2bibframe:get-resourceTypes(
+    $record as element(marcxml:record)
     ) as item()*
 {
-    let $leader06 := fn:substring(xs:string($leader), 7, 1)
-    
-    let $types := 
-        for $t in $marcbib2bibframe:resourceTypes/type
-        where $t/@leader6 eq $leader06
-        return xs:string($t)
+
+    let $leader06 := fn:substring(fn:string($record/marcxml:leader), 7, 1)
+    (:let $cf007-00 :=:)
+    let $types:=
+    (	for $cf in $record/marcxml:controlfield[@tag="007"]/fn:substring(text(),1,1)
+    		for $t in $marcbib2bibframe:resourceTypes/type[@cf007]
+    			where fn:matches($cf,$t/@cf007) 
+    				return fn:string($t)    	
+    (:let $sf336a :=:) ,
+    	for $field in fn:string($record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="a"])    		
+    		for $t in $marcbib2bibframe:resourceTypes/type[@sf336a]
+    			where fn:matches($field,$t/@sf336a) 
+    				return fn:string($t),   				
+(:    let $sf336b := :)
+    	for $field in fn:string($record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="b"])    		
+    		for $t in $marcbib2bibframe:resourceTypes/type[@sf336b]
+    			where fn:matches($field,$t/@sf336b) 
+    				return fn:string($t), 
+    				
+    (:let $sf337a := :)
+    	for $field in fn:string($record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="a"])    		
+    		for $t in $marcbib2bibframe:resourceTypes/type[@sf337a]
+    			where fn:matches($field,$t/@sf337a) 
+    				return fn:string($t) ,   	
+(:let $sf337b := :)
+    	for $field in fn:string($record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="b"])    		
+    		for $t in $marcbib2bibframe:resourceTypes/type[@sf337b]
+    			where fn:matches($field,$t/@sf337b) 
+    				return fn:string($t)  ,  	
+    (:let $ldr6 :=:) 
+    	for $t in $marcbib2bibframe:resourceTypes/type
+        		where $t/@leader6 eq $leader06
+        		return xs:string($t)
+        		)
 
     return $types
+    
 };
 
 (:~
@@ -2703,6 +2797,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             $marcbib2bibframe:classes//property[@domain="Instance"]
         else 
             $marcbib2bibframe:classes//property[@domain="Work"]
+   let $validLCCs:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
     return
         for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|083|084|086)")]
             (:to do: 
@@ -2718,24 +2813,29 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                 080, 082 083 $q
                 084, 086  has $2
                 086 has $z  cancel
-                :)                
-                for $cl in $this-tag/marcxml:subfield[@code="a"]
-                  
-		let $validLCCs:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
-		let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
-		let $subclassCode := fn:replace($strip, "\d", "")			
-		let $valid-lcc:= 
-	            (: lc classes don't have a space after the alpha prefix, like DA1 vs "DA 1" :)
-	            if (
-	                fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and 
-	                $subclassCode = $validLCCs 
-	                ) then   								  
-	                fn:string($cl)
-	            else (:invalid content in 050:)
-	                () 
+                :)    
+                
+                for $cl in $this-tag/marcxml:subfield[@code="a"]           
+                	let $valid:=
+                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))) then
+                			fn:string($cl)
+                		else (:050 has non-class stuff in it: :)
+			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
+			let $subclassCode := fn:replace($strip, "\d", "")			
+			return 
+		            
+			            if (
+			            (: lc classes shouldn't  have a space after the alpha prefix, like DA1 vs "DA 1" ??? don't  enforce this???
+			            :)
+			                (:fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and :) 
+			                $subclassCode = $validLCCs 
+			                ) then   								  
+			                fn:string($strip)
+			            else (:invalid content in sfa:)
+			                () 
 	                
         return 
-            if ( $valid-lcc and
+            if ( $valid and
                 fn:count($this-tag/marcxml:subfield)=1 and 
                 $this-tag/marcxml:subfield[@code="a"] or 
                 (fn:count($this-tag/marcxml:subfield)=2  and $this-tag/marcxml:subfield[@code="b"] )
@@ -2744,16 +2844,26 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         if (fn:exists($classes[@level="property"][fn:contains(@tag,$this-tag/@tag)])) then
                             fn:string( $classes[@level="property"][fn:contains(@tag,$this-tag/@tag)]/@name)
                         else
-                            "class"            	            	  	       
+                            "class"                        	
                     return	 
-                        element  {fn:concat("bf:",$property)} {            	
-                            fn:string($this-tag/marcxml:subfield[@code="a"])
+                        element  {fn:concat("bf:",$property)} {          
+			if ($property="class-lcc" ) then attribute rdf:about {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
+			else
+                            		($property,fn:string($cl))                            
                         }
             else if (
-                ($valid-lcc and fn:matches($this-tag/@tag,"(050|051)"))
+                ($valid and fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))
                     or 
-                fn:not(fn:matches($this-tag/@tag,"(050|051)"))
+                fn:not(fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))
                 ) then
+                let $assigner:=              
+                       if ($this-tag/@tag="050" and $this-tag/@ind2="0") then "dlc"
+                       else if (fn:matches($this-tag/@tag,"(051)")) then "dlc"
+                       else if (fn:matches($this-tag/@tag,"(060|061)")) then "dnln"
+                       else if (fn:matches($this-tag/@tag,"(070|071)")) then "dnal"
+                       else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then fn:string($this-tag/marcxml:subfield[@code="q"])
+                       else ()
+	return                       
                 element bf:class {
                     element bf:ClassificationEntity {                        
                         element bf:classScheme {
@@ -2770,24 +2880,17 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                                 else if ($this-tag/marcxml:subfield[@code="m"] ="b") then "optional" 
                                 else ()
                             }
-                        else (),
-                        
-                    (:    for $sfa in $this-tag[fn:matches($classes[@name="classNumber"]/@tag,@tag)]/marcxml:subfield[@code="a"]
-            			return element bf:classNumber {fn:string($sfa)},
-            	:) 
+                        else (),                        
+            
             	       element bf:classNumber {fn:string($cl)},
             	       element bf:label {fn:string($cl)},
-            	
-                       if ($this-tag/@tag="050" and $this-tag/@ind2="0") then  element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"}}
-                       else if (fn:matches($this-tag/@tag,"(051)")) then element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"}}
-                       else if (fn:matches($this-tag/@tag,"(060|061)")) then element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dnln"}}
-                       else if (fn:matches($this-tag/@tag,"(070|071)")) then element bf:classAssigner {attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dnal"}}
-                       else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then element bf:classAssigner { fn:string($this-tag/marcxml:subfield[@code="q"])}
-                       else (),             			
-			            	 
-            	       if ( 
-            	 		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
-            	 		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
+		       if ( $assigner) then 
+            		element bf:classAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",$assigner)}}
+                           else (),             			
+			            	
+           	       if ( 
+             		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
+             		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
             	 		   ) then  
                             element bf:classEdition {
                                 if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="1") then
