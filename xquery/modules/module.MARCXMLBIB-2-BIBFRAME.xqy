@@ -1199,13 +1199,12 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
         else ()
 
     let $carrier:=
-        if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then
-        
+        if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then        
             marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-set/marcxml:subfield[1],"\(")[2]))            
         else () 
     
     let $carrierType:=                                				  	                        
-        element bf:carrierType {
+   
             if (fn:matches($carrier,"(pbk|softcover)","i")) then
                 "paperback"
             else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
@@ -1216,8 +1215,8 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
                 "library binding"			
             else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
                 "acid free"						  		
-            else $carrier
-        }                               
+            else fn:replace($carrier,"\)","")
+                                  
     
     let $clean-isbn:= 
         for $item in $isbn-set/bf:isbn
