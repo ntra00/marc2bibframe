@@ -615,11 +615,11 @@ let $physSerialData:=()
 let $physResourceData:=()
             (:this is not right yet  :)
     let $instanceType := 
-        if ( fn:count($physBookData) > 0 ) then
+        if ( fn:count($physBookData) gt 0 ) then
             "PhysicalBook"
-        else if ( fn:count($physMapData) > 0 ) then
+        else if ( fn:count($physMapData) gt 0 ) then
             "PhysicalMap"
-        else if ( fn:count($physSerialData) > 0 ) then
+        else if ( fn:count($physSerialData) gt 0 ) then
             "Serial"
         else if ( fn:count($physResourceData) > 0 ) then
             "PhysicalResource"
@@ -1686,7 +1686,7 @@ declare function marcbib2bibframe:generate-related-work
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                
 	                    else if (fn:string($s/@code="x")) then
-	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", marcbib2bibframe:clean-string($iStr)) } }                           	                	
+	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }                           	                	
 		        else ()
 	   else 
 	   (),		
@@ -1946,6 +1946,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
                 else ()
         else
             ()
+            
      let $aud521:= if ($marcxml/marcxml:datafield[@tag eq "521"]) then 
      			for $tag in $marcxml/marcxml:datafield[@tag eq "521"]
      				return marcbib2bibframe:get-521audience($tag) 
