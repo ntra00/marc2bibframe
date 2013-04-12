@@ -50,7 +50,7 @@ declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-11-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-12-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -698,27 +698,34 @@ declare function marcbib2bibframe:generate-880-label
     if (fn:starts-with($d/marcxml:subfield[@code="6"],"880")) then
     
         let $hit-num := fn:substring(fn:tokenize($d/marcxml:subfield[@code="6"],'-')[2],1,2)
-        let $script := fn:tokenize($d/marcxml:subfield[@code="6"],"/")[2]
+        
         let $lang := fn:substring(fn:string($d/../marcxml:controlfield[@tag="008"]), 36, 3)     
     
-        let $script:=
-	       if ($script="(3" ) then "ara"
-	       else if ($script="(B" ) then "latin"
-	       else if ($script="$l" ) then "cjk"
-	       else if ($script="(N" ) then "cyrillic"
-	       else if ($script="(S" ) then "greek"
-	       else if ($script="(2" ) then "hebrew"
-	       else $lang
-
+  	
         let $this-tag:= fn:string($d/@tag)
         let $hit-num:=fn:tokenize($d/marcxml:subfield[@code="6"],"-")[2]			
         let $match:=$d/../marcxml:datafield[@tag="880" and fn:starts-with(marcxml:subfield[@code="6"] , fn:concat($this-tag ,"-", $hit-num ))]
 	
+	let $scr := fn:tokenize($match/marcxml:subfield[@code="6"],"/")[2]
+
+        let $script:=
+	       if ($scr="(3" ) then "arab"
+	       else if ($scr="(B" ) then "latn"
+	       else if ($scr="$1"  and $lang="kor" ) then "hang"
+	       else if ($scr="$1"  and $lang="chi" ) then "hani"
+	       else if ($scr="$1"  and $lang="jpn" ) then "jpan"	       
+	       else if ($scr="(N" ) then "cyrl"
+	       else if ($scr="(S" ) then "grek"
+	       else if ($scr="(2" ) then "hebr"
+	       else ()
+	       
+        let $xmllang:= if ($script) then fn:concat($lang,"-",$script) else $lang
+        
         return 
             if ($node-name="name") then
                 element madsrdf:authoritativeLabel {
-                    attribute xml:lang {$lang},
-                    attribute xml:script {$script},
+                    attribute xml:lang {$xmllang},
+                    
                      if ($d/@tag!="534") then   
                     marcbib2bibframe:clean-string(fn:string-join($match/marcxml:subfield[@code="a" or @code="b" or @code="c" or @code="d" or @code="q"] , " "))
                     else
@@ -732,31 +739,28 @@ declare function marcbib2bibframe:generate-880-label
                         "(t|f|k|m|n|p|s)"
                 return
                     element madsrdf:authoritativeLabel {
-                        attribute xml:lang {$lang},
-                        attribute xml:script {$script},
+                        attribute xml:lang {$xmllang},   
+                        
                         (: marcbib2bibframe:clean-title-string(fn:replace(fn:string-join($match/marcxml:subfield[fn:matches(@code,"(a|b)")] ," "),"^(.+)/$","$1")) :)
                         marcbib2bibframe:clean-title-string(fn:replace(fn:string-join($match/marcxml:subfield[fn:matches(@code,$subfs)] ," "),"^(.+)/$","$1"))
                     }
             else if ($node-name="subject") then 
                 element madsrdf:authoritativeLabel{
-                    attribute xml:lang {$lang},
-                    attribute xml:script {$script},
+	attribute xml:lang {$xmllang},   
                     marcbib2bibframe:clean-string(fn:string-join($match/marcxml:subfield[fn:not(@code="6")], " "))
                 }
             else if ($node-name="place") then 
                 for $sf in $match/marcxml:subfield[@code="a"]
                 return
                     element  rdfs:label {
-                        attribute xml:lang {$lang},
-                        attribute xml:script {$script},
+                        attribute xml:lang {$xmllang},                         
                         marcbib2bibframe:clean-string(fn:string($sf))
                     }
 	else if ($node-name="provider") then 
                 for $sf in $match/marcxml:subfield[@code="b"]
                 return
                     element rdfs:label {
-                        attribute xml:lang {$lang},
-                        attribute xml:script {$script},					
+                        attribute xml:lang {$xmllang},   			
                         marcbib2bibframe:clean-string(fn:string($sf))
                 }
             else 
@@ -851,7 +855,7 @@ declare function marcbib2bibframe:generate-identifiers(
 			marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize(fn:string($this-tag/marcxml:subfield[@code="a"]),"\(")[1]))
 	
 		return    element bf:isbn {    
-                            attribute rdf:about {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($clean-isbn),"/1")}         
+                            attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($clean-isbn),"/1")}         
                                 (:fn:normalize-space(xs:string($this-tag[@tag="020"]/marcxml:subfield[@code="a"])):)
                             }:)
 
@@ -1645,8 +1649,7 @@ declare function marcbib2bibframe:generate-related-work
             let $combinedLabel := fn:normalize-space(fn:concat(xs:string($n), " ", xs:string($aLabelWork880)))
             return
                 element madsrdf:authoritativeLabel {
-                    $aLabelWork880/@xml:lang,
-                    $aLabelWork880/@xml:script,
+                    $aLabelWork880/@xml:lang,                    
                     $combinedLabel
                 }
         else
@@ -1850,8 +1853,7 @@ declare function marcbib2bibframe:generate-work(
         where $al/@xml:lang
         return
             element madsrdf:authoritativeLabel {
-                    $al/@xml:lang,
-                    $al/@xml:script,
+                    $al/@xml:lang,                   
                     $combinedLabel
                 }
         
@@ -1988,7 +1990,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
 	            (: lc classes don't have a space after the alpha prefix, like DA1 vs "DA 1" :)
 	          return   if (fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and  $subclassCode = $validLCC 	      ) then   								  
 	            element bf:class-lcc {	             								 						
-	                        attribute rdf:about {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($cl))}														                
+	                        attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($cl))}														                
 	              }
 	            else (:invalid content in 050:)
 	                ()
@@ -2850,7 +2852,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                             "class"                        	
                     return	 
                         element  {fn:concat("bf:",$property)} {          
-			if ($property="class-lcc" ) then attribute rdf:about {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
+			if ($property="class-lcc" ) then attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
 			else
                             		($property,fn:string($cl))                            
                         }
