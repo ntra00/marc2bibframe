@@ -1079,56 +1079,65 @@ declare function marcbib2bibframe:generate-publication
     (
         $d as element(marcxml:datafield)        
     ) as element ()*
-{
-    if ($d/marcxml:subfield[fn:matches(@code,"(b|e)")]) then
+{ (:first handle abc, for each b, set up a publication with any associated A's and Cs:)
+    if ($d/marcxml:subfield[@code="b"]) then
     (: not sure why this is failing when there's a b and an e: 509288 ; currently set to [1] to move on:)
-        for $pub at $x in $d/marcxml:subfield[fn:matches(@code,"(b|e)")]
-        let $propname := 
-            if ($pub/@code="b" ) then 
-                "bf:publication" 
-            else 
-                "bf:manufacture"
-        where $x > 1
-        return 
-            element {$propname} {
-                element bf:ProviderEntity {
-                    element bf:providerName {fn:string($pub)},
-                    if ( $d/marcxml:subfield[fn:matches(xs:string(@code),"(a|d)")][$x]) then
-                        element bf:providerPlace {fn:string($d/marcxml:subfield[fn:matches(xs:string(@code),"(a|d)")][$x])}	
-                    else (),
-                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then
-                        element bf:copyrightDate {fn:string($d/marcxml:subfield[@code="c"][$x])}
-                    else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
-                        element bf:providerDate {fn:string($d/marcxml:subfield[@code="c"][$x])}
-                    else if ($d/marcxml:subfield[fn:matches(@code,"(c|f)")][$x] ) then
-                        element bf:providerDate {fn:string($d/marcxml:subfield[fn:matches(@code,"(c|f)")][$x])}
-                    else ()
-                }
-	       }
-        
+        for $pub at $x in $d/marcxml:subfield[@code="b"]
+	        let $propname :=  "bf:publication" 
+	               
+	        return 
+	            element {$propname} {
+	                element bf:ProviderEntity {
+	                    element bf:providerName {fn:string($pub)},
+	                    if ( $d/marcxml:subfield[@code="a"][$x]) then
+	                        element bf:providerPlace {fn:string($d/marcxml:subfield[@code="a"][$x])}	
+	                    else (),
+	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then
+	                        element bf:copyrightDate {fn:string($d/marcxml:subfield[@code="c"][$x])}
+	                    else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
+	                        element bf:providerDate {fn:string($d/marcxml:subfield[@code="c"][$x])}                 
+	                    else ()
+	                }
+		}   
+		(:there is no $b:)
         else if ($d/marcxml:subfield[fn:matches(@code,"(a|c)")]) then	
-            element bf:publication {
-                element bf:ProviderEntity {
-                    for $pl in $d/marcxml:subfield[@code="a"]
-                    return element bf:providerPlace {fn:string($pl)},
-                    
-                    for $pl in $d/marcxml:subfield[@code="c"]
-                    return 
-                        if (fn:starts-with($pl,"c")) then				
-					       element bf:providerDate {fn:string($pl)}
-                        else 
-					       element bf:copyrightDate {fn:string($pl)}		
+	            element bf:publication {
+	                element bf:ProviderEntity {
+	                    for $pl in $d/marcxml:subfield[@code="a"]
+	                    return element bf:providerPlace {fn:string($pl)},
+	                    
+	                    for $pl in $d/marcxml:subfield[@code="c"]
+	                    	return 
+	                        if (fn:starts-with($pl,"c")) then				
+				       element bf:providerDate {fn:string($pl)}
+	                        else 
+				       element bf:copyrightDate {fn:string($pl)}		
 		      }
-	       }
-        
+	        }
+        (:handle $d,e,f like abc :)
+        else if ($d/marcxml:subfield[@code="e"]) then
+        for $pub at $x in $d/marcxml:subfield[@code="e"]
+	        let $propname := "bf:manufacture"   
+	        return 
+	            element {$propname} {
+	                element bf:ProviderEntity {
+	                    element bf:providerName {fn:string($pub)},
+	                    if ( $d/marcxml:subfield[@code="d"][$x]) then
+	                        element bf:providerPlace {fn:string($d/marcxml:subfield[@code="d"][$x])}	
+	                    else (),
+	                    if ($d/marcxml:subfield[@code="f"][$x]) then
+	                        element bf:providerDate {fn:string($d/marcxml:subfield[@code="f"][$x])}	                                     
+	                    else ()
+	                }
+		}   
+		(:there is no $b:)       
         else if ($d/marcxml:subfield[fn:matches(@code,"(d|f)")]) then	
             element bf:publication {
                 element bf:ProviderEntity {
                     for $pl in $d/marcxml:subfield[@code="d"]
-                    return element bf:providerPlace {fn:string($pl)},
-                    
+                    	return element bf:providerPlace {fn:string($pl)},                    
                     for $pl in $d/marcxml:subfield[@code="f"]							
-                    return element bf:providerDate {fn:string($pl)}						
+                    	return element bf:providerDate {fn:string($pl)}						
                 }
             }
     
