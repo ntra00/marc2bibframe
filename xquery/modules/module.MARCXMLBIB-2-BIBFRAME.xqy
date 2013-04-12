@@ -1188,39 +1188,52 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
     
 {
  
-let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
-let $volume:=fn:replace(marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2])),"\)","")
-let $voume-info:=
-	if ($volume ) then		
-		for $vol in fn:tokenize(fn:string($d//marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$volume)][1]
-		return if  (fn:contains($vol,$volume)) then element bf:partTitle {fn:concat("experimental 505a parsing/matching to isbn:",$vol)} else ()
-	else ()
-let $carrier:=
-	if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then 
-     		marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-set/marcxml:subfield[1],"\(")[2]))
-          else () 
-let $carrierType:=                                				  	                                  
-                    if (fn:matches($carrier,"(pbk|softcover)","i")) then
-                        "paperback"
-                    else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
-                        "hardback"
-                    else if (fn:matches($carrier,"(ebook|eresource|e-isbn)","i") ) then
-                        "electronic resource"
-                    else if (fn:contains($carrier,"lib. bdg.") ) then
-                        "library binding"			
-                    else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
-                        "acid free"						  		
-                    else $carrier
-                                            
-let $clean-isbn:= for $item in $isbn-set/*
-	    return 
-	        marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize( fn:string($item),"\(")[1]))
-let $isbn := 
-		for $i in $clean-isbn
-		let $element-name:=if (fn:string-length($i) gt 11  ) then "bf:isbn13" else "bf:isbn10" 
-			return element {$element-name} {    
-				attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}                                         
-	}    
+                
+    let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
+    let $volume:=fn:replace(marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2])),"\)","")   
+    
+    let $voume-info:=
+        if ($volume ) then		
+            for $vol in fn:tokenize(fn:string($d//marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$volume)][1]           
+		  return if  (fn:contains($vol,$volume)) then element bf:partTitle {fn:concat("experimental 505a parsing/matching to isbn:",$vol)} else ()		  
+        else ()
+
+    let $carrier:=
+        if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then
+        
+            marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-set/marcxml:subfield[1],"\(")[2]))            
+        else () 
+    
+    let $carrierType:=                                				  	                        
+        element bf:carrierType {
+            if (fn:matches($carrier,"(pbk|softcover)","i")) then
+                "paperback"
+            else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
+                "hardback"
+            else if (fn:matches($carrier,"(ebook|eresource|e-isbn)","i") ) then
+                "electronic resource"
+            else if (fn:contains($carrier,"lib. bdg.") ) then
+                "library binding"			
+            else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
+                "acid free"						  		
+            else $carrier
+        }                               
+    
+    let $clean-isbn:= 
+        for $item in $isbn-set/bf:isbn
+        	return marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize( fn:string($item),"\(")[1]))
+
+    let $isbn := 
+        for $i in $clean-isbn
+        let $element-name :=
+            if (fn:string-length($i) gt 11  ) then 
+                "bf:isbn13" 
+            else 
+                "bf:isbn10" 
+        return element {$element-name} {    
+            attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}                                         
+	   }    
+
     (:get the physical details:)
     (: We only ask for the first 260 :)
 (: instance is now calculated before this function and passed in
@@ -1469,17 +1482,24 @@ let $isbn-sets:=
 	else ()
 
     return    
-            (
-        if ( $isbn-sets//bf:set) then                     	
-	let $instance:= 
-		for $i in $marcxml/marcxml:datafield[@tag eq "260"][1]
-            		return marcbib2bibframe:generate-instance-from260($i, $workID)
-            		
-            for $set in $isbn-sets/bf:set                           
-            	return (
-            		for $i in $set/*            			
-	    			return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
-	    		)
+
+        (
+        
+        if ( $isbn-sets//bf:set) then           
+        	(:use the first 260 to set up a book instance:)
+            let $instance:= 
+                for $i in $marcxml/marcxml:datafield[@tag eq "260"][1]
+                return marcbib2bibframe:generate-instance-from260($i, $workID)        
+
+            for $set in $isbn-sets/bf:set
+            return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
+                (:
+                (
+                    for $i in $set/*
+                    return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
+	    	      )
+	    	    :)	    	      
+
 	   	(: always have a 260? 028s are handled in $instance-identifiers
 	   	else if ( $marcxml/marcxml:datafield[@tag eq "028"] ) then
             for $i in $marcxml/marcxml:datafield[@tag eq "028"]
@@ -1694,6 +1714,7 @@ declare function marcbib2bibframe:generate-related-work
 			}
 		}
 };
+
 (:~
 :   This is the function that finds and dedups isbns, delivering a complete set for generate-instancefrom isbn
 :  If the 020$a has a 10 or 13, they are matched in a set, if the opposite of a pair doesn't exist, it is calculated
@@ -1704,35 +1725,60 @@ declare function marcbib2bibframe:generate-related-work
 declare function marcbib2bibframe:process-isbns (
 	$marcxml as element (marcxml:record)
 ) as element() {
-(:for books with isbns, generate all isbn10 and 13s from the data, list each pair on individual instances:)
+    
+    (:for books with isbns, generate all isbn10 and 13s from the data, list each pair on individual instances:)
     let $isbns:=$marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]
     let $isbn-sets:=
-            for $str in $isbns 
-            	let $isbn-str:=fn:normalize-space(fn:tokenize(fn:string($str),"\(")[1])
-            	return element bf:isbn-pair {
-            			marcbib2bibframe:get-isbn(
-            				marcbib2bibframe:clean-string( $isbn-str )
-            				)/*
-            			}
+        for $str in $isbns 
+        let $isbn-str:=fn:normalize-space(fn:tokenize(fn:string($str),"\(")[1])
+        return 
+            element bf:isbn-pair {
+                marcbib2bibframe:get-isbn( marcbib2bibframe:clean-string( $isbn-str ) )/*
+            }
+	
+	let $unique-13s := fn:distinct-values($isbn-sets/bf:isbn13)
 	let $unique-pairs:=
-		for $isbn-set in $isbn-sets
-			return element set {$isbn-set//bf:isbn[1],   $isbn-set//bf:isbn[2],           	
-            			for $tag in $marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"][fn:contains(text(),$isbn-set//bf:isbn[1])  or fn:contains(text(),$isbn-set//bf:isbn[2]) ]
-            			return $tag
-            		}
-    return    
-             element wrap {for $set in $unique-pairs 
-            	return element bf:set { $set//marcxml:subfield,
-            			if (fn:count($set//marcxml:subfield)=2) then
-            				() (:both isbns are in the data:)
-            			else
+        for $isbn13 in $unique-13s
+        let $isbn-set := $isbn-sets[bf:isbn13=$isbn13][1]
+		(: for $isbn-set in $isbn-sets :)
+        return 
+            element set {
+                (: 
+                $isbn-set/bf:isbn[1],
+                $isbn-set/bf:isbn[2], 
+                :)
+                element bf:isbn { xs:string($isbn-set/bf:isbn10) },
+                element bf:isbn { xs:string($isbn-set/bf:isbn13) },
+            	for $sfa in $marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]
+            	where fn:contains(xs:string($sfa),xs:string($isbn-set/bf:isbn10)) or fn:contains(xs:string($sfa),xs:string($isbn-set/bf:isbn13))
+                return $sfa
+            }
+    return
+        element wrap {
+            for $set in $unique-pairs
+            return element bf:set { $set/* }
+        }
+        (:
+        element wrap {
+            for $set in $unique-pairs 
+            return 
+                element bf:set {
+                    $set//marcxml:subfield,
+                    if (fn:count($set//marcxml:subfield)=2) then
+                        () ( :both isbns are in the data: )
+                    else if (fn:count($set//marcxml:subfield)=0) then
+                        () ( :neither isbns are in the data: )
+                    else
             			for $bf in $set//bf:isbn
-            			(:bl has multiple 020a with same isbn: 0786254815 on lccn:2003047845, so only take the first :)
-            				return if (fn:not(fn:matches(fn:string($set/marcxml:subfield[1]),$bf/text()))) then
-            					$bf
-            					else ()
+            			( :bl has multiple 020a with same isbn: 0786254815 on lccn:2003047845, so only take the first : )
+            			return 
+            			     if (fn:not(fn:matches(fn:string($set/marcxml:subfield[1]),$bf/text()))) then
+                                $bf
+                             else 
+                                ()
             		}
             }
+        :)
 };
 (:~
 :   This is the function generates related item works.
@@ -2176,8 +2222,17 @@ declare function marcbib2bibframe:get-subject(
                     },
                     element bf:label { xs:string($madsrdf/madsrdf:authoritativeLabel) },
                     $madsrdf/madsrdf:authoritativeLabel,
-                    $madsrdf/madsrdf:componentList,
-                    $madsrdf/madsrdf:elementList                   
+                    for $cl in $madsrdf/madsrdf:componentList
+                    return
+                        element madsrdf:componentList {
+                            attribute rdf:parseType {"Collection"},
+                            for $a in $cl/madsrdf:*
+                            return
+                                element {fn:name($a)} {
+                                    $a/rdf:type,
+                                    $a/madsrdf:authoritativeLabel
+                                }
+                        }          
                 )
             return $details
 	   
@@ -2661,6 +2716,7 @@ declare function marcbib2bibframe:get-uniformTitle(
             }        
             
 };
+
 (:~
 :   This function takes an ISBN string and 
 :   determines if it's 10 or 13, and returns both the 10 and 13 for this one.
@@ -2670,45 +2726,45 @@ declare function marcbib2bibframe:get-uniformTitle(
 :)
 
 declare function marcbib2bibframe:get-isbn($isbn as xs:string ) as element() {
-(:
-let $isbn1:="9780792312307" (:produces 0792312309 ok:)
-let $isbn1:="0792312309" (:produces  9780792312307 ok:)
-let $isbn1:="0-571-08989-5" (:produces 9780571089895  ok:)
-let $isbn1:="0 571 08989 5" (:produces 9780571089895  ok:)
-verify here:http://www.isbn.org/converterpub.asp
-let $isbn:="paperback" (:produces "error"  ok:)
-:) 
+    (:
+        let $isbn1:="9780792312307" (:produces 0792312309 ok:)
+        let $isbn1:="0792312309" (:produces  9780792312307 ok:)
+        let $isbn1:="0-571-08989-5" (:produces 9780571089895  ok:)
+        let $isbn1:="0 571 08989 5" (:produces 9780571089895  ok:)
+        verify here:http://www.isbn.org/converterpub.asp
+        let $isbn:="paperback" (:produces "error"  ok:)
+    :) 
 
-let $clean-isbn:=fn:replace($isbn,"[- ]+","")
-(:let $isbn-num:=replace($clean-isbn,"^[^0-9]*(\d+)[^0-9]*$","$1" ):) 
-(: test on isbn 10, 13, hyphens, empty, strings only :)
+    let $clean-isbn:=fn:replace($isbn,"[- ]+","")
+    (:let $isbn-num:=replace($clean-isbn,"^[^0-9]*(\d+)[^0-9]*$","$1" ):) 
+    (: test on isbn 10, 13, hyphens, empty, strings only :)
 
-let $isbn-num1:=  fn:replace($clean-isbn,"^[^0-9]*(\d+)[^0-9]*$","$1" ) 
-let $isbn-num:= if (fn:string-length($isbn-num1)=9) then fn:concat($isbn-num1,'X') else $isbn-num1
+    let $isbn-num1:=  fn:replace($clean-isbn,"^[^0-9]*(\d+)[^0-9]*$","$1" ) 
+    let $isbn-num:= if (fn:string-length($isbn-num1)=9) then fn:concat($isbn-num1,'X') else $isbn-num1
 
-(: test on isbn 10, 13, hyphens, empty, strings only :)
+    (: test on isbn 10, 13, hyphens, empty, strings only :)
 
-return
+    return
         if (fn:number($isbn-num) or fn:number($isbn-num1) ) then
     
 	        if ( fn:string-length($isbn-num) = 10  ) then
 	            let $isbn12:= fn:concat("978",fn:substring($isbn-num,1,9))
 	            let $odds:= fn:number(fn:substring($isbn12,1,1)) + fn:number(fn:substring($isbn12,3,1)) +fn:number(fn:substring($isbn12,5,1)) + fn:number(fn:substring($isbn12,7,1)) +fn:number(fn:substring($isbn12,9,1)) +fn:number(fn:substring($isbn12,11,1))
 	            let $evens:= (fn:number(fn:substring($isbn12,2,1)) + fn:number(fn:substring($isbn12,4,1)) +fn:number(fn:substring($isbn12,6,1)) + fn:number(fn:substring($isbn12,8,1)) +fn:number(fn:substring($isbn12,10,1)) +fn:number(fn:substring($isbn12,12,1)) ) * 3      
-	            let $chk:= if (  (($odds + $evens) mod 10) = 0)
-        	                then 0 else 10 - (($odds + $evens) mod 10)
-        
-            return
-               	element  wrap {
-               			element bf:isbn {$isbn-num},
-               			element bf:isbn { fn:concat($isbn12,$chk)}
-               	}
+	            let $chk:= 
+	               if (  (($odds + $evens) mod 10) = 0) then 
+	                   0 
+	               else 
+	                   10 - (($odds + $evens) mod 10)
+                return
+               	    element wrap {
+               	       element bf:isbn10 {$isbn-num},
+               		   element bf:isbn13 { fn:concat($isbn12,$chk)}
+               	    }
                  
-        else (: isbn13 to 10 :)
-
-            let $isbn9:=fn:substring($isbn-num,4,9) 
-            
-            let $sum:= (fn:number(fn:substring($isbn9,1,1)) * 1) 
+            else (: isbn13 to 10 :)
+                let $isbn9:=fn:substring($isbn-num,4,9) 
+                let $sum:= (fn:number(fn:substring($isbn9,1,1)) * 1) 
                         + (fn:number(fn:substring($isbn9,2,1)) * 2)
                         + (fn:number(fn:substring($isbn9,3,1)) * 3)
                         + (fn:number(fn:substring($isbn9,4,1)) * 4) 
@@ -2717,15 +2773,25 @@ return
                         + (fn:number(fn:substring($isbn9,7,1)) * 7)
                         + (fn:number(fn:substring($isbn9,8,1)) * 8)
                         + (fn:number(fn:substring($isbn9,9,1)) * 9)
-             
-             let $check_dig:= if ( ($sum mod 11) = 10 ) then 'X'
-                              else ($sum mod 11)
-                              
-            return
-           element wrap {element bf:isbn {fn:concat($isbn9,$check_dig) } , element bf:isbn{$isbn-num}}                     
+                let $check_dig:= 
+                    if ( ($sum mod 11) = 10 ) then 
+                        'X'
+                    else 
+                        ($sum mod 11)
+                return
+                    element wrap {
+                        element bf:isbn10 {fn:concat($isbn9,$check_dig) }, 
+                        element bf:isbn13 {$isbn-num}
+                    }                     
            
-    else  element wrap {element bf:isbn {"error"},element bf:isbn {"error"}}
+        else 
+            element wrap {
+                element bf:isbn10 {"error"},
+                element bf:isbn13 {"error"}
+            }
+
 };
+
 (:~
 :   This function takes a string and 
 :   attempts to clean it up 
