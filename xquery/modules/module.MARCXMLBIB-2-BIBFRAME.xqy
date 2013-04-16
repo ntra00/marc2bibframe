@@ -39,18 +39,19 @@ module namespace marcbib2bibframe  = 'info:lc/id-modules/marcbib2bibframe#';
 import module namespace marcxml2madsrdf = "info:lc/id-modules/marcxml2madsrdf#" at "module.MARCXML-2-MADSRDF.xqy";
 
 (: NAMESPACES :)
-declare namespace marcxml       = "http://www.loc.gov/MARC21/slim";
-declare namespace rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-declare namespace rdfs          = "http://www.w3.org/2000/01/rdf-schema#";
+declare namespace marcxml       	= "http://www.loc.gov/MARC21/slim";
+declare namespace rdf           	= "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+declare namespace rdfs          	= "http://www.w3.org/2000/01/rdf-schema#";
 
-declare namespace bf            = "http://bibframe.org/vocab/";
-declare namespace madsrdf       = "http://www.loc.gov/mads/rdf/v1#";
-declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
-declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
-declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
+declare namespace bf            	= "http://bibframe.org/vocab/";
+declare namespace madsrdf       	= "http://www.loc.gov/mads/rdf/v1#";
+declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
+declare namespace identifiers   	= "http://id.loc.gov/vocabulary/identifiers/";
+declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
+ declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-12-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-16-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -341,7 +342,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 	<work-notes>
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
 		<note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>
-		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
+		
 		<note tag ="505" property="contents" ind2="0">Formatted Contents Note</note>	
 		<note tag ="513" property="reportType">Type of Report and Period Covered Note</note>
 		<note tag ="514" property="dataQuality">Data Quality Note</note>
@@ -372,6 +373,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 	<instance-notes>	
 		<note tag ="300" property="illustrativeContentNote" sfcodes="b">Illustrative content note</note>
 		<note tag ="501" property="with" sfcodes="a">With Note</note>
+		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
 		<note tag ="506" property="restrictionsOnAccess">Restrictions on Access Note</note>
 		<note tag ="507" property="cartographicNote" sfcodes="a" >Scale Note for Graphic Material</note>
 		<note tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </note>
@@ -482,7 +484,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
             let $instances := marcbib2bibframe:generate-instances($marcxml, $about)
             let $holdings := marcbib2bibframe:generate-holdings($marcxml, $about)
             return
-                element rdf:RDF {        attribute transformation-edition{$marcbib2bibframe:last-edit},
+                element rdf:RDF {        attribute dcterms:modified {$marcbib2bibframe:last-edit},                
                     $work,
                     $instances,
                     (:,
@@ -491,7 +493,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
                 }
         else
             element rdf:RDF {
-            	attribute transformation-edition {$marcbib2bibframe:last-edit},
+            	attribute dcterms:modified {$marcbib2bibframe:last-edit},
                 comment {"No leader - invalid MARC/XML input"}
             }
 };
@@ -547,18 +549,14 @@ declare function marcbib2bibframe:generate-instance-from260(
         return element bf:edition {fn:string-join($e/marcxml:subfield[fn:not(@code="6")], " ")}
         
     let $publication:=marcbib2bibframe:generate-publication($d)
-    let $place :=
+    (:pub place is now in generate-publication:)
+  (:  let $place :=
         for $a in $d/marcxml:subfield[@code eq "a"]
         let $label:= marcbib2bibframe:clean-string(xs:string($a))        
         return 
             if (fn:not(fn:matches($label,"^n.[ ]?p.$","i"))) then
                 element bf:placePub {	            
-                    element bf:Place {
-                        (: 
-                            k-note: added call to clean-str here.  
-                            We'll need to figure out where this is and 
-                            isn't a problem
-                        :)
+                    element bf:Place {                      
                         element bf:label { marcbib2bibframe:clean-string(xs:string($a)) },
                         marcbib2bibframe:generate-880-label($d,"place")
                     }
@@ -581,11 +579,11 @@ declare function marcbib2bibframe:generate-instance-from260(
                       element bf:resourceRole {"publisher"}
                 }
             }
-    
+     
     let $pubdate :=
         for $a in $d/marcxml:subfield[@code eq "c"]
         return element bf:pubDate {marcbib2bibframe:clean-string(xs:string($a))}
-    
+    :)
     
 
     let $physMapData := 
@@ -659,9 +657,9 @@ let $physResourceData:=()
             $names,
             $edition,
             $publication,
-            $providers,            
+          (:  $providers,            
             $place,
-            $pubdate,       
+            $pubdate,       :)
             $physResourceData,            
             $physMapData,
             $physSerialData,            
@@ -1071,9 +1069,12 @@ declare function marcbib2bibframe:generate-identifiers-old(
 :	Returns bf: node of elname 
 : abc are repeatable!!! each repetition of b or c is another publication; should it be another instance????
 abc and def are parallel, so a and d are treated the same, etc, except the starting property name publication vs manufacture
-:   @param  $marcxml       element is the datafield 260
+:   @param  $d       element is the datafield 260
 :   @param  $resource      string is the "work" or "instance"
 :   @return bf:* 	   element()
+
+
+!!! work on 880s in 260abc, def
 :)
 declare function marcbib2bibframe:generate-publication
     (
@@ -1084,16 +1085,24 @@ declare function marcbib2bibframe:generate-publication
     (: not sure why this is failing when there's a b and an e: 509288 ; currently set to [1] to move on:)
         for $pub at $x in $d/marcxml:subfield[@code="b"]
 	        let $propname :=  "bf:publication" 
-	               
+	            
+                            
 	        return 
 	            element {$propname} {
 	                element bf:ProviderEntity {
-	                    element bf:providerName {fn:string($pub)},
+	                 (: 
+                            k-note: added call to clean-str here.  
+                            We'll need to figure out where this is and 
+                            isn't a problem
+                        :)
+	                    element bf:providerName {marcbib2bibframe:clean-string(fn:string($pub))},
+	                    marcbib2bibframe:generate-880-label($d,"provider") ,
 	                    if ( $d/marcxml:subfield[@code="a"][$x]) then
-	                        element bf:providerPlace {fn:string($d/marcxml:subfield[@code="a"][$x])}	
+	                        (element bf:providerPlace {marcbib2bibframe:clean-string(fn:string($d/marcxml:subfield[@code="a"][$x]))},
+	                         marcbib2bibframe:generate-880-label($d,"place") )
 	                    else (),
-	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then
-	                        element bf:copyrightDate {fn:string($d/marcxml:subfield[@code="c"][$x])}
+	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (:\D filters out "c" and other non-digits:)
+	                        element bf:copyrightDate {fn:replace(fn:string($d/marcxml:subfield[@code="c"][$x]),"\D","")}
 	                    else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
 	                        element bf:providerDate {fn:string($d/marcxml:subfield[@code="c"][$x])}                 
 	                    else ()
@@ -1104,14 +1113,14 @@ declare function marcbib2bibframe:generate-publication
 	            element bf:publication {
 	                element bf:ProviderEntity {
 	                    for $pl in $d/marcxml:subfield[@code="a"]
-	                    return element bf:providerPlace {fn:string($pl)},
-	                    
+	                    return (element bf:providerPlace {fn:string($pl)},
+	                    		marcbib2bibframe:generate-880-label($d,"place")  ),
 	                    for $pl in $d/marcxml:subfield[@code="c"]
 	                    	return 
 	                        if (fn:starts-with($pl,"c")) then				
 				       element bf:providerDate {fn:string($pl)}
 	                        else 
-				       element bf:copyrightDate {fn:string($pl)}		
+				       element bf:copyrightDate {fn:replace(fn:string($pl),"\D","")}		
 		      }
 	        }
         (:handle $d,e,f like abc :)
@@ -1121,9 +1130,11 @@ declare function marcbib2bibframe:generate-publication
 	        return 
 	            element {$propname} {
 	                element bf:ProviderEntity {
-	                    element bf:providerName {fn:string($pub)},
+	                    element bf:providerName {marcbib2bibframe:clean-string(fn:string($pub))},
+	                    marcbib2bibframe:generate-880-label($d,"provider") ,
 	                    if ( $d/marcxml:subfield[@code="d"][$x]) then
-	                        element bf:providerPlace {fn:string($d/marcxml:subfield[@code="d"][$x])}	
+	                        (element bf:providerPlace {fn:string($d/marcxml:subfield[@code="d"][$x])},
+	                        marcbib2bibframe:generate-880-label($d,"place") )
 	                    else (),
 	                    if ($d/marcxml:subfield[@code="f"][$x]) then
 	                        element bf:providerDate {fn:string($d/marcxml:subfield[@code="f"][$x])}	                                     
@@ -1135,7 +1146,9 @@ declare function marcbib2bibframe:generate-publication
             element bf:publication {
                 element bf:ProviderEntity {
                     for $pl in $d/marcxml:subfield[@code="d"]
-                    	return element bf:providerPlace {fn:string($pl)},                    
+                    	return (element bf:providerPlace {fn:string($pl)},
+                    			marcbib2bibframe:generate-880-label($d,"place") 
+                    		),
                     for $pl in $d/marcxml:subfield[@code="f"]							
                     	return element bf:providerDate {fn:string($pl)}						
                 }
@@ -2155,6 +2168,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},
+            element rdfs:label {    fn:string(  $titles/bf:*[1])},
             for $t in fn:distinct-values($types)
             return
                 element rdf:type {
