@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-16-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-17-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -179,115 +179,53 @@ declare variable $marcbib2bibframe:classes := (
 );
 (:code=a unless specified:)
 declare variable $marcbib2bibframe:identifiers :=
-(: vocab-identifiers are now used, not these instance and work identifiers. nate 2013-02-22 :)
+
     ( 
     <identifiers>
-        <instance-identifiers>
-            <field tag="010" property="bf:derivedFromLccn">Library of Congress Control Number</field>
-            <field tag="018" property="bf:copyrightArticleFee">Copyright Article-Fee Code</field>
-            <field tag="022" property="identifiers:issn">International Standard Serial Number</field>
-            <field tag="024" ind1="0" property="identifiers:isrc">International Standard Recording Code</field>
-            <field tag="024" ind1="1" property="identifiers:upc">Universal Product Code</field>
-            <field tag="024" ind1="2" property="identifiers:ismn">International Standard Music Number</field>
-            <field tag="024" ind1="3" property="identifiers:ean">International Article Number</field>
-            <field tag="024" ind1="4" property="identifiers:sici">Serial Item and Contribution Identifier</field>
-            <field tag="025" property="identifiers:ovopAcqNum">Overseas Acquisition Number</field>
-            <field tag="028" ind1="0" property="identifiers:issue-number">Publisher's Issue Number</field>
-            <field tag="028" ind1="1" property="identifiers:matrix-number">Sound Recording Matrix Number</field>
-            <field tag="028" ind1="2" property="identifiers:music-plate">Publisher's Music Plate Number</field>
-            <field tag="028" ind1="3" property="identifiers:music-publisher">Publisher-assigned Music Number</field>
-            <field tag="028" ind1="4" property="identifiers:videorecording-identifier">Publisher-assigned videorecording number</field>
-            <field tag="032" property="bf:postalRegistrationNumber">Postal Registration Number</field>
-            <field tag="035" property="identifiers:syscontrolID">System Control Number</field>
-            <field tag="037" property="identifiers:acqSource">Source of Acquisition</field>
-            <field tag="044" property="identifiers:countryofPublisher">Country of Publishing/Producing Entity Code</field>
-            <field tag="048" property="bf:musicalInstruments">Number of Musical Instruments or Voices Codes</field>
-            <field tag="055" property="bf:canadaClass" codes="ab">Classification Numbers Assigned in Canada</field>
-            <field tag="060" property="bf:nlmCall" codes="ab">National Library of Medicine Call Number</field>
-            <field tag="070" property="bf:nalCall" codes="ab">National Agricultural Library Call Number</field>
-            <field tag="074" property="bf:gpoItemNum">GPO Item Number</field>
-            <field tag="080" property="bf:udcNum" codes="ab">Universal Decimal Classification Number</field>
-            <field tag="082" property="identifiers:dewey" codes="ab">Dewey Decimal Classification Number</field>
-            <field tag="083" property="bf:deweyplus" codes="ab">Additional Dewey Decimal Classification Number</field>
-            <field tag="084" property="bf:otherClass" codes="ab">Other Classification Number</field>
-            <field tag="088" property="bf:reportNum">Report Number</field>
-        </instance-identifiers>
-        <work-identifiers>
-            <field tag="010" property="identifiers:lccn">Library of Congress Control Number</field>
-            <field tag="012" property="identifiers:conser">CONSER Number</field>
-            <!--<field tag="013" property="identifiers:patentNum">Patent Control Information</field>-->
-            <!--013$b is a location code-->
-            <field tag="015" property="bf:natbibliographyNum">National Bibliography Number</field>
-            <field tag="016" property="bf:natbibAgencyContrrol">National Bibliographic Agency Control Number</field>
-            <field tag="022" property="identifiers:issn-l" sfcodes="l">International Standard Serial Number</field>
-            <field tag="024" ind1="0" property="identifiers:isrc">International Standard Recording Code</field>
-            <field tag="024" ind1="1" property="identifiers:upc">Universal Product Code</field>
-            <field tag="024" ind1="2" property="identifiers:ismn">International Standard Music Number</field>
-            <field tag="024" ind1="3" property="identifiers:ean">International Article Number</field>
-            <field tag="024" ind1="7" property="identifiers:sici">Serial Item and Contribution Identifier</field>(:!!!:)
-            <field tag="027" property="identifiers:strn">Standard Technical Report Number</field>
-            <field tag="030" property="bf:coden">CODEN Designation</field>
-            <field tag="031" property="bf:musicalIncipits">Musical Incipits Information</field>
-            <field tag="033" property="bf:dateTimePlace">Date/Time and Place of an Event</field>
-            <field tag="034" property="bf:cartographicData">Coded Cartographic Mathematical Data</field>
-            <field tag="036" property="identifiers:studyNumber">Original Study Number for Computer Data files</field>
-            <field tag="038" property="bf:licensor">Record Content Licensor</field>
-            <field tag="045" property="bf:era">Time Period of content</field>
-            <field tag="047" property="bf:musicalGenre">Form of Musical Composition Code</field>
-            <field tag="055" property="bf:canadaClass">Classification Numbers Assigned in Canada</field>
-            <field tag="060" property="bf:nlmCall">National Library of Medicine Call Number</field>
-            <field tag="070" property="bf:nalCall">National Agricultural Library Call Number</field>
-            <field tag="072" property="bf:subjectCategory" sfcodes="ax2">Subject Category Code</field>
-            <field tag="080" property="identifiers:udcNum">Universal Decimal Classification Number</field>
-            <field tag="082" property="identifiers:dewey">Dewey Decimal Classification Number</field>
-            <field tag="083" property="bf:deweyplus">Additional Dewey Decimal Classification Number</field>
-            <field tag="084" property="bf:otherClass">Other Classification Number</field>
-            <field tag="085" property="bf:classComponents">Synthesized Classification Number Components</field>
-            <field tag="086" property="bf:govodocsClass">Government Document Classification Number</field>
-        </work-identifiers>
+       
    <vocab-identifiers>     
    	<property name="lccn" label="Library of Congress Control Number" domain="Instance"   marc="010--/a,z"   tag="010"   sfcodes="a,z"/>
- <property name="nbn" label="National Bibliography Number" domain="Instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
- <property name="nban" label="National bibliography agency control number"   domain="Instance"   marc="016--/a,z"   tag="016"   sfcodes="a,z"/>
- <property name="legal-deposit" label="copyright or legal deposit number"   domain="Instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
- <property name="isbn" label="International Standard Bibliographic Number"   domain="Instance"   marc="020--/a,z"   tag="020"   sfcodes="a,z"/>
- <property name="issn" label="International Standard Serial Number" domain="Instance"   marc="022--/a,z,y"   tag="022"   sfcodes="a,z,y"/>
- <property name="issn-l" label="linking International Standard Serial Number"   domain="Work"   marc="022--/l,m"   tag="022"   sfcodes="l,m"/>
- <property name="isrc" label="International Standard Recording Code" domain="Instance"   marc="0240-/a,z"   tag="024"   ind1="0"   sfcodes="a,z"/>
- <property name="upc" label="Universal Product Code" domain="Instance" marc="0241-/a,z"   tag="024"   ind1="1"   sfcodes="a,z"/>
- <property name="ismn" label="International Standard Music Number" domain="Instance"   marc="0242-/a,z"   tag="024"   ind1="2"   sfcodes="a,z" uri="http://www.loc.gov/ismn/987-10-11110" />
- <property name="ean" label="International Article Identifier (EAN)" domain="Instance"   marc="0243-/a,z,d(sep by -)"   tag="024"   ind1="3"   sfcodes="a,z,d(sep by -)" uri="http://www.ean-search.org/perl/ean-search.pl?q=5099750442227"/>
- <property name="sici" label="Serial Item and Contribution Identifier" domain="Instance"   marc="0244-/a,z"   tag="024"   ind1="4"   sfcodes="a,z"/>
- <property name="ansi" label="American National Standard Institute Number"   domain="Instance"   marc="0247-+2'ansi'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="isan" label="International Standard Audiovisual Number" domain="Work"   marc="0247-+2'isan'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="iso"   label="International Organization for Standardization standard number"   domain="Instance"   marc="0247-+2'iso'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="istc" label="International Standard Text Code" domain="Work"   marc="0247-+2'istc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="iswc" label="International Standard Musical Work Code" domain="Work"   marc="0247-+2'iswc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="local" label="local identifier" domain="Instance"   marc="0247-+2'local'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="uri" label="Uniform Resource Identifier" domain="Instance"   marc="0247-+2'uri'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="urn" label="Uniform Resource Number" domain="Instance"   marc="0247-+2'urn'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
- <property name="lc-overseas-acq"   label="Library of Congress Overseas Acquisition Program number"   domain="Instance"   marc="025--/a"   tag="025"   sfcodes="a"/>
- <property name="fingerprint" label="fingerprint identifier" domain="Instance"   marc="026--/e"   tag="026"   sfcodes="e"/>
- <property name="strn" label="Standard Technical Report Number" domain="Instance"   marc="027--/a,z"   tag="027"   sfcodes="a,z"/>
- <property name="issue-number" label="sound recording publisher issue number"   domain="Instance"   marc="0280-/a"   tag="028"   ind1="0"   sfcodes="a"/>
- <property name="matrix-number" label="sound recording publisher matrix master number"   domain="Instance"   marc="0281-/a"   tag="028"   ind1="1"   sfcodes="a"/>
- <property name="music-plate" label="music publication number assigned by publisher"   domain="Instance"   marc="0282-/a"   tag="028"   ind1="2"   sfcodes="a"/>
- <property name="music-publisher" label="other publisher number for music"   domain="Instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
- <property name="videorecording-identifier"   label="publisher assigned videorecording number"   domain="Instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
- <property name="publisher-number" label="other publisher assigned number"   domain="Instance"   marc="0285-/a"   tag="028"   ind1="5"   sfcodes="a"/>
- <property name="coden" label="CODEN" domain="Instance" marc="030--/a,z" tag="030"   sfcodes="a,z" uri="http://cassi.cas.org/coden/"/>
- <property name="postal-registration" label="postal registration number" domain="Instance"   marc="032--/a"   tag="032"   sfcodes="a"/>
- <property name="system-number" label="system control number" domain="Instance"   marc="035--/a,z"   tag="035"   sfcodes="a,z"/>
- <!--<property name="oclc-number" domain="Instance"   marc="035 - - /a,z prefix 'OCOLC'"   tag="035"   sfcodes="a,z"/> -->
- <property name="study-number"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
- <property name="stock-number" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
- <property name="report-number" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>
- <property name="dissertationIdentifier" label="Dissertation Identifier"   domain="Dissertation"   marc="502--/o"   tag="502"   sfcodes="o"/>
- <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
- <property name="hdl" label="handle for a resource" domain="Instance"   marc="856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
- <property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
- <property name="orcid" label="Open Researcher and Contributor Identifier" domain="Agent"   marc="authority:0247-+2'orcid'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
- <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
+		 <property name="nbn" label="National Bibliography Number" domain="Instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
+		 <property name="nban" label="National bibliography agency control number"   domain="Instance"   marc="016--/a,z"   tag="016"   sfcodes="a,z"/>
+		 <property name="legal-deposit" label="copyright or legal deposit number"   domain="Instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
+		 <property name="isbn" label="International Standard Bibliographic Number"   domain="Instance"   marc="020--/a,z"   tag="020"   sfcodes="a,z"/>
+		 <property name="issn" label="International Standard Serial Number" domain="Instance"   marc="022--/a,z,y"   tag="022"   sfcodes="a,z,y"/>
+		 <property name="issn-l" label="linking International Standard Serial Number"   domain="Work"   marc="022--/l,m"   tag="022"   sfcodes="l,m"/>
+		 <property name="isrc" label="International Standard Recording Code" domain="Instance"   marc="0240-/a,z"   tag="024"   ind1="0"   sfcodes="a,z"/>
+		 <property name="upc" label="Universal Product Code" domain="Instance" marc="0241-/a,z"   tag="024"   ind1="1"   sfcodes="a,z"/>
+		 <property name="ismn" label="International Standard Music Number" domain="Instance"   marc="0242-/a,z"   tag="024"   ind1="2"   sfcodes="a,z" uri="http://www.loc.gov/ismn/987-10-11110" />
+		 <property name="ean" label="International Article Identifier (EAN)" domain="Instance"   marc="0243-/a,z,d(sep by -)"   tag="024"   ind1="3"   sfcodes="a,z,d(sep by -)" uri="http://www.ean-search.org/perl/ean-search.pl?q=5099750442227"/>
+		 <property name="sici" label="Serial Item and Contribution Identifier" domain="Instance"   marc="0244-/a,z"   tag="024"   ind1="4"   sfcodes="a,z"/>
+		 <property name="ansi" label="American National Standard Institute Number"   domain="Instance"   marc="0247-+2'ansi'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="isan" label="International Standard Audiovisual Number" domain="Work"   marc="0247-+2'isan'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="iso"   label="International Organization for Standardization standard number"   domain="Instance"   marc="0247-+2'iso'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="istc" label="International Standard Text Code" domain="Work"   marc="0247-+2'istc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="iswc" label="International Standard Musical Work Code" domain="Work"   marc="0247-+2'iswc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="local" label="local identifier" domain="Instance"   marc="0247-+2'local'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="uri" label="Uniform Resource Identifier" domain="Instance"   marc="0247-+2'uri'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="urn" label="Uniform Resource Number" domain="Instance"   marc="0247-+2'urn'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <property name="lc-overseas-acq"   label="Library of Congress Overseas Acquisition Program number"   domain="Instance"   marc="025--/a"   tag="025"   sfcodes="a"/>
+		 <property name="fingerprint" label="fingerprint identifier" domain="Instance"   marc="026--/e"   tag="026"   sfcodes="e"/>
+		 <property name="strn" label="Standard Technical Report Number" domain="Instance"   marc="027--/a,z"   tag="027"   sfcodes="a,z"/>
+		 <property name="issue-number" label="sound recording publisher issue number"   domain="Instance"   marc="0280-/a"   tag="028"   ind1="0"   sfcodes="a"/>
+		 <property name="matrix-number" label="sound recording publisher matrix master number"   domain="Instance"   marc="0281-/a"   tag="028"   ind1="1"   sfcodes="a"/>
+		 <property name="music-plate" label="music publication number assigned by publisher"   domain="Instance"   marc="0282-/a"   tag="028"   ind1="2"   sfcodes="a"/>
+		 <property name="music-publisher" label="other publisher number for music"   domain="Instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
+		 <property name="videorecording-identifier"   label="publisher assigned videorecording number"   domain="Instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
+		 <property name="publisher-number" label="other publisher assigned number"   domain="Instance"   marc="0285-/a"   tag="028"   ind1="5"   sfcodes="a"/>
+		 <property name="coden" label="CODEN" domain="Instance" marc="030--/a,z" tag="030"   sfcodes="a,z" uri="http://cassi.cas.org/coden/"/>
+		 <property name="postal-registration" label="postal registration number" domain="Instance"   marc="032--/a"   tag="032"   sfcodes="a"/>
+		 <property name="system-number" label="system control number" domain="Instance"   marc="035--/a,z"   tag="035"   sfcodes="a,z"/>
+		 <!--<property name="oclc-number" domain="Instance"   marc="035 - - /a,z prefix 'OCOLC'"   tag="035"   sfcodes="a,z"/> -->
+		 <property name="study-number"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
+		 <property name="stock-number" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
+		 <property name="report-number" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>
+		 <property name="dissertationIdentifier" label="Dissertation Identifier"   domain="Dissertation"   marc="502--/o"   tag="502"   sfcodes="o"/>
+		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
+		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
+		 <property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
+		 <property name="orcid" label="Open Researcher and Contributor Identifier" domain="Agent"   marc="authority:0247-+2'orcid'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
+		 <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
              </vocab-identifiers>
     </identifiers>
     );
@@ -453,7 +391,7 @@ declare variable $marcbib2bibframe:relationships :=
         </work-relateds>
         <!-- Instance to Work relationships (none!) -->
 	  	<instance-relateds>
-	  	  <type tag="6d30"  property="subject">isSubjectOf</type>
+	  	  (:<type tag="6d30"  property="subject">isSubjectOf</type>:)
 	  	</instance-relateds>
 	</relationships>
 );
@@ -768,15 +706,7 @@ declare function marcbib2bibframe:generate-880-label
 	else ()
 	
 };
-(:~
-:   This is the function generates 0xx  data for instance or work, based on mappings in $work-identifiers 
-:    and $instance-identifiers. Returns subfield $a
-:
-::   @param  $marcxml       element is the marcxml record
 
-:   @param  $resource      string is the "work" or "instance"
-:   @return bf:* as element()
-:)
 
 (:~
 :   This is the function generates 0xx  data for instance or work, based on mappings in $work-identifiers 
@@ -819,8 +749,6 @@ declare function marcbib2bibframe:generate-identifiers(
 
                             for $sub in $this-tag/marcxml:subfield[@code="q" ]
                             return element bf:identifierQualifier {fn:string($sub)},
-
-               
                             (: 
                                 kefo - 1 march
                                 ALERT - I had to insert [1] to get this to work in a crunch.
@@ -834,11 +762,7 @@ declare function marcbib2bibframe:generate-identifiers(
                                     fn:string($this-tag/marcxml:subfield[@code="a"][1])
                             }
                         }
-                    else
-                        (:
-                            just the property: should include 035 oclc 
-                            ($this-tag[@tag="035"][fn:contains(fn:string(marcxml:subfield[@code="a"]), "(OCoLC)")]) 
-                        :)
+                    else                      
                         (
                            if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
                             element bf:derivedFromLccn {    
@@ -847,37 +771,29 @@ declare function marcbib2bibframe:generate-identifiers(
 		else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
                             element bf:coden {    
                             attribute rdf:resource {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(xs:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}                                         
-                            }
-		(:else  if ( $this-tag[@tag="020"]/marcxml:subfield[@code="a"] ) then
-		let $clean-isbn:=	
-			marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize(fn:string($this-tag/marcxml:subfield[@code="a"]),"\(")[1]))
-	
-		return    element bf:isbn {    
-                            attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($clean-isbn),"/1")}         
-                                (:fn:normalize-space(xs:string($this-tag[@tag="020"]/marcxml:subfield[@code="a"])):)
-                            }:)
+                            }	
 
                         else if ( fn:contains(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "(OCoLC)" ) ) then
                             element bf:oclc-number {
-                            attribute rdf:resource { fn:concat("http://oclc.org/oclc-number/",fn:normalize-space(
-                            				fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "")
-                            				)
-                            				)                       }
-                            				
-                            (:    fn:normalize-space(fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "")):)
+                            	attribute rdf:resource { 
+                            		fn:concat("http://oclc.org/oclc-number/",
+                            			fn:normalize-space( fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "") )
+                            			)   
+     				}                            	
                             }
-                        else if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"doi")) then
-                            element bf:doi {
-                                fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
+                        else if (fn:contains(fn:string-join($this-tag[@tag="856"]/marcxml:subfield[@code="u"],""),"doi") ) then
+                        	for $doi in $this-tag[@tag="856"]/marcxml:subfield[@code="u"][fn:contains(.,"doi")]
+                            		return element bf:doi {
+                                			fn:normalize-space( fn:string($doi))
                             }
-                        else if (fn:contains(fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]),"hdl" )) then
-                            element bf:hdl {
-                                fn:normalize-space( fn:string($this-tag[@tag="856"]/marcxml:subfield[@code="u"]))
+                        else if (fn:contains(fn:string-join($this-tag[@tag="856"]/marcxml:subfield[@code="u"],""),"hdl" ) ) then
+                        	for $hdl in $this-tag[@tag="856"]/marcxml:subfield[@code="u"][fn:contains(.,"hdl")]
+                            		return element bf:hdl {
+                                			fn:normalize-space( fn:string($hdl))
                             }
-                        else (),
-	                    
+                        else (),	                    
 	                    (:then deal with the z's:)
-	                    if ( $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]) then
+	           if ( $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]) then
                             for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]     
                             return
                                 element bf:IdentifierEntity {
@@ -888,8 +804,8 @@ declare function marcbib2bibframe:generate-identifiers(
 	                    ),
 
                     for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(024|028)")]
-                    let $this-id:= $identifiers[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1](: i1=7 has several:)   	       	  
-                    return
+                    	let $this-id:= $identifiers[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1](: i1=7 has several:)   	       	  
+                    	return
                         if ($this-id) then(: if there are any 024s on this record in this domain (work/instance):) 
                             let $scheme:=   	       	  	
                                 if ($this-tag/@ind1="7") then (:use the contents of $2 for the name: :)
@@ -1016,54 +932,7 @@ declare function marcbib2bibframe:handle-cancels($this-tag, $sf)
         ()
             
 };
-(:~
-:   This is the function generates 0xx  data for instance or work, based on mappings in $work-identifiers 
-:    and $instance-identifiers. Returns subfield $a
-:
-::   @param  $marcxml       element is the marcxml record
 
-:   @param  $resource      string is the "work" or "instance"
-:   @return bf:* as element()
-:)
-declare function marcbib2bibframe:generate-identifiers-old(
-   $marcxml as element(marcxml:record),
-    $resource as xs:string
-    ) as element ()*
-{
-    let $identifiers:= 
-        if ($resource="instance") then 
-            $marcbib2bibframe:identifiers/instance-identifiers
-        else 
-            $marcbib2bibframe:identifiers/work-identifiers
-
-    return 
-        (  
-            for $id in $identifiers/id[@ind1](:any with ind1 means 024 for now:)
-            let $return-codes:=
-                if ($id/@sfcodes) then 
-                    fn:string($id/@sfcodes)
-                else 
-                    "a"
-            
-            for $each-id in $marcxml/marcxml:datafield[@tag eq $id/@tag]					
-                for $a in $each-id[@ind1=$id/@ind1]/marcxml:subfield[fn:matches(@code,$return-codes)]									
-                return 
-                    element {fn:string($id/@property)} {
-                        fn:normalize-space( fn:string($a))
-                    },
-                    				
-			for $id in $identifiers/id[fn:not(@ind1)]			 
-				for $each-id in $marcxml/marcxml:datafield[@tag eq $id/@tag]
-					for $a in $each-id/marcxml:subfield[@code eq "a"]
-						return
-							element {fn:string($id/@property)} {
-								if ($each-id/@tag="048") then 
-									fn:normalize-space( fn:substring(fn:string($a),1,2))
-								else
-									fn:normalize-space( fn:string($a))
-				}
-		)
-};
 (:~
 :   This is the function generates publication  data for instance 
 :	Returns bf: node of elname 
@@ -1377,42 +1246,48 @@ declare function marcbib2bibframe:generate-instance-from856(
     let $result:=
         for $link in $marcxml/marcxml:datafield[@tag="856"]
         let $category:=         
-            if (fn:contains( fn:string($link/marcxml:subfield[@code="u"][1]),"hdl.loc.gov") and
-                fn:not(fn:matches(fn:string($link/marcxml:subfield[@code="3"][1]),"finding aid","i") ) 
+            if (
+            	fn:contains(
+            		fn:string-join($link/marcxml:subfield[@code="u"],""),"hdl.loc.gov") and(:u is repeatable:)
+                fn:not(fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"finding aid","i") ) 
                 ) then
                 "instance"
-            else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"][1]) ,"(pdf|page view) ","i"))   then
+            else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]) ,"(pdf|page view) ","i"))   then
                 "instance"
             else if ($link/@ind1="4" and $link/@ind2="0" ) then
                 "instance"
-            else if ($link/@ind1="4" and $link/@ind2="1" and fn:not(fn:exists(fn:string($link/marcxml:subfield[@code="3"]) ) ) ) then
+            else if ($link/@ind1="4" and $link/@ind2="1" and fn:not(fn:string($link/marcxml:subfield[@code="3"]) )  ) then
                 "instance"
-            else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"][1]),"finding aid","i") ) then
+            else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"finding aid","i") ) then
                 "findaid"    
             else 
                 "annotation"
             
         let $type:= 
-            if (fn:matches(fn:string($link/marcxml:subfield[@code="u"][1]),"catdir","i")) then            
-                if (fn:matches(fn:string($link/marcxml:subfield[@code="3"][1]),"contents","i")) then "contents"
-                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"][1]),"sample","i")) then "sample"
-                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"][1]),"contributor","i")) then "contributor"
-                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"][1]),"publisher","i")) then "publisher"
+            if (fn:matches(fn:string-join($link/marcxml:subfield[@code="u"],""),"catdir","i")) then            
+                if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"contents","i")) then "contents"
+                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"sample","i")) then "sample"
+                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"contributor","i")) then "contributor"
+                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"publisher","i")) then "publisher"
                 else  ()
             else ()
             
  	return
-	 if ( $category="resource" ) then (:?? is this ever true? I don't see resource assigned for category above...:)
+	 if ( $category="instance" ) then 
                 element bf:Instance {
-                    element bf:label {fn:string($link/marcxml:subfield[@code="3"])},
-                    element bf:link {fn:string($link/marcxml:subfield[@code="u"])},
+                    element bf:label {
+                    		if ($link/marcxml:subfield[@code="3"]) then fn:normalize-space(fn:string($link/marcxml:subfield[@code="3"]))
+                    		else "Electronic Resource"
+                    },
+                    for $u in $link/marcxml:subfield[@code="u"]
+                    		return element bf:link {fn:normalize-space(fn:string($u))},
                     element bf:instanceOf {
                         attribute rdf:resource {$workID}
                     },
-                    $biblink
+                    $biblink              
                 }
              else             	
-       	    element bf:Annotation {                    
+       	    element bf:Annotation {            
                     if (fn:string($link/marcxml:subfield[@code="3"]) ne "") then
                         element bf:label {
                             fn:string($link/marcxml:subfield[@code="3"])       					
@@ -1450,16 +1325,19 @@ declare function marcbib2bibframe:generate-instance-from856(
                     },
                     
                     (:  
-                        Is annotation-service the same as link ($u), basically?
-                        11737193 has multiple $u, so that apparently is a thing
-                        to deal with.
+		annotation service is restful in-id version of $u; should we drop it or the u if it exists?
+                        11737193 has multiple $u
+                        
                     :) 
                     if ($type ne "") then
                         element bf:annotation-service {
                             fn:concat("http://id.loc.gov/resources/bibs/",$bibid,".",$type,".xml")
                         }
                     else (),
-                    element bf:annotationBody {fn:string($link/marcxml:subfield[@code="u"][1])},
+                    for $u in $link/marcxml:subfield[@code="u"]
+                    	return element bf:annotationBody {                    	
+                    		 fn:normalize-space(fn:string($u))
+                    		},                    		
                     $biblink
               	}
      return $result
@@ -1474,25 +1352,28 @@ declare function marcbib2bibframe:generate-holdings(
     $marcxml as element(marcxml:record),
     $workID as xs:string
     ) as element ()* 
-{  
- let $call-num:=  
-        if ($marcxml/marcxml:datafield[@tag eq "050"]) then
-	        (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$":)
-	         if ($marcxml/marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]) then	         	
-	        			for $call in $marcxml/marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]        
-	            			return fn:normalize-space(fn:string-join($call," ")) 
-	            	
-		else ()
-        else ()
+{
+(:udc is abc; the rest are ab:) 
+(:call numbers: if a is a class and b exists:)
+ let $call-num:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
+	for $call in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|084)")][fn:matches(marcxml:subfield[@code="a"],"^[a-zA-Z]{1,3}[1-9].*$")][marcxml:subfield[@code="b"]]
+		let $element:= 
+			if (fn:matches($call/@tag,"(050|051|055|060|061|070|071)")) then "bf:callno-lcc" 
+			else if (fn:matches($call/@tag,"082") ) then "bf:callno-ddc"
+			else if (fn:matches($call/@tag,"084") ) then "bf:callno"
+				else ()
+	        	return if ($element!="bf:callno-udc") then
+	        		element {$element } {fn:normalize-space(fn:string-join($call/marcxml:subfield[fn:matches(@code, "(a|b)")]," "))}
+	        		else 
+	        		element {$element } {fn:normalize-space(fn:string-join($call/marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}
+	        		
 return 
         if ($call-num) then 
          element bf:HoldingsAnnotation {
             element bf:annotates {
                 attribute rdf:resource {$workID}
             },
-         	for $c in fn:distinct-values($call-num) 
-         		return
-         			element bf:callNumber {$c}
+         	$call-num
          }	
          	else ()
     
@@ -1548,8 +1429,8 @@ let $isbn-sets:=
     )
 };
 (:~
-:   This is the function generates 0xx  data for instance or work, based on mappings in $work-identifiers 
-:    and $instance-identifiers. Returns subfield $a
+:   This is the function generates 0xx  data for instance or work, based on mappings in $notes-list
+:   Returns subfield $a
 :
 ::   @param  $marcxml       element is the marcxml record
 
@@ -2077,12 +1958,6 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
 	        
     (:ex:5811630:)
  
-(:special condition of $b prevents this from being one of the std identifiers:)
-	let $copyright:=  
-			for $d in  $marcxml/marcxml:datafield[@tag="017"][fn:starts-with(marcxml:subfield[@code="b"],"U.S. Copyright Off")]
-				return element bf:copyrightDocumentID {
-				fn:string($d/marcxml:subfield[@code="a"])				
-					}
   
 	let $work-identifiers := marcbib2bibframe:generate-identifiers($marcxml,"work")
 	let $work-classes := marcbib2bibframe:generate-class($marcxml,"work")
@@ -2189,8 +2064,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
             $audience,           
             $genre,
             $subjects,
-            $gacs,
-            $copyright,
+            $gacs,            
             $work-classes,            
             $work-identifiers,            
             $work-notes,
