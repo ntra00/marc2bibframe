@@ -264,13 +264,13 @@ declare variable $marcbib2bibframe:physdesc-list:=
 	           <field tag="365" codes="abcdefghijkm2"> Trade Price </field>
 	           <field tag="366" codes="abcdefgjkm2"> Trade Availability Information </field>
 	           <field tag="377" codes="al2"> Associated Language </field>
-    	        <field tag="380" codes="a02"> Form of Work </field>
+    	         <!--   <field tag="380" codes="a02"> Form of Work </field>
 	           <field tag="381" codes="auv02"> Other Distinguishing Characteristics of Work or Expression </field>
-	           <field tag="382" codes="abdnpsv02"> Medium of Performance </field>
-	           <field tag="383" codes="abcde2"> Numeric Designation of Musical Work </field>
-	           <field tag="384" codes="a"> Key </field>
+	         <field tag="382" codes="abdnpsv02"> Medium of Performance </field>
+	         <field tag="383" codes="abcde2"> Numeric Designation of Musical Work </field>-->	           
         	   </instance-physdesc>
 	           <work-physdesc>	           
+	                <field tag="384" codes="a" property="key" > Key </field>
 	       </work-physdesc>
         </physdesc>
     );
@@ -279,18 +279,17 @@ declare variable $marcbib2bibframe:notes-list:= (
 <notes>
 	<work-notes>
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
-		<note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>
-		
+		<note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>		
 		<note tag ="505" property="contents" ind2="0">Formatted Contents Note</note>	
 		<note tag ="513" property="reportType">Type of Report and Period Covered Note</note>
 		<note tag ="514" property="dataQuality">Data Quality Note</note>
 		<note tag ="516" property="dataType">Type of Computer File or Data Note</note>
-		<note tag ="518" property="venue">Date/Time and Place of an Event Note</note>
+		<note tag ="518" property="venue" sfcodes="adp" >Date/Time and Place of an Event Note</note>
 		<!-- has its own function<note tag ="521" property="targetAudience">Target Audience Note</note>-->
 		<note tag ="522" property="geographic">Geographic Coverage Note</note>
 		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>		
 		<note tag ="526" property="studyProgram">Study Program Information Note</note>
-		<note tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="additionalPhysicalForm">Additional Physical Form Available Note </note>
+		<note tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="otherPhysicalFormat">Additional Physical Form Available Note </note>
 <!-- moved to relateds;			<note tag ="533"  comment="(develop link) (Delsey - Manifestation)" property="reproduction">Reproduction Note</note>
  		<note tag ="534" comment="(develop link)(Delsey - Manifestation)" sfcodes="b" property="originalVersion">Original Version Note</note>-->
 		<note tag ="535" property="originalLocation">Location of Originals/Duplicates Note</note>
@@ -358,10 +357,10 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
 		    <type tag="777" property="issuedWith">issuedWith</type>
 		<!--       <type tag="780" property="preceding">continuationOf</type>-->
-		    <type tag="780" ind2="0" property="continues">continuationOf</type>
-		    <type tag="780" ind2="2" property="continues">continuationOf</type>
+		    <type tag="780" ind2="0" property="continues">continuationOf</type>		    
 		    <type tag="780" ind2="1" property="continuesInPart">partiallyContinuedBy</type>
-		    <type tag="780" ind2="3" property="continuesInPart">partiallyContinuedBy</type>
+		    <type tag="780" ind2="2" property="supercedes">continuationOf</type>
+		    <type tag="780" ind2="3" property="supercedesInPart">partiallyContinuedBy</type>
 		    <type tag="780" ind2="4" property="unionOf">preceding</type>
 		    <type tag="780" ind2="5" property="absorbed">isAbsorbedBy</type>
 		    <type tag="780" ind2="7" property="separatedFrom">formerlyIncluded</type>
@@ -369,8 +368,8 @@ declare variable $marcbib2bibframe:relationships :=
 		   
 		 <type tag="785" ind2="0"  property="continuedBy">continues</type>
 		    <type tag="785" ind2="1" property="continuedInPartBy">partiallyContinues</type>	
-		    <type tag="785" ind2="2"  property="continuedBy">continues</type>
-		    <type tag="785" ind2="3" property="continuedInPartBy">partiallyContinues</type>
+		    <type tag="785" ind2="2"  property="supercededBy">continues</type>
+		    <type tag="785" ind2="3" property="supercededInPartBy">partiallyContinues</type>
 		    <type tag="785" ind2="4" property="absorbedBy">absorbs</type>
 		    <type tag="785" ind2="5"  property="absorbedInPartBy">partiallyAbsorbs</type>
 		    <type tag="785" ind2="6"  property="splitInto">splitFrom</type>
@@ -529,7 +528,7 @@ declare function marcbib2bibframe:generate-instance-from260(
             for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "a"]   
             return element bf:scale {
             		if (fn:string($i)="a") then "Linear scale" 
-            		else if (fn:string($i)="b") then "Angular scale" else if (fn:string($i)="z") then "Other scale type" else ()
+            		else if (fn:string($i)="b") then "Angular scale" else if (fn:string($i)="z") then "Other scale type" else "invalid"
             		},
 	for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "b" or @code eq "c"]  
             	return element bf:scale { fn:string($i)},
@@ -594,10 +593,7 @@ let $physResourceData:=()
             
             $names,
             $edition,
-            $publication,
-          (:  $providers,            
-            $place,
-            $pubdate,       :)
+            $publication,          
             $physResourceData,            
             $physMapData,
             $physSerialData,            
@@ -1042,31 +1038,32 @@ declare function marcbib2bibframe:generate-physdesc
 {
 
     let $physdescs:= 
-	   if ($resource="instance") then 
-            $marcbib2bibframe:physdesc-list/instance-physdesc
-        else 
-            $marcbib2bibframe:physdesc-list/work-physdesc
+    	if ($resource="instance") then 
+           	 $marcbib2bibframe:physdesc-list/instance-physdesc
+        	else 
+           	$marcbib2bibframe:physdesc-list/work-physdesc
     return 
-        ( 
-            for $physdesc in $physdescs/field			 
-
-                for $each-field in $marcxml/marcxml:datafield[@tag eq $physdesc/@tag]
-                let $codes := 
+        (
+            for $physdesc in $physdescs/field
+            let $codes := 
                     if ($physdesc/@codes) then 
                         fn:string($physdesc/@codes)
                     else 
-                        "a"	
+                        "a"                        
+	for $each-field in $marcxml/marcxml:datafield[@tag eq $physdesc/@tag]
+
                 for $subelement in $each-field/marcxml:subfield[fn:matches(@code,$codes)]
+                
                 let $elname:=
                     if ($physdesc/@property) then 
                         fn:string($physdesc/@property) 
                     else 
-                        fn:string($physdesc/@tag)
+                        "propertyname"
                 return						
                     element {fn:concat("bf:", $elname)} {								
                         fn:normalize-space( fn:string($subelement))
                     }
-		)
+	)
 };
 
 (:~
@@ -1106,8 +1103,7 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
         else () 
     
     let $carrierType:=                                				  	                        
-   
-            if (fn:matches($carrier,"(pbk|softcover)","i")) then
+               if (fn:matches($carrier,"(pbk|softcover)","i")) then
                 "paperback"
             else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
                 "hardback"
@@ -1356,16 +1352,18 @@ declare function marcbib2bibframe:generate-holdings(
 (:udc is abc; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $call-num:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
-	for $call in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|084)")][fn:matches(marcxml:subfield[@code="a"],"^[a-zA-Z]{1,3}[1-9].*$")][marcxml:subfield[@code="b"]]
+	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|084)")]
+(:	multiple $a is possible: 2017290 :)
+		for $class in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
 		let $element:= 
-			if (fn:matches($call/@tag,"(050|051|055|060|061|070|071)")) then "bf:callno-lcc" 
-			else if (fn:matches($call/@tag,"082") ) then "bf:callno-ddc"
-			else if (fn:matches($call/@tag,"084") ) then "bf:callno"
+			if (fn:matches($class/../@tag,"(050|051|055|060|061|070|071)")) then "bf:callno-lcc" 
+			else if (fn:matches($class/../@tag,"082") ) then "bf:callno-ddc"
+			else if (fn:matches($class/../@tag,"084") ) then "bf:callno"
 				else ()
 	        	return if ($element!="bf:callno-udc") then
-	        		element {$element } {fn:normalize-space(fn:string-join($call/marcxml:subfield[fn:matches(@code, "(a|b)")]," "))}
+	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b)")]," "))}
 	        		else 
-	        		element {$element } {fn:normalize-space(fn:string-join($call/marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}
+	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}
 	        		
 return 
         if ($call-num) then 
@@ -1484,14 +1482,11 @@ declare function marcbib2bibframe:generate-notes(
 sample bib 723007
 :)
 declare function marcbib2bibframe:generate-related-reproduction
-
     (
-        $d as element(marcxml:datafield) ,$type
-     
+        $d as element(marcxml:datafield) ,$type     
     )
 { 	 
-let $title:=
-fn:string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])
+let $title:=fn:string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])
 let $carrier:= 
     if ($d/marcxml:subfield[@code="a"]) then 
         fn:string($d/marcxml:subfield[@code="a"]) 
@@ -1499,9 +1494,9 @@ let $carrier:=
         $d/marcxml:subfield[@code="3"] 
     else ()
 let $pubPlace:= for  $pl in $d/marcxml:subfield[@code="b"]
-			return element bf:pubPlace {fn:string($pl)}
+			return element bf:providerPlace{fn:string($pl)}
 let $agent:= for  $aa in $d/marcxml:subfield[@code="c"] 
-			return element bf:associatedAgent {fn:string($aa)}
+			return element bf:providerName {fn:string($aa)}
 let $pubDate:= fn:string($d/marcxml:subfield[@code="d"])
 let $extent:= fn:string($d/marcxml:subfield[@code="e"])
 let $coverage:= fn:string($d/marcxml:subfield[@code="m"])
@@ -1512,19 +1507,26 @@ return
 	element {fn:concat("bf:",fn:string($type/@property))} {
 			element bf:Work{
 				element bf:title {$title},
-				element bf:label {$title},
-				element bf:carrier {$carrier}, 
+				element bf:label {$title},	
 				if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
 				element bf:hasInstance {
 					element bf:Instance {
-						$pubPlace,
-						element bf:pubDate {$pubDate},
+						element bf:title {$title},
+						element bf:publication {
+							element bf:providerEntity {
+								$pubPlace,
+								element bf:providerDate{$pubDate},
+								$agent
+							}
+						},
+					
 						if ($extent) then element bf:extent {$extent} else (),
-						if ($coverage) then element bf:coverage {$coverage}  else (),
-						$agent,
-						if ($note) then  $note  else (),
-						(:$3, $c, $b, $d, $e, $f, $m, $n, $5 in that order:)
-						element bf:relatedNote {fn:string-join ($d/*[fn:not(@code="a")]," - ")}
+						if ($coverage) then element bf:coverage {$coverage}  else (),						
+						element bf:carrier {$carrier},	
+						if ($note) then  $note  else ()						
+						(: do we need this? nate removed 2013-04-17:)
+						(:$3, $c, $b, $d, $e, $f, $m, $n, $5 in that order:)						
+						(:element bf:relatedNote {fn:string-join ($d/*[fn:not(@code="a")]," - ")}:)
 					}
 				}
 				else ()				 							
@@ -1877,6 +1879,9 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
                 else ()
         else
             ()
+            
+            
+     let $work3xx := marcbib2bibframe:generate-physdesc($marcxml,"work")
          
 (:
         # - Summary
@@ -2063,6 +2068,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
             $abstract-annotation,
             $audience,           
             $genre,
+            $work3xx,
             $subjects,
             $gacs,            
             $work-classes,            
