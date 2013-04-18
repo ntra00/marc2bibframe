@@ -219,8 +219,7 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <!--<property name="oclc-number" domain="Instance"   marc="035 - - /a,z prefix 'OCOLC'"   tag="035"   sfcodes="a,z"/> -->
 		 <property name="study-number"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
 		 <property name="stock-number" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
-		 <property name="report-number" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>
-		 <property name="dissertationIdentifier" label="Dissertation Identifier"   domain="Dissertation"   marc="502--/o"   tag="502"   sfcodes="o"/>
+		 <property name="report-number" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
 		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
 		 <property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
@@ -279,7 +278,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 <notes>
 	<work-notes>
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
-		<note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>		
+		<!-- <note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
 		<note tag ="505" property="contents" ind2="0">Formatted Contents Note</note>	
 		<note tag ="513" property="reportType">Type of Report and Period Covered Note</note>
 		<note tag ="514" property="dataQuality">Data Quality Note</note>
@@ -599,7 +598,7 @@ let $physResourceData:=()
             $names,
             $edition,
             $publication,          
-            $physResourceData,            
+            $physResourceData,  (: ??? work on this:)         
             $physMapData,
             $physSerialData,            
             $instance-identifiers,               
@@ -1370,9 +1369,52 @@ else
 		else (),
 		if ($d/marcxml:subfield[@code="d"]) then
 			element bf:dissertationYear{fn:string($d/marcxml:subfield[@code="d"])}
+		else (),
+		if ($d/marcxml:subfield[@code="o"]) then
+			element bf:dissertationIdentifier{fn:string($d/marcxml:subfield[@code="o"])}
 		else ()
 
    )
+};
+(:~
+:   This is the function generates cartography properties from 255
+: 
+:   @param  $marcxml        element is the 255 datafield  
+:   @return bf:* as element()
+:)
+declare function marcbib2bibframe:generate-cartography(
+    $d as element(marcxml:datafield)   
+    ) as element ()* 
+{
+
+
+if ($d/marcxml:subfield[@code="a"] and fn:count($d/*)=1) then
+	element bf:cartographicScale{fn:string($d/marcxml:subfield[@code="a"])}
+else 
+	
+		if ($d/marcxml:subfield[@code="a"]) then
+			element bf:cartographicScale{fn:string($d/marcxml:subfield[@code="a"])}
+		else (),
+		if ($d/marcxml:subfield[@code="b"]) then
+			element bf:cartographicProjection{fn:string($d/marcxml:subfield[@code="b"])}
+		else (),
+		if ($d/marcxml:subfield[@code="c"]) then
+			element bf:cartographicCoordinates {fn:string($d/marcxml:subfield[@code="c"])}
+		else (),
+		if ($d/marcxml:subfield[@code="d"]) then
+			element bf:cartographicAscensionAndDeclination{fn:string($d/marcxml:subfield[@code="d"])}
+		else (),
+		if ($d/marcxml:subfield[@code="e"]) then
+			element bf:cartographicEquinox{fn:string($d/marcxml:subfield[@code="e"])}
+		else (),
+		if ($d/marcxml:subfield[@code="f"]) then
+			element bf:cartographicAscensionAndDeclination{fn:string($d/marcxml:subfield[@code="f"])}
+		else (),
+		if ($d/marcxml:subfield[@code="g"]) then
+			element bf:cartographicAscensionAndDeclination{fn:string($d/marcxml:subfield[@code="g"])}
+		else ()
+
+  
 };
 (:~
 :   This is the function generates holdings resources.
@@ -1872,9 +1914,10 @@ declare function marcbib2bibframe:generate-work(
             }
         else
             ()
-let $langs := marcbib2bibframe:get-languages ($marcxml)
-      let $dissertation:= for $diss in $marcxml/marcxml:datafield[@tag="502"]
-      				return marcbib2bibframe:generate-dissertation($diss)
+   let $langs := marcbib2bibframe:get-languages ($marcxml)
+   let $dissertation:= 
+   	for $diss in $marcxml/marcxml:datafield[@tag="502"]
+      		return marcbib2bibframe:generate-dissertation($diss)
     let $audience := fn:substring($cf008, 23, 1)
     let $audience := 
         if ($audience ne "") then
@@ -1920,7 +1963,8 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
             
             
      let $work3xx := marcbib2bibframe:generate-physdesc($marcxml,"work")
-         
+      let $cartography:=  for $carto in $marcxml/marcxml:datafield[@tag="255"] 
+      				return marcbib2bibframe:generate-cartography($carto)
 (:
         # - Summary
         0 - Subject
@@ -2108,6 +2152,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
             $audience,           
             $genre,
             $work3xx,
+            $cartography,
             $subjects,
             $gacs,            
             $work-classes,            
@@ -2872,9 +2917,10 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                             "class"                        	
                     return	 
                         element  {fn:concat("bf:",$property)} {          
-			if ($property="class-lcc" ) then attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
+			if ($property="class-lcc" ) then 
+				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
 			else
-                            		($property,fn:string($cl))                            
+                            		fn:string($cl)                            
                         }
             else if (
                 ($valid and fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))
