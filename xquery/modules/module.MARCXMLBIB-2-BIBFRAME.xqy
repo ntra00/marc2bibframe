@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-17-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-18-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -1352,10 +1352,27 @@ declare function marcbib2bibframe:generate-instance-from856(
 declare function marcbib2bibframe:generate-dissertation(
     $d as element(marcxml:datafield)   
     ) as element ()* 
-{if ($d/marcxml:subfield[@code="a"]) then
-element bf:dissertationNote{fn:string($d/marcxml:subfield[@code="a"])}
-else ()
-    
+{
+
+(element rdf:type {attribute rdf:resource{"http://bibframe.org/vocab/Dissertation"}},
+if ($d/marcxml:subfield[@code="a"] and fn:count($d/*)=1) then
+	element bf:dissertationNote{fn:string($d/marcxml:subfield[@code="a"])}
+else 
+	
+		if ($d/marcxml:subfield[@code="a"]) then
+			element bf:dissertationNote{fn:string($d/marcxml:subfield[@code="a"])}
+		else (),
+		if ($d/marcxml:subfield[@code="b"]) then
+			element bf:dissertationDegree{fn:string($d/marcxml:subfield[@code="b"])}
+		else (),
+		if ($d/marcxml:subfield[@code="c"]) then
+			element bf:dissertationInstitution{fn:string($d/marcxml:subfield[@code="c"])}
+		else (),
+		if ($d/marcxml:subfield[@code="d"]) then
+			element bf:dissertationYear{fn:string($d/marcxml:subfield[@code="d"])}
+		else ()
+
+   )
 };
 (:~
 :   This is the function generates holdings resources.
@@ -1478,8 +1495,8 @@ declare function marcbib2bibframe:generate-notes(
 		                },                
 		for $note in $notes/note[fn:not(@ind2)]
 			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag]
-				return
-				if ($marc-note/@tag!="502" ) then
+				
+				
 					let $return-codes:=
  						if ($note/@sfcodes) then fn:string($note/@sfcodes)
  						else "a"
@@ -1495,7 +1512,7 @@ declare function marcbib2bibframe:generate-notes(
 	                    					else 
 	                    						fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
 	                				}
-				else marcbib2bibframe:generate-dissertation($marc-note)
+				
         )
 };
 (:533 to reproduction
@@ -1856,7 +1873,8 @@ declare function marcbib2bibframe:generate-work(
         else
             ()
 let $langs := marcbib2bibframe:get-languages ($marcxml)
-            
+      let $dissertation:= for $diss in $marcxml/marcxml:datafield[@tag="502"]
+      				return marcbib2bibframe:generate-dissertation($diss)
     let $audience := fn:substring($cf008, 23, 1)
     let $audience := 
         if ($audience ne "") then
@@ -2074,6 +2092,7 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
                 element rdf:type {
                     attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
                 },
+                 $dissertation,
             if ($uniformTitle/bf:uniformTitle) then
                 $uniformTitle/*
             else
@@ -2456,17 +2475,17 @@ declare function marcbib2bibframe:get-521audience(
     $tag as element(marcxml:datafield)
     ) as item()*
 {
-let $type:=  if ($tag/@ind1="0") then "Audience: " else if ($tag/@ind1="0") then "Reading grade level" else if  ($tag/@ind1="1") then "Interest age level" else if  ($tag/@ind1="3") then "Interest grade level" else if  ($tag/@ind1="4") then "Special audience characteristics" else if  ($tag/@ind1="4") then "Motivation/interest level" else ()
+let $type:=  if ($tag/@ind1=" ") then "Audience: " else if ($tag/@ind1=" 0") then "Reading grade level" else if  ($tag/@ind1="1") then "Interest age level" else if  ($tag/@ind1="2") then "Interest grade level" else if  ($tag/@ind1="3") then "Special audience characteristics" else if  ($tag/@ind1="4") then "Motivation/interest level" else ()
 (:if type!=audience then you need entity:)
 return if ($type= "Audience: ") then
 	if ( fn:not($tag/marcxml:subfield[@code="b"]) ) then
-		element bf:intendedAudience {fn:concat($type,$tag/marcxml:subfield[@code="a"])}
+		element bf:intendedAudience {fn:concat($type,": ",$tag/marcxml:subfield[@code="a"])}
 	else element bf:intendedAudience {
 		element bf:IntendedAudienceEntity {
-			element bf:audience {fn:concat($type,$tag/marcxml:subfield[@code="a"])},
+			element bf:audience {fn:concat($type,": ",$tag/marcxml:subfield[@code="a"])},
 			element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}	
 	}}
-	else if ($type!=() ) then (:you need audienceType:)
+	else if ($type) then (:you need audienceType:)
 	element bf:intendedAudience {
 		element bf:IntendedAudienceEntity {
 			if ($tag/marcxml:subfield[@code="a"]) then
@@ -2481,13 +2500,14 @@ return if ($type= "Audience: ") then
 	else if ($tag/marcxml:subfield[@code="b"]) then
 		element bf:intendedAudience {
 			element bf:IntendedAudienceEntity {
+			element bf:audienceType {$type},
 			if ($tag/marcxml:subfield[@code="a"]) then
 				element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])}
 			else (),
 				element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}
 		}}
 	else   if ($tag/marcxml:subfield[@code="a"]) then
-	 	element bf:intendedAudience {fn:concat($type,$tag/marcxml:subfield[@code="a"])}
+	 	element bf:intendedAudience {fn:concat($type,": ",$tag/marcxml:subfield[@code="a"])}
 	 else ()
 
 };
