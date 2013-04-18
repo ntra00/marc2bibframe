@@ -309,6 +309,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 	</work-notes>
 	<instance-notes>	
 		<note tag ="300" property="illustrativeContentNote" sfcodes="b">Illustrative content note</note>
+		<note tag ="500" sfcodes="3a" property="note">General Note</note>
 		<note tag ="501" property="with" sfcodes="a">With Note</note>
 		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
 		<note tag ="506" property="restrictionsOnAccess">Restrictions on Access Note</note>
@@ -317,7 +318,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </note>
 		<note tag ="515" property="numbering">Numbering Peculiarities Note </note>
 		<note tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</note>
-		<note tag ="538" property="systemDetials">System Details Note</note>
+		<note tag ="538" property="systemDetails">System Details Note</note>
 		<note tag ="540" comment="(Delsey - Manifestation)" property="useAndReproduction">Terms Governing Use and Reproduction Note </note>
 		<note tag ="541" sfcodes="cad" property="acquisition">Immediate Source of Acquisition Note</note>
 		<note tag ="542" property="copyrightStatus">Information Relating to Copyright Status</note>
@@ -580,7 +581,11 @@ let $physResourceData:=()
     (:let $related-works:= marcbib2bibframe:related-works($d/ancestor::marcxml:record,$workID,"instance"):) 
     let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
-        
+    let $links:=
+     if ( $d/../marcxml:datafield[@tag eq "856"]) then
+            marcbib2bibframe:generate-instance-from856($d/parent::marcxml:record, $workID)
+        else 
+            ()
     return 
         element bf:Instance {        
             if ($instanceType ne "") then
@@ -603,6 +608,7 @@ let $physResourceData:=()
                 attribute rdf:resource {$workID}
             },
             $notes,
+            $links,
          (:   $related-works,:)
             $derivedFrom                      
         }
@@ -1242,8 +1248,7 @@ declare function marcbib2bibframe:generate-instance-from856(
     let $result:=
         for $link in $marcxml/marcxml:datafield[@tag="856"]
         let $category:=         
-            if (
-            	fn:contains(
+            if (      fn:contains(
             		fn:string-join($link/marcxml:subfield[@code="u"],""),"hdl.loc.gov") and(:u is repeatable:)
                 fn:not(fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"finding aid","i") ) 
                 ) then
@@ -1339,6 +1344,20 @@ declare function marcbib2bibframe:generate-instance-from856(
      return $result
 };
 (:~
+:   This is the function generates dissertation on Work from 502.
+: 
+:   @param  $marcxml        element is the 502 datafield  
+:   @return bf:* as element()
+:)
+declare function marcbib2bibframe:generate-dissertation(
+    $d as element(marcxml:datafield)   
+    ) as element ()* 
+{if ($d/marcxml:subfield[@code="a"]) then
+element bf:dissertationNote{fn:string($d/marcxml:subfield[@code="a"])}
+else ()
+    
+};
+(:~
 :   This is the function generates holdings resources.
 : 
 :   @param  $marcxml        element is the MARCXML  
@@ -1367,7 +1386,7 @@ declare function marcbib2bibframe:generate-holdings(
 	        		
 return 
         if ($call-num) then 
-         element bf:HoldingsAnnotation {
+         element bf:Holding {
             element bf:annotates {
                 attribute rdf:resource {$workID}
             },
@@ -1393,17 +1412,15 @@ let $isbn-sets:=
 	else ()
 
     return    
-
-        (
-        
+        (        
         if ( $isbn-sets//bf:set) then           
         	(:use the first 260 to set up a book instance:)
             let $instance:= 
                 for $i in $marcxml/marcxml:datafield[@tag eq "260"][1]
-                return marcbib2bibframe:generate-instance-from260($i, $workID)        
+          		      return marcbib2bibframe:generate-instance-from260($i, $workID)        
 
             for $set in $isbn-sets/bf:set
-            return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
+          	  return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
                 (:
                 (
                     for $i in $set/*
@@ -1414,16 +1431,16 @@ let $isbn-sets:=
 	   	(: always have a 260? 028s are handled in $instance-identifiers
 	   	else if ( $marcxml/marcxml:datafield[@tag eq "028"] ) then
             for $i in $marcxml/marcxml:datafield[@tag eq "028"]
-	    	return marcbib2bibframe:generate-instance-from-pubnum($i, $workID):)
-        else 	        		
+	    	return marcbib2bibframe:generate-instance-from-pubnum($i, $workID) :)
+	    	
+        else 	        (: $isbn-sets//bf:set is false:)		
             for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]
-     	       return marcbib2bibframe:generate-instance-from260($i, $workID),
+     	       return marcbib2bibframe:generate-instance-from260($i, $workID)
             
-        if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
+    (:,    if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
             marcbib2bibframe:generate-instance-from856($marcxml, $workID)
         else 
-            ()
-                  
+            ()                 :)
     )
 };
 (:~
@@ -1461,21 +1478,24 @@ declare function marcbib2bibframe:generate-notes(
 		                },                
 		for $note in $notes/note[fn:not(@ind2)]
 			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag]
-			let $return-codes:=
- 				if ($note/@sfcodes) then fn:string($note/@sfcodes)
- 				else "a"
- 			let $precede:= if ($marc-note/@tag!="504") then 
- 						fn:string($note/@startwith)
- 					else if ($marc-note/@tag="504" and $marc-note/marcxml:subfield[@code="b"]) then
- 						fn:concat(fn:string($note/@startwith),$marc-note/marcxml:subfield[@code="b"])
- 					else ()
-			return
-                			element {fn:concat("bf:",fn:string($note/@property))} {						
-                    				if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:contains($return-codes,@code)]) then
-                    					fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]," ")))                    
-                    				else 
-                    					fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
-                			}        
+				return
+				if ($marc-note/@tag!="502" ) then
+					let $return-codes:=
+ 						if ($note/@sfcodes) then fn:string($note/@sfcodes)
+ 						else "a"
+	 				let $precede:= if ($marc-note/@tag!="504") then 
+	 							fn:string($note/@startwith)
+	 						else if ($marc-note/@tag="504" and $marc-note/marcxml:subfield[@code="b"]) then
+	 							fn:concat(fn:string($note/@startwith),$marc-note/marcxml:subfield[@code="b"])
+		 					else ()
+					return
+	                				element {fn:concat("bf:",fn:string($note/@property))} {						
+	                    					if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:contains($return-codes,@code)]) then
+	                    						fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]," ")))                    
+	                    					else 
+	                    						fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
+	                				}
+				else marcbib2bibframe:generate-dissertation($marc-note)
         )
 };
 (:533 to reproduction
@@ -2086,12 +2106,12 @@ let $langs := marcbib2bibframe:get-languages ($marcxml)
 :   It takes a specific 6xx as input.
 :   It generates a bf:subject as output.
 : 
-29 '600': ('subject', {'bibframeType': 'Person'}),
-30 '610': ('subject', {'bibframeType': 'Organization'}), 
-31 '611': ('subject', {'bibframeType': 'Meeting'}),   
-33 '630': ('uniformTitle', {'bibframeType': 'Title'}), 
-34 '650': ('subject', {'bibframeType': 'Topic'}), 
-35 '651': ('subject', {'bibframeType': 'Geographic'}), 
+:29 '600': ('subject', {'bibframeType': 'Person'}),
+:30 '610': ('subject', {'bibframeType': 'Organization'}), 
+:31 '611': ('subject', {'bibframeType': 'Meeting'}),   
+:33 '630': ('uniformTitle', {'bibframeType': 'Title'}), 
+:34 '650': ('subject', {'bibframeType': 'Topic'}), 
+:35 '651': ('subject', {'bibframeType': 'Geographic'}), 
 
 :   @param  $d        element is the marcxml:datafield  
 :   @return bf:subject
