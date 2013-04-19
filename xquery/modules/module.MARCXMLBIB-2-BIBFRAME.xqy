@@ -1273,71 +1273,73 @@ declare function marcbib2bibframe:generate-instance-from856(
             
  	return
 	 if ( $category="instance" ) then 
-                element bf:Instance {
-                    element bf:label {
-                    		if ($link/marcxml:subfield[@code="3"]) then fn:normalize-space(fn:string($link/marcxml:subfield[@code="3"]))
-                    		else "Electronic Resource"
-                    },
-                    for $u in $link/marcxml:subfield[@code="u"]
-                    		return element bf:link {fn:normalize-space(fn:string($u))},
-                    element bf:instanceOf {
-                        attribute rdf:resource {$workID}
-                    },
-                    $biblink              
+                element bf:hasInstance {
+                	element bf:Instance {
+                    		element bf:label {
+                    			if ($link/marcxml:subfield[@code="3"]) then fn:normalize-space(fn:string($link/marcxml:subfield[@code="3"]))
+                    			else "Electronic Resource"
+                    		},
+	                    for $u in $link/marcxml:subfield[@code="u"]
+	                    		return element bf:link {fn:normalize-space(fn:string($u))},
+	                    element bf:instanceOf {
+	                        attribute rdf:resource {$workID}
+	                  	},
+                    		$biblink              
+                	}
                 }
              else             	
-       	    element bf:Annotation {            
-                    if (fn:string($link/marcxml:subfield[@code="3"]) ne "") then
-                        element bf:label {
-                            fn:string($link/marcxml:subfield[@code="3"])       					
-                        }
-                    else (),
-                
-                    if (
-                        $type="contributor" and 
-                        $marcxml/marcxml:datafield[
-                            fn:starts-with(@tag , "10") or
-                            fn:starts-with(@tag , "11") or 
-                            fn:starts-with(@tag , "71") or
-                            fn:starts-with(@tag , "70") or 
-                            fn:starts-with(@tag , "72")]
-                        )
-                        then
-                        let $df :=
-                                $marcxml/marcxml:datafield[fn:starts-with(@tag , "10")]|
-                                $marcxml/marcxml:datafield[fn:starts-with(@tag , "11")]|
-                                $marcxml/marcxml:datafield[fn:starts-with(@tag , "70")]|
-                                $marcxml/marcxml:datafield[fn:starts-with(@tag , "71")]|
-                                $marcxml/marcxml:datafield[fn:starts-with(@tag , "72")]
-		
-                      (:  let $names := :)
-                    	    for $datafield in $df 
-                    	    return marcbib2bibframe:get-name( $datafield )
-                
-                    else
-                        element bf:annotationAssertedBy {
-                                attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"} 
-                            },
-                    
-                    element bf:annotates {
-                        attribute rdf:resource {$workID}
-                    },
-                    
-                    (:  
-		annotation service is restful in-id version of $u; should we drop it or the u if it exists?
-                        11737193 has multiple $u
-                        
-                    :) 
-                    if ($type ne "") then
-                        element bf:annotation-service {
-                            fn:concat("http://id.loc.gov/resources/bibs/",$bibid,".",$type,".xml")
-                        }
-                    else (),
-                    for $u in $link/marcxml:subfield[@code="u"]
-                    	return element bf:annotationBody {                    	
-                    		 fn:normalize-space(fn:string($u))
-                    		},                    		
-                    $biblink
+               element bf:hasAnnotation {
+       	 	element bf:Annotation {            
+                    		if (fn:string($link/marcxml:subfield[@code="3"]) ne "") then
+                        		element bf:label {
+                            			fn:string($link/marcxml:subfield[@code="3"])       					
+                        		}
+                    		else (),                
+		          if (
+		               $type="contributor" and 
+		                        $marcxml/marcxml:datafield[
+		                            fn:starts-with(@tag , "10") or
+		                            fn:starts-with(@tag , "11") or 
+		                            fn:starts-with(@tag , "71") or
+		                            fn:starts-with(@tag , "70") or 
+		                            fn:starts-with(@tag , "72")]
+		                        ) then
+		           let $df :=
+		                      $marcxml/marcxml:datafield[fn:starts-with(@tag , "10")]|
+                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "11")]|
+                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "70")]|
+                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "71")]|
+                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "72")]
+			
+	                   	   (:  let $names := :)
+	                    	    for $datafield in $df 
+	                    	    	return marcbib2bibframe:get-name( $datafield )
+	                
+	                    else 		(:not contributor:)
+	                        element bf:annotationAssertedBy {
+	                                attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"} 
+	                            },
+	                    
+	                    element bf:annotates {
+	                        attribute rdf:resource {$workID}
+	                    },
+	                    
+	                    (:  
+			annotation service is restful in-id version of $u; should we drop it or the u if it exists?
+	                        11737193 has multiple $u
+	                        
+	                    :) 
+	                    if ($type ne "") then
+	                        element bf:annotation-service {
+	                            fn:concat("http://id.loc.gov/resources/bibs/",$bibid,".",$type,".xml")
+	                        }
+	                    else (),
+	                    for $u in $link/marcxml:subfield[@code="u"]
+	                    	return element bf:annotationBody {                    	
+	                    		 fn:normalize-space(fn:string($u))
+	                    		},                    		
+	                    $biblink
+              		}
               	}
      return $result
 };
@@ -1473,7 +1475,7 @@ let $isbn-sets:=
         if ( $isbn-sets//bf:set) then           
         	(:use the first 260 to set up a book instance:)
             let $instance:= 
-                for $i in $marcxml/marcxml:datafield[@tag eq "260"][1]
+                for $i in $marcxml/marcxml:datafield[@tag eq "260" or @tag eq "264"][1]
           		      return marcbib2bibframe:generate-instance-from260($i, $workID)        
 
             for $set in $isbn-sets/bf:set
@@ -1670,7 +1672,7 @@ declare function marcbib2bibframe:generate-related-work
     return 
  	element {fn:concat("bf:",fn:string($type/@property))} {
 		element bf:Work {		
-            if ($d/marcxml:subfield[@code="w" or @code="x"]) then
+            if ($d/marcxml:subfield[@code="w" or @code="x"] and fn:not($d/@tag="630")) then (:(identifiers):)
                 for $s in $d/marcxml:subfield[@code="w" or @code="x" ]
   	              let $iStr := fn:string($s)
            	    return
@@ -1679,7 +1681,7 @@ declare function marcbib2bibframe:generate-related-work
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                
 	                    else if (fn:string($s/@code="x")) then
-	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }                           	                	
+	                        element bf:issn {attribute rdf:resource {fn:concat("http://sissn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }                           	                	
 		        else ()
 	   else 
 	   (),		
@@ -1998,7 +2000,7 @@ declare function marcbib2bibframe:generate-work(
             else if ($d/@idn1="4") then "Content Advice"
             else                        "Content Description"
         return
-            element bf:annotation {
+            element bf:hasAnnotation {
                 element bf:Annotation {
                     element rdf:type {
                         attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , fn:replace($abstract-type, " ", "") ) }
@@ -2598,7 +2600,6 @@ declare function marcbib2bibframe:get-resourceTypes(
         		where $t/@leader6 eq $leader06
         		return xs:string($t)
         		)
-
     return $types
     
 };
