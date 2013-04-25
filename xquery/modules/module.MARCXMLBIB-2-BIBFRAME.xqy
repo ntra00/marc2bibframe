@@ -338,10 +338,10 @@ declare variable $marcbib2bibframe:notes-list:= (
 
 (:$related fields must have $t except 510 630,730,830 , 767? 740 ($a is title),  :)
 declare variable $marcbib2bibframe:relationships := 
-(    
+(
     <relationships>
         <!-- Work to Work relationships -->
-        <work-relateds>
+        <work-relateds all-tags="()">
             <type tag="(700|710|711|720)" ind2="2" property="constituent">isIncludedIn</type>
             <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedWork">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
@@ -351,44 +351,37 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="765" property="translationOf">hasTranslation</type>
 		    <type tag="767" property="translation">translationOf</type>
 		    <type tag="770" property="supplement">translationOf</type>
-		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>
-		    <!--<type tag="772" ind2="0" property="hasParent">isParentOf</type>		
+		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>		    	
 		    <type tag="772" property="memberOf">host</type>-->
 		    <type tag="773" property="host">hasConstituent</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
 		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
-		    <type tag="777" property="issuedWith">issuedWith</type>
-		<!--       <type tag="780" property="preceding">continuationOf</type>-->
+		    <type tag="777" property="issuedWith">issuedWith</type>		
 		    <type tag="780" ind2="0" property="continues">continuationOf</type>		    
 		    <type tag="780" ind2="1" property="continuesInPart">partiallyContinuedBy</type>
 		    <type tag="780" ind2="2" property="supercedes">continuationOf</type>
 		    <type tag="780" ind2="3" property="supercedesInPart">partiallyContinuedBy</type>
 		    <type tag="780" ind2="4" property="unionOf">preceding</type>
 		    <type tag="780" ind2="5" property="absorbed">isAbsorbedBy</type>
-		    <type tag="780" ind2="7" property="separatedFrom">formerlyIncluded</type>
-		<!--    <type tag="785" property="succeeding">continuedBy</type>-->
-		   
-		 <type tag="785" ind2="0"  property="continuedBy">continues</type>
+		    <type tag="780" ind2="7" property="separatedFrom">formerlyIncluded</type>				   
+		    <type tag="785" ind2="0"  property="continuedBy">continues</type>
 		    <type tag="785" ind2="1" property="continuedInPartBy">partiallyContinues</type>	
 		    <type tag="785" ind2="2"  property="supercededBy">continues</type>
 		    <type tag="785" ind2="3" property="supercededInPartBy">partiallyContinues</type>
 		    <type tag="785" ind2="4" property="absorbedBy">absorbs</type>
 		    <type tag="785" ind2="5"  property="absorbedInPartBy">partiallyAbsorbs</type>
 		    <type tag="785" ind2="6"  property="splitInto">splitFrom</type>
-		   <type tag="785" ind2="7"  property="mergedInto">mergedFrom</type>	
-    		<type pattern="785" ind2="8"  property="changedBackTo">formerlyNamed</type>	
-		
+		    <type tag="785" ind2="7"  property="mergedInto">mergedFrom</type>	
+    		<type tag="785" ind2="8"  property="changedBackTo">formerlyNamed</type>			
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
-		      <type tag="534" property="originalVersion"></type>
-    		<type pattern="787" property="hasRelationship">relatedItem</type>					  	    	  	   
+		    <type tag="534" property="originalVersion"></type>
+    		<type tag="787" property="hasRelationship">relatedItem</type>					  	    	  	   
 	  	    <type tag="490" ind1="0" property="inSeries">hasParts</type>
-	  	    <type pattern ="510" property="references">isReferencedBy</type>
+	  	    <type tag ="510" property="references">isReferencedBy</type>
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|440|760|800|810|811|830)" property="series">hasParts</type>	  	    
-            <type tag="730"  property="relatedWork">relatedItem</type>
-            
-              
+            <type tag="730"  property="relatedWork">relatedItem</type>             
         </work-relateds>
         <!-- Instance to Work relationships (none!) -->
 	  	<instance-relateds>
@@ -747,7 +740,7 @@ declare function marcbib2bibframe:generate-identifiers(
 		                                fn:string($id/@name)
 		                            },	                            
 		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
-		                            	return element bf:identifierAssigner {fn:string($sub)},
+		                            	return element bf:identifierAssigner {        	fn:string($sub)},
 		
 		                            for $sub in $this-tag/marcxml:subfield[@code="q" ]
 		                            	return element bf:identifierQualifier {fn:string($sub)},
@@ -821,13 +814,13 @@ let $id024-028:=
 	                                    element bf:identifierScheme {$scheme},		
 	                            
 	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
-	                                    return element bf:identifierAssigner{fn:string($sub)},
+	                                       return element bf:identifierAssigner{fn:string($sub)},
 	        
 	                                    for $sub in $this-tag[fn:contains(fn:string(marcxml:subfield[@code="c"]),"(") ]
-	                                    return element bf:identifierQualifier {fn:replace(fn:substring-after($sub,"(" ),"\)","")},
+	                                       return element bf:identifierQualifier {fn:replace(fn:substring-after($sub,"(" ),"\)","")},
 	        
 	                                    for $sub in $this-tag/marcxml:subfield[@code="q"] 
-	                                    return element bf:identifierQualifier {fn:string($sub)},
+	                                       return element bf:identifierQualifier {fn:string($sub)},
 	            
 	                                    element bf:identifierValue {
 	                                        fn:string($this-tag/marcxml:subfield[@code="a"]),						
@@ -1794,6 +1787,7 @@ declare function marcbib2bibframe:related-works
             $marcbib2bibframe:relationships/work-relateds
 
     let $relatedWorks := 
+    
         for $type in $relateds/type
         	return 
             if ($type/@tag="740") then (: title is in $a :)
@@ -1801,10 +1795,7 @@ declare function marcbib2bibframe:related-works
                 return marcbib2bibframe:generate-related-work($d,$type)
      	else if (fn:matches($type/@tag,"533")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]		
-				return marcbib2bibframe:generate-related-reproduction($d,$type)                
-            (: ind1 isn't in relateds:  else if ($type/@ind1) then 
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind1=$type/@ind1][marcxml:subfield[@code="t"]]	
-                return marcbib2bibframe:generate-related-work($d,$type):)                
+				return marcbib2bibframe:generate-related-reproduction($d,$type)                                           
             else if ($type/@ind2 and$marcxml/marcxml:datafield[fn:matches(@tag,"(780|785)")] ) then 
               for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
 				return marcbib2bibframe:generate-related-work($d,$type)
@@ -2231,8 +2222,11 @@ declare function marcbib2bibframe:get-subject(
                                 }
                         },
                     for $sys-num in $d/marcxml:subfield[@code="0"] 
-                        return element bf:system-number {fn:string($sys-num)
-                    }
+                        return if (fn:starts-with(fn:normalize-space($sys-num),"(DE-")) then
+                                    let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
+                                    return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
+                                else
+                                    element bf:system-number {fn:string($sys-num)}
                 )
             return ($details)
             
