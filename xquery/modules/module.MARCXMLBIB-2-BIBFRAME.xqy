@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-18-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-25-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -126,7 +126,7 @@ declare variable $marcbib2bibframe:targetAudiences := (
 		<subject tag="610">Organization</subject>
 		<subject tag="611">Meeting</subject>
 		<subject tag="630">Work</subject>
-		<subject tag="648">Chronological</subject>
+		<subject tag="648">TemporalConcept</subject>
 		<subject tag="650">Topic</subject>
 		<subject tag="651">Place</subject>
 		<subject tag="654">Topical</subject>
@@ -1049,12 +1049,12 @@ declare function marcbib2bibframe:generate-physdesc
     return 
         (
             for $physdesc in $physdescs/field
-            let $codes := 
+             let $codes := 
                     if ($physdesc/@codes) then 
                         fn:string($physdesc/@codes)
                     else 
                         "a"                        
-	for $each-field in $marcxml/marcxml:datafield[@tag eq $physdesc/@tag]
+	           for $each-field in $marcxml/marcxml:datafield[@tag eq $physdesc/@tag]
 
                 for $subelement in $each-field/marcxml:subfield[fn:matches(@code,$codes)]
                 
@@ -1064,7 +1064,7 @@ declare function marcbib2bibframe:generate-physdesc
                     else 
                         "propertyname"
                 return						
-                    element {fn:concat("bf:", $elname)} {								
+                    element {fn:concat("bf:", $elname)} {					
                         fn:normalize-space( fn:string($subelement))
                     }
 	)
@@ -1532,13 +1532,11 @@ declare function marcbib2bibframe:generate-notes(
  				else "a"
  			let $precede:=fn:string($note/@startwith)
 			return
-		                element {fn:concat("bf:",fn:string($note/@property))} {                
+		                element {fn:concat("bf:",fn:string($note/@property))} {	               
 		                    fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]," ")))
 		                },                
 		for $note in $notes/note[fn:not(@ind2)]
-			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag]
-				
-				
+			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag]								
 					let $return-codes:=
  						if ($note/@sfcodes) then fn:string($note/@sfcodes)
  						else "a"
@@ -1548,13 +1546,15 @@ declare function marcbib2bibframe:generate-notes(
 	 							fn:concat(fn:string($note/@startwith),$marc-note/marcxml:subfield[@code="b"])
 		 					else ()
 					return
-	                				element {fn:concat("bf:",fn:string($note/@property))} {						
-	                    					if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:contains($return-codes,@code)]) then
-	                    						fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]," ")))                    
+					   if ($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then
+	                			element {fn:concat("bf:",fn:string($note/@property))} {
+	                    					if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then	                    							                    						
+	                    						fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")))	                    						
 	                    					else 
 	                    						fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
 	                				}
-				
+                        else ()
+		 	
         )
 };
 (:533 to reproduction
@@ -1679,9 +1679,9 @@ declare function marcbib2bibframe:generate-related-work
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
 	                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",marcbib2bibframe:clean-string(fn:replace($iStr, "\(OCoLC\)", ""))) }}
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                
-	                    else if (fn:string($s/@code="x")) then
-	                        element bf:issn {attribute rdf:resource {fn:concat("http://sissn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }                           	                	
+	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
+	                    else if ($s/@code="x") then
+	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }                           	                	
 		        else ()
 	   else 
 	   (),		
@@ -1694,11 +1694,9 @@ declare function marcbib2bibframe:generate-related-work
                 for $s in $d/marcxml:subfield[@code="w"]
                 let $iStr := fn:string($s)
                 return
-                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-                        (:element bf:oclc-number{ fn:normalize-space(fn:replace($iStr, "\(OCoLC\)", "")) }:)
+                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then                        
                         element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",marcbib2bibframe:clean-string(fn:replace($iStr, "\(OCoLC\)", ""))) }}
-                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-                        (:element bf:derivedFromLccn {  fn:replace(fn:replace($iStr, "\(DLC\)", "")," ","") }:)
+                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then                        
                         element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:replace($iStr, "\(DLC\)", "")," ",""))}                   
                         }
                     else 
@@ -1799,16 +1797,16 @@ declare function marcbib2bibframe:related-works
         for $type in $relateds/type
         	return 
             if ($type/@tag="740") then (: title is in $a :)
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind1=$type/@ind1 or @ind2=$type/@ind2]		
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind2=$type/@ind2]		
                 return marcbib2bibframe:generate-related-work($d,$type)
      	else if (fn:matches($type/@tag,"533")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]		
 				return marcbib2bibframe:generate-related-reproduction($d,$type)                
-            else if ($type/@ind1) then
+            (: ind1 isn't in relateds:  else if ($type/@ind1) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind1=$type/@ind1][marcxml:subfield[@code="t"]]	
-                return marcbib2bibframe:generate-related-work($d,$type)                
-            else if ($type/@ind2) then 
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
+                return marcbib2bibframe:generate-related-work($d,$type):)                
+            else if ($type/@ind2 and$marcxml/marcxml:datafield[fn:matches(@tag,"(780|785)")] ) then 
+              for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
 				return marcbib2bibframe:generate-related-work($d,$type)
             else if (fn:matches($type/@tag,"(510|630|730|830)")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="a"]]		
@@ -2205,7 +2203,7 @@ declare function marcbib2bibframe:get-subject(
                             attribute tag { fn:concat("1" , $last2Tag) },
                             attribute ind1 { " " },
                             attribute ind2 { "0" },
-                            $d/*[@code ne "2"]
+                            $d/*[@code ne "2"][@code ne "0"]
                         }
                     }
                 </marcxml:record>
@@ -2217,9 +2215,10 @@ declare function marcbib2bibframe:get-subject(
                         attribute rdf:resource { 
                             fn:concat("http://www.loc.gov/mads/rdf/v1#" , fn:local-name($madsrdf))
                         }
-                    },
+                    },                                      
                     element bf:label { xs:string($madsrdf/madsrdf:authoritativeLabel) },
                     $madsrdf/madsrdf:authoritativeLabel,
+                    
                     for $cl in $madsrdf/madsrdf:componentList
                     return
                         element madsrdf:componentList {
@@ -2230,9 +2229,13 @@ declare function marcbib2bibframe:get-subject(
                                     $a/rdf:type,
                                     $a/madsrdf:authoritativeLabel
                                 }
-                        }          
+                        },
+                    for $sys-num in $d/marcxml:subfield[@code="0"] 
+                        return element bf:system-number {fn:string($sys-num)
+                    }
                 )
-            return $details
+            return ($details)
+            
 	   
        else if (fn:matches(fn:string($d/@tag),"(662|752)")) then
             (: 
