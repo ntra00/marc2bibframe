@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-25-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-04-30-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -240,10 +240,10 @@ declare variable $marcbib2bibframe:physdesc-list:=
 <!-- now in notes
            	<field tag="300" codes="b" property="illustrativeContentNote">Illustrative content note</field>-->
 	        <field tag="300" codes="c" property="dimensions">Dimensions</field>
-   		 <field tag="300" codes="e" property="additionalMaterial"> Accompanying material</field>
+   		       <field tag="300" codes="e" property="additionalMaterial"> Accompanying material</field>
         		<field tag="300" codes="f" property="unitType">Type of unit </field>
         		<field tag="300" codes="g" property="unitSize">Size of unit </field>		
-        		<field tag="306" codes="a" property="playingTime">Playing Time </field>
+        		<field tag="306" codes="a" property="duration">Playing Time </field>
         		<field tag="307" codes="ab" property="hoursAvailable"> Hours Available</field>
         		<field tag="310" codes="ab">Current Publication Frequency </field>
         		<field tag="321" codes="ab"> Former Publication Frequency </field>
@@ -1536,13 +1536,13 @@ declare function marcbib2bibframe:generate-notes(
 	 				let $precede:= if ($marc-note/@tag!="504") then 
 	 							fn:string($note/@startwith)
 	 						else if ($marc-note/@tag="504" and $marc-note/marcxml:subfield[@code="b"]) then
-	 							fn:concat(fn:string($note/@startwith),$marc-note/marcxml:subfield[@code="b"])
+	 							fn:concat(fn:string($note/@startwith),marcbib2bibframe:clean-string($marc-note/marcxml:subfield[@code="b"]))
 		 					else ()
 					return
 					   if ($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then
 	                			element {fn:concat("bf:",fn:string($note/@property))} {
 	                    					if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then	                    							                    						
-	                    						fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")))	                    						
+	                    						marcbib2bibframe:clean-string(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")))	                    						
 	                    					else 
 	                    						fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
 	                				}
@@ -2136,6 +2136,7 @@ declare function marcbib2bibframe:generate-work(
             $names,
             $aud521,
             $language,
+            $langs,
             $abstract,
             $abstract-annotation,
             $audience,           
@@ -2308,7 +2309,7 @@ declare function marcbib2bibframe:get-subject(
 (:~
 :   This function generates all languages .
 :   It takes 041 and generates a wrapper 
-:   It generates a bf:subject as output.
+:   It generates a bf:languageEntity's as output.
 : 
 : $2 - Source of code (NR)
     also 546?
@@ -2321,7 +2322,7 @@ declare function marcbib2bibframe:get-subject(
    
 declare function marcbib2bibframe:get-languages(
    $d as element(marcxml:record)
-    ) as element()
+    ) as element()*
 {
  let $parts:=
  
@@ -2339,24 +2340,22 @@ declare function marcbib2bibframe:get-languages(
       <sf code="n">original libretto</sf>
       </languageObjectParts>
     (:if a=3chars and there's no $2, then bf:language, else bf:LanguageEntity:)
-return element wrap {    
+return 
 for $tag in $d/marcxml:datafield[@tag="041"]
 	for $sf in $tag/marcxml:subfield 
-	return 
-	fn:string($sf)
-		
-	
-	(:let $string := fn:string($sf)
-	for $i in 0 to string-length($string) idiv 3
-		let $pos := $i * 3 + 1		
-		return substring($string, $pos, 3) 
-	 
-	  
-	return 
-	element {"wrap"} {
-		
-	}:)
-	}
+	return element bf:language {
+	           element bf:LanguageEntity {
+	               element bf:resourcePart{
+        	           fn:string($parts//sf[@code=$sf/@code])
+        	           },	               	            
+	                   for $i in 0 to (fn:string-length($sf) idiv 3)-1
+		                  let $pos := $i * 3 + 1		
+		                      return 
+		                          element bf:languageOfPart{
+		                            attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/" , fn:substring($sf, $pos, 3))}
+    		                      }                  
+                }	
+	       }	
 };
 
 (:~
