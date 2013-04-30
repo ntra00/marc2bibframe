@@ -1549,7 +1549,7 @@ declare function marcbib2bibframe:generate-notes(
 	 							fn:concat(fn:string($note/@startwith),marcbib2bibframe:clean-string($marc-note/marcxml:subfield[@code="b"]))
 		 					else ()
 					return
-					   if ($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then
+					   if ($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]) then
 	                			element {fn:concat("bf:",fn:string($note/@property))} {
 	                    					if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then	                    							                    						
 	                    						marcbib2bibframe:clean-string(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")))	                    						
@@ -2109,10 +2109,12 @@ declare function marcbib2bibframe:generate-work(
 		     }
 						
  	let $gacs:= 
-            for $d in $marcxml/marcxml:datafield[@tag = "043"]/marcxml:subfield[@code="a"] 
-            	let $gac := fn:normalize-space(fn:replace(fn:string($d),"-","")) 
+            for $d in $marcxml/marcxml:datafield[@tag = "043"]/marcxml:subfield[@code="a"]
+            (:filter out trailing hyphens:)
+            	let $gac :=  fn:replace(fn:normalize-space(fn:string($d)),"-+$","")
+            	(:if this were subject it would have to be subject/Place/uri or something?:)
 	            return
-	                element bf:subject {
+	                element bf:geographicSubject {
 	                    attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/geographicAreas/", $gac) }
 	            }
             		
