@@ -1104,7 +1104,7 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
                 "paperback"
             else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
                 "hardback"
-            else if (fn:matches($carrier,"(ebook|eresource|e-isbn)","i") ) then
+            else if (fn:matches($carrier,"(ebook|eresource|e-isbn|ebk)","i") ) then
                 "electronic resource"
             else if (fn:contains($carrier,"lib. bdg.") ) then
                 "library binding"			
@@ -1305,8 +1305,16 @@ declare function marcbib2bibframe:generate-instance-from856(
                                 		$marcxml/marcxml:datafield[fn:starts-with(@tag , "72")]
 			
 	                   	   (:  let $names := :)
-	                    	    for $datafield in $df 
-	                    	    	return marcbib2bibframe:get-name( $datafield )
+	                    	    for $datafield in $df
+	                    	      let $internal-name-link:=
+                                        attribute rdf:resource {                                                   
+                                                        fn:concat("http://id.loc.gov/temp/names/",     fn:string($datafield/@tag),fn:replace(fn:string($datafield/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))
+                                                   
+                                        }
+	                    	    	(:return marcbib2bibframe:get-name( $datafield ):)
+	                    	    	(: nate changed this so we annotate the names
+	                    	    	instead of looking like they created this annotation:)
+	                    	    	return element bf:annotates {$internal-name-link}
 	                
 	                    else 		(:not contributor:)
 	                        element bf:annotationAssertedBy {
@@ -1318,18 +1326,20 @@ declare function marcbib2bibframe:generate-instance-from856(
 	                    },
 	                    
 	                    (:  
-			annotation service is restful in-id version of $u; should we drop it or the u if it exists?
-	                        11737193 has multiple $u
-	                        
+			annotation service is restful in-id version of $u; 
+			dropped for now since it can't be live
+	                        11737193 has multiple $u	                        
 	                    :) 
-	                    if ($type ne "") then
+	                    (:if ($type ne "") then
 	                        element bf:annotation-service {
 	                            fn:concat("http://id.loc.gov/resources/bibs/",$bibid,".",$type,".xml")
 	                        }
-	                    else (),
+	                    else (),:)
 	                    for $u in $link/marcxml:subfield[@code="u"]
-	                    	return element bf:annotationBody {                    	
-	                    		 fn:normalize-space(fn:string($u))
+	                    	return element bf:annotationBody { 
+	                    	                  attribute rdf:resource {                  	
+	                    		                 fn:normalize-space(fn:string($u))
+	                    		                }
 	                    		},                    		
 	                    $biblink
               		}
@@ -2410,9 +2420,7 @@ declare function marcbib2bibframe:get-name(
                      }
         }
     else () (: 534 $a is not parsed:)
-    
-  
-        
+            
     let $class := 
         if ( fn:ends-with(xs:string($d/@tag), "00") ) then
             "bf:Person"
@@ -2448,11 +2456,14 @@ declare function marcbib2bibframe:get-name(
     let $resourceRoleTerms := 
         for $r in $d/marcxml:subfield[@code="e"]
         return element bf:resourceRole {fn:string($r)}
-
+    let $internal-name-link:=
+            attribute rdf:resource {
+            fn:concat("http://id.loc.gov/temp/names/",  $tag,fn:replace(fn:string($d/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))            
+            }
     return
 
        element {$resourceRole} {
-            element {$class} {            
+            element {$class} {  $internal-name-link,      
                 element bf:label {$label},
                 element rdfs:label {$aLabel},
                 if ($d/@tag!='534') then element madsrdf:authoritativeLabel {$aLabel} else (),
