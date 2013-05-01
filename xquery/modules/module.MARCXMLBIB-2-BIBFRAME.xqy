@@ -1276,7 +1276,7 @@ declare function marcbib2bibframe:generate-instance-from856(
                     			else "Electronic Resource"
                     		},
 	                    for $u in $link/marcxml:subfield[@code="u"]
-	                    		return element bf:link {fn:normalize-space(fn:string($u))},
+	                    		return element bf:identifier {fn:normalize-space(fn:string($u))},
 	                    element bf:instanceOf {
 	                        attribute rdf:resource {$workID}
 	                  	},
@@ -1628,7 +1628,11 @@ declare function marcbib2bibframe:generate-finding-aids
         $d as element(marcxml:datafield) 
     )
 { 	 
-
+let $link-property:=
+    if (fn:contains($d/marcxml:subfield[@code="u"],"hdl")) then "bf:hdl"
+            else if (fn:contains($d/marcxml:subfield[@code="u"],"doi")) then "bf:doi" 
+            else "bf:identifier"
+return
  element bf:index        
     {
     if ($d/marcxml:subfield[@code="u"]) then
@@ -1636,7 +1640,7 @@ declare function marcbib2bibframe:generate-finding-aids
             element bf:title {fn:string($d/marcxml:subfield[@code="a"])},
             element bf:hasInstance {
                         element bf:Instance {
-                            element bf:hdl {fn:string($d/marcxml:subfield[@code="u"])}
+                            element  {$link-property} {fn:string($d/marcxml:subfield[@code="u"])}
                     }
             }
           }
