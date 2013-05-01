@@ -380,7 +380,7 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="534" property="originalVersion"></type>
     		<type tag="787" property="hasRelationship">relatedItem</type>					  	    	  	   
 	  	    <type tag="490" ind1="0" property="inSeries">hasParts</type>
-	  	    <type tag ="510" property="references">isReferencedBy</type>
+	  	    <type tag="510" property="describedIn">isReferencedBy</type>
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|440|760|800|810|811|830)" property="series">hasParts</type>	  	    
             <type tag="730"  property="relatedWork">relatedItem</type>             
@@ -1621,6 +1621,7 @@ return
 
 (:555 finding aids note may be related work link or a simple property
 sample bib 14923309
+consider linking 555 w/856 on $u!
 
 :)
 declare function marcbib2bibframe:generate-finding-aids
@@ -1646,8 +1647,7 @@ return
           }
        
     else    
-        fn:string($d/marcxml:subfield[@code="a"])
-       
+        fn:string($d/marcxml:subfield[@code="a"])       
         }
 };
 
@@ -1833,7 +1833,7 @@ declare function marcbib2bibframe:related-works
     let $relatedWorks := 
     
         for $type in $relateds/type
-        	return 
+        	return
             if (fn:matches($type/@tag,"740")) then (: title is in $a , @ind2 needs attention:)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind2=$type/@ind2]		
                     return marcbib2bibframe:generate-related-work($d,$type)
