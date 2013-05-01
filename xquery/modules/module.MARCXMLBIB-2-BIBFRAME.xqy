@@ -222,8 +222,7 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="study-number"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
 		 <property name="stock-number" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
 		 <property name="report-number" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
-		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
-		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
+		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="555;856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
 		 <property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
 		 <property name="orcid" label="Open Researcher and Contributor Identifier" domain="Agent"   marc="authority:0247-+2'orcid'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
 		 <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
@@ -231,6 +230,9 @@ declare variable $marcbib2bibframe:identifiers :=
     </identifiers>
     );
 
+(:		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>:)
+		 
+		 
 declare variable $marcbib2bibframe:physdesc-list:= 
     (
         <physdesc>
@@ -296,10 +298,10 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="535" property="originalLocation">Location of Originals/Duplicates Note</note>
 		<note tag ="536" property="funding">Funding Information Note</note>		
 		<note tag ="544" sfcodes="3dea" comment="(develop link?)" property="archiveLocation">Location of Other Archival Materials Note</note>
-		<note tag ="545"  comment ="belongs to name???" property="biographicalHistorical">Biographical or Historical Data</note>
+		<note tag ="545"  comment ="annotation to name???" property="biographicalHistoricalNote">Biographical or Historical Data</note>
 		<note tag ="547" property="formerTitleComplexity">Former Title Complexity Note</note>
 		<note tag ="552" property="entityInformation">Entity and Attribute Information Note</note>
-		<note tag ="555" comment="(link?)" property="findingAids">Cumulative Index/Finding Aids Note </note>
+	<!--	<note tag ="555" comment="(link?)" property="index">Cumulative Index/Finding Aids Note </note>-->
 		<note tag ="565" property="caseFile">Case File Characteristics Note</note>
 		<note tag ="567" property="methodology">Methodology Note</note>
 		<note tag ="580" property="linkingEntryComplexity">Linking Entry Complexity Note</note>
@@ -342,7 +344,7 @@ declare variable $marcbib2bibframe:relationships :=
     <relationships>
         <!-- Work to Work relationships -->
         <work-relateds all-tags="()">
-            <type tag="(700|710|711|720)" ind2="2" property="constituent">isIncludedIn</type>
+            <type tag="(700|710|711|720)" ind2="2" property="contains">isIncludedIn</type>
             <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedWork">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
 		    <type tag="740" ind2="2" property="contains">isContainedIn</type>
@@ -413,12 +415,13 @@ declare function marcbib2bibframe:marcbib2bibframe(
     return
         if ($marcxml/marcxml:leader) then
             let $work := marcbib2bibframe:generate-work($marcxml, $about) 
-            let $instances := marcbib2bibframe:generate-instances($marcxml, $about)
+            (:let $instances := marcbib2bibframe:generate-instances($marcxml, $about):)
             let $holdings := marcbib2bibframe:generate-holdings($marcxml, $about)
             return
                 element rdf:RDF {        attribute dcterms:modified {$marcbib2bibframe:last-edit},                
                     $work,
-                    $instances,
+                    (:we might want to embed the instances in the work with hasInstance:)
+                  (:  $instances,:)
                     (:,
                       generate-controlfields($marcxml):)
                       $holdings
@@ -575,11 +578,11 @@ let $physResourceData:=()
     (:let $related-works:= marcbib2bibframe:related-works($d/ancestor::marcxml:record,$workID,"instance"):) 
     let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
-    let $links:=
+  (:  let $links:=
      if ( $d/../marcxml:datafield[@tag eq "856"]) then
-            marcbib2bibframe:generate-instance-from856($d/parent::marcxml:record, $workID)
+            marcbib2bibframe:generate-instance-from856($d/ancestor::marcxml:record, $workID)            
         else 
-            ()
+            ():)
     return 
         element bf:Instance {        
             if ($instanceType ne "") then
@@ -602,7 +605,7 @@ let $physResourceData:=()
                 attribute rdf:resource {$workID}
             },
             $notes,
-            $links,
+          (:  $links,:)
          (:   $related-works,:)
             $derivedFrom                      
         }
@@ -1264,7 +1267,7 @@ declare function marcbib2bibframe:generate-instance-from856(
                 else  ()
             else ()
             
- 	return
+ 	return 
 	 if ( $category="instance" ) then 
                 element bf:hasInstance {
                 	element bf:Instance {
@@ -1282,7 +1285,7 @@ declare function marcbib2bibframe:generate-instance-from856(
                 }
              else             	
                element bf:hasAnnotation {
-       	 	element bf:Annotation {            
+            	 	element bf:Annotation {            
                     		if (fn:string($link/marcxml:subfield[@code="3"]) ne "") then
                         		element bf:label {
                             			fn:string($link/marcxml:subfield[@code="3"])       					
@@ -1616,6 +1619,33 @@ return
 			}
 };
 
+(:555 finding aids note may be related work link or a simple property
+sample bib 14923309
+
+:)
+declare function marcbib2bibframe:generate-finding-aids
+    (
+        $d as element(marcxml:datafield) 
+    )
+{ 	 
+
+ element bf:index        
+    {
+    if ($d/marcxml:subfield[@code="u"]) then
+        element bf:Work{
+            element bf:title {fn:string($d/marcxml:subfield[@code="a"])},
+            element bf:hasInstance {
+                        element bf:Instance {
+                            element bf:hdl {fn:string($d/marcxml:subfield[@code="u"])}
+                    }
+            }
+          }
+       
+    else    
+        fn:string($d/marcxml:subfield[@code="a"])
+       
+        }
+};
 
 declare function marcbib2bibframe:generate-related-work
     (
@@ -1673,7 +1703,7 @@ declare function marcbib2bibframe:generate-related-work
             $aLabelWork880
             
     return 
- 	element {fn:concat("bf:",fn:string($type/@property))} {
+ 	  element {fn:concat("bf:",fn:string($type/@property))} {
 		element bf:Work {		
             if ($d/marcxml:subfield[@code="w" or @code="x"] and fn:not($d/@tag="630")) then (:(identifiers):)
                 for $s in $d/marcxml:subfield[@code="w" or @code="x" ]
@@ -1800,24 +1830,24 @@ declare function marcbib2bibframe:related-works
     
         for $type in $relateds/type
         	return 
-            if ($type/@tag="740") then (: title is in $a :)
+            if (fn:matches($type/@tag,"740")) then (: title is in $a , @ind2 needs attention:)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind2=$type/@ind2]		
-                return marcbib2bibframe:generate-related-work($d,$type)
-     	else if (fn:matches($type/@tag,"533")) then 
+                    return marcbib2bibframe:generate-related-work($d,$type)
+     	    else if (fn:matches($type/@tag,"533")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]		
-				return marcbib2bibframe:generate-related-reproduction($d,$type)                                           
-            else if ($type/@ind2 and$marcxml/marcxml:datafield[fn:matches(@tag,"(780|785)")] ) then 
-              for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
-				return marcbib2bibframe:generate-related-work($d,$type)
+				    return marcbib2bibframe:generate-related-reproduction($d,$type)                                           
+            else if ($type/@ind2 and $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")] ) then 
+               for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
+				            return marcbib2bibframe:generate-related-work($d,$type)
             else if (fn:matches($type/@tag,"(510|630|730|830)")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="a"]]		
-				return marcbib2bibframe:generate-related-work($d,$type)
+				    return marcbib2bibframe:generate-related-work($d,$type)
             else if (fn:matches($type/@tag,"(534)")  and $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="f"]] ) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="f"]](:	series:)
-				return marcbib2bibframe:generate-related-work($d,$type)
+			     	return marcbib2bibframe:generate-related-work($d,$type)
             else 	
                 for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t"]]		
-				return marcbib2bibframe:generate-related-work($d,$type)
+			     	return marcbib2bibframe:generate-related-work($d,$type)
 				
     return $relatedWorks
 				
@@ -1833,8 +1863,13 @@ declare function marcbib2bibframe:generate-work(
     $marcxml as element(marcxml:record),
     $workID as xs:string
     ) as element () 
-{
-    
+{ (:2013-05-01 ntra moved instances inside work; also need to do 856 instances ?:)
+    let $instances := marcbib2bibframe:generate-instances($marcxml, $workID)
+    let $instancesfrom856:=
+     if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
+            marcbib2bibframe:generate-instance-from856($marcxml, $workID)            
+        else 
+            ()
     let $types := marcbib2bibframe:get-resourceTypes($marcxml)
         
     let $mainType := "Work"
@@ -2052,6 +2087,8 @@ declare function marcbib2bibframe:generate-work(
  		for $d in $marcxml/marcxml:datafield[fn:matches(fn:string-join($marcbib2bibframe:subject-types//@tag," "),fn:string(@tag))]		
         			return marcbib2bibframe:get-subject($d)
  	let $work-notes := marcbib2bibframe:generate-notes($marcxml,"work")
+ 	let $findaids:= for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"555")]
+ 	                  return marcbib2bibframe:generate-finding-aids($d)
  	let $work-relateds := marcbib2bibframe:related-works($marcxml,$workID,"work")
  	(:audio ex:12241297:)
  	let $complex-notes:= 
@@ -2149,6 +2186,7 @@ declare function marcbib2bibframe:generate-work(
             $aud521,
             $language,
             $langs,
+            $findaids,
             $abstract,
             $abstract-annotation,
             $audience,           
@@ -2163,7 +2201,10 @@ declare function marcbib2bibframe:generate-work(
             $complex-notes,
             $work-relateds,
             $schemes,            
-            $biblink
+            $biblink,
+            for $i in $instances 
+                return element  bf:hasInstance{$i},
+             $instancesfrom856             
         }
 };
 
@@ -2296,7 +2337,7 @@ declare function marcbib2bibframe:get-subject(
                     }                   
                 )
             return $details
-           
+            (:656 occupation itoamc in $2? :)
        else
            (
                element bf:label {fn:string-join($d/marcxml:subfield[fn:not(@code="6")], " ")},
