@@ -455,7 +455,7 @@ declare function marcbib2bibframe:generate-instance-from260(
 {
 
     let $derivedFrom := 
-        element bf:derivedFrom {element bf:test{$workID}
+        element bf:derivedFrom {
             attribute rdf:resource {
                 fn:concat(
                     "http://id.loc.gov/resources/bibs/",
