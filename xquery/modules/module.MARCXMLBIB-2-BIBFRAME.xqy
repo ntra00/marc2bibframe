@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-04-30-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-01-T13:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -455,7 +455,7 @@ declare function marcbib2bibframe:generate-instance-from260(
 {
 
     let $derivedFrom := 
-        element bf:derivedFrom {
+        element bf:derivedFrom {element bf:test{$workID}
             attribute rdf:resource {
                 fn:concat(
                     "http://id.loc.gov/resources/bibs/",
@@ -1637,7 +1637,7 @@ return
  element bf:index        
     {
     if ($d/marcxml:subfield[@code="u"]) then
-        element bf:Work{
+        element bf:Work{ 
             element bf:title {fn:string($d/marcxml:subfield[@code="a"])},
             element bf:hasInstance {
                         element bf:Instance {
@@ -2504,7 +2504,7 @@ declare function marcbib2bibframe:get-name(
         for $r in $d/marcxml:subfield[@code="e"]
         return element bf:resourceRole {fn:string($r)}
     let $internal-name-link:=
-            attribute rdf:resource {
+            attribute rdf:about {
             fn:concat("http://id.loc.gov/temp/names/",  $tag,fn:replace(fn:string($d/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))            
             }
     return
