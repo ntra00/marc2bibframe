@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-01-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-01-T18:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -869,7 +869,20 @@ let $id024-028:=
 		            else
 		                $bfi
 };
-
+(:~
+:   This is the function that handles $0 in various fields
+:   @param  $sys-num       element is the marc subfield $0
+     
+:   @return  element() either bf:system-number or bf:hasAuthority with uri
+:)
+declare function marcbib2bibframe:handle-system-number( $sys-num   ) 
+{
+ if (fn:starts-with(fn:normalize-space($sys-num),"(DE-")) then
+                                    let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
+                                    return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
+                                else
+                                    element bf:system-number {fn:string($sys-num)}
+};
 (:~
 :   This is the function generates full Identifier classes from m,y,z cancel/invalid identifiers and qualifiers
 :   @param  $this-tag       element is the marc data field
@@ -2280,11 +2293,7 @@ declare function marcbib2bibframe:get-subject(
                                 }
                         },
                     for $sys-num in $d/marcxml:subfield[@code="0"] 
-                        return if (fn:starts-with(fn:normalize-space($sys-num),"(DE-")) then
-                                    let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
-                                    return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
-                                else
-                                    element bf:system-number {fn:string($sys-num)}
+                        return marcbib2bibframe:handle-system-number($sys-num)                    
                 )
             return ($details)
             
@@ -2353,12 +2362,15 @@ declare function marcbib2bibframe:get-subject(
                     )                    
                 }
            )
-	   
+	let $system-number:= 
+        for $sys-num in $d/marcxml:subfield[@code="0"] 
+                     return marcbib2bibframe:handle-system-number($sys-num)  
     return 
         element bf:subject {
             element {fn:concat("bf:",$subjectType)} { 
-                $details,
-                marcbib2bibframe:generate-880-label($d,"subject")
+                $details,                
+                marcbib2bibframe:generate-880-label($d,"subject"),
+                $system-number
             }
         }
 
@@ -2507,6 +2519,9 @@ declare function marcbib2bibframe:get-name(
             attribute rdf:about {
             fn:concat("http://id.loc.gov/temp/names/",  $tag,fn:replace(fn:string($d/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))            
             }
+    let $system-number:= 
+        for $sys-num in $d/marcxml:subfield[@code="0"] 
+                     return marcbib2bibframe:handle-system-number($sys-num)            
     return
 
        element {$resourceRole} {
@@ -2515,9 +2530,9 @@ declare function marcbib2bibframe:get-name(
                 element rdfs:label {$aLabel},
                 if ($d/@tag!='534') then element madsrdf:authoritativeLabel {$aLabel} else (),
                 marcbib2bibframe:generate-880-label($d,"name"),
-                $elementList,
-             
+                $elementList,             
                 $resourceRoleTerms,
+                 $system-number,
                 element bf:descriptionRole { $desc-role}
             }
         }
