@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-01-T18:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-02-T15:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -580,7 +580,7 @@ let $physResourceData:=()
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
   (:  let $links:=
      if ( $d/../marcxml:datafield[@tag eq "856"]) then
-            marcbib2bibframe:generate-instance-from856($d/ancestor::marcxml:record, $workID)            
+            marcbib2bibframe:generate-instance-from856($d, $workID)            
         else 
             ():)
     return 
@@ -1242,41 +1242,41 @@ declare function marcbib2bibframe:generate-instance-from-pubnum(
 
 :)
 declare function marcbib2bibframe:generate-instance-from856(
-    $marcxml as element(marcxml:record),
+    $d as element(marcxml:datafield),
     $workID as xs:string
     ) as element ()* 
 {
-    let $bibid:=$marcxml/marcxml:controlfield[@tag="001"]
+    let $bibid:=$d/../marcxml:controlfield[@tag="001"]
     let $biblink:= 
         element bf:derivedFrom {
             attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",$bibid)}
         } 
 
-    let $result:=
-        for $link in $marcxml/marcxml:datafield[@tag="856"]
+    
+        
         let $category:=         
             if (      fn:contains(
-            		fn:string-join($link/marcxml:subfield[@code="u"],""),"hdl.loc.gov") and(:u is repeatable:)
-                fn:not(fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"finding aid","i") ) 
+            		fn:string-join($d/marcxml:subfield[@code="u"],""),"hdl.loc.gov") and(:u is repeatable:)
+                fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"finding aid","i") ) 
                 ) then
                 "instance"
-            else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]) ,"(pdf|page view) ","i"))   then
+            else if (fn:matches(fn:string($d/marcxml:subfield[@code="3"]) ,"(pdf|page view) ","i"))   then
                 "instance"
-            else if ($link/@ind1="4" and $link/@ind2="0" ) then
+            else if ($d/@ind1="4" and $d/@ind2="0" ) then
                 "instance"
-            else if ($link/@ind1="4" and $link/@ind2="1" and fn:not(fn:string($link/marcxml:subfield[@code="3"]) )  ) then
+            else if ($d/@ind1="4" and $d/@ind2="1" and fn:not(fn:string($d/marcxml:subfield[@code="3"]) )  ) then
                 "instance"
-            else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"finding aid","i") ) then
+            else if (fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"finding aid","i") ) then
                 "findaid"    
             else 
                 "annotation"
             
         let $type:= 
-            if (fn:matches(fn:string-join($link/marcxml:subfield[@code="u"],""),"catdir","i")) then            
-                if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"contents","i")) then "contents"
-                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"sample","i")) then "sample"
-                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"contributor","i")) then "contributor"
-                else if (fn:matches(fn:string($link/marcxml:subfield[@code="3"]),"publisher","i")) then "publisher"
+            if (fn:matches(fn:string-join($d/marcxml:subfield[@code="u"],""),"catdir","i")) then            
+                if (fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"contents","i")) then "contents"
+                else if (fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"sample","i")) then "sample"
+                else if (fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"contributor","i")) then "contributor"
+                else if (fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"publisher","i")) then "publisher"
                 else  ()
             else ()
             
@@ -1285,10 +1285,10 @@ declare function marcbib2bibframe:generate-instance-from856(
                 element bf:hasInstance {
                 	element bf:Instance {
                     		element bf:label {
-                    			if ($link/marcxml:subfield[@code="3"]) then fn:normalize-space(fn:string($link/marcxml:subfield[@code="3"]))
+                    			if ($d/marcxml:subfield[@code="3"]) then fn:normalize-space(fn:string($d/marcxml:subfield[@code="3"]))
                     			else "Electronic Resource"
                     		},
-	                    for $u in $link/marcxml:subfield[@code="u"]
+	                    for $u in $d/marcxml:subfield[@code="u"]
 	                    		return element bf:identifier {fn:normalize-space(fn:string($u))},
 	                    element bf:instanceOf {
 	                        attribute rdf:resource {$workID}
@@ -1299,14 +1299,15 @@ declare function marcbib2bibframe:generate-instance-from856(
              else             	
                element bf:hasAnnotation {
             	 	element bf:Annotation {            
-                    		if (fn:string($link/marcxml:subfield[@code="3"]) ne "") then
+                    		if (fn:string($d/marcxml:subfield[@code="3"]) ne "") then
                         		element bf:label {
-                            			fn:string($link/marcxml:subfield[@code="3"])       					
+                            			fn:string($d/marcxml:subfield[@code="3"])       					
                         		}
-                    		else (),                
-		          if (
+                    		else (),
+                    		(:contributors are now handled in get-names:)
+		          (:if ( 
 		               $type="contributor" and 
-		                        $marcxml/marcxml:datafield[
+		                        $d/../marcxml:datafield[
 		                            fn:starts-with(@tag , "10") or
 		                            fn:starts-with(@tag , "11") or 
 		                            fn:starts-with(@tag , "71") or
@@ -1314,23 +1315,24 @@ declare function marcbib2bibframe:generate-instance-from856(
 		                            fn:starts-with(@tag , "72")]
 		                        ) then
 		           let $df :=
-		                      $marcxml/marcxml:datafield[fn:starts-with(@tag , "10")]|
-                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "11")]|
-                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "70")]|
-                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "71")]|
-                                		$marcxml/marcxml:datafield[fn:starts-with(@tag , "72")]
+		                      $d/../marcxml:datafield[fn:starts-with(@tag , "10")]|
+                                		$d/../marcxml:datafield[fn:starts-with(@tag , "11")]|
+                                		$d/../marcxml:datafield[fn:starts-with(@tag , "70")]|
+                                		$d/../xml/marcxml:datafield[fn:starts-with(@tag , "71")]|
+                                		$d/../marcxml:datafield[fn:starts-with(@tag , "72")]:)
 			
 	                   	   (:  let $names := :)
-	                    	    for $datafield in $df
+	                    	    (:for $datafield in $df
 	                    	      let $internal-name-link:=
                                         attribute rdf:resource {                                                   
                                                         fn:concat("http://id.loc.gov/temp/names/",     fn:string($datafield/@tag),fn:replace(fn:string($datafield/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))
                                                    
                                         }
-	                    	    	(:return marcbib2bibframe:get-name( $datafield ):)
+:)
+(:return marcbib2bibframe:get-name( $datafield ):)
 	                    	    	(: nate changed this so we annotate the names
 	                    	    	instead of looking like they created this annotation:)
-	                    	    	return element bf:annotates {$internal-name-link}
+	                    	    	(:return element bf:annotates {$internal-name-link} 
 	                
 	                    else 		(:not contributor:)
 	                        element bf:annotationAssertedBy {
@@ -1340,6 +1342,7 @@ declare function marcbib2bibframe:generate-instance-from856(
 	                    element bf:annotates {
 	                        attribute rdf:resource {$workID}
 	                    },
+	                    :)
 	                    
 	                    (:  
 			annotation service is restful in-id version of $u; 
@@ -1351,7 +1354,7 @@ declare function marcbib2bibframe:generate-instance-from856(
 	                            fn:concat("http://id.loc.gov/resources/bibs/",$bibid,".",$type,".xml")
 	                        }
 	                    else (),:)
-	                    for $u in $link/marcxml:subfield[@code="u"]
+	                    for $u in $d/marcxml:subfield[@code="u"]
 	                    	return element bf:annotationBody { 
 	                    	                  attribute rdf:resource {                  	
 	                    		                 fn:normalize-space(fn:string($u))
@@ -1360,7 +1363,7 @@ declare function marcbib2bibframe:generate-instance-from856(
 	                    $biblink
               		}
               	}
-     return $result
+
 };
 (:~
 :   This is the function generates dissertation on Work from 502.
@@ -1515,8 +1518,9 @@ let $isbn-sets:=
             for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]
      	       return marcbib2bibframe:generate-instance-from260($i, $workID)
             
-    (:,    if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
-            marcbib2bibframe:generate-instance-from856($marcxml, $workID)
+    (:,     if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
+                for $d in $marcxml/marcxml:datafield[@tag eq "856"]
+                    return  marcbib2bibframe:generate-instance-from856($d, $workID)
         else 
             ()                 :)
     )
@@ -1880,11 +1884,13 @@ declare function marcbib2bibframe:generate-work(
     $marcxml as element(marcxml:record),
     $workID as xs:string
     ) as element () 
-{ (:2013-05-01 ntra moved instances inside work; also need to do 856 instances ?:)
+{ (:2013-05-01 ntra moved instances inside work;  :)
     let $instances := marcbib2bibframe:generate-instances($marcxml, $workID)
     let $instancesfrom856:=
-     if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
-            marcbib2bibframe:generate-instance-from856($marcxml, $workID)            
+     if ( $marcxml/marcxml:datafield[@tag eq "856"][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]) then         
+        (:set up instances/annotations for each non-contributor bio link:)    
+        for $d in $marcxml/marcxml:datafield[@tag="856"][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]
+            return marcbib2bibframe:generate-instance-from856($d, $workID)            
         else 
             ()
     let $types := marcbib2bibframe:get-resourceTypes($marcxml)
@@ -2432,11 +2438,12 @@ for $tag in $d/marcxml:datafield[@tag="041"]
 :   It takes a specific datafield as input.
 :   It generates a bf:uniformTitle as output.
 :
-:   @param  $d        element is the marcxml:datafield  
+:   @param  $d        element is the marcxml:datafield
+:
 :   @return bf:creator element OR a more specific relators:* one. 
 :)
 declare function marcbib2bibframe:get-name(
-    $d as element(marcxml:datafield)
+    $d as element(marcxml:datafield)     
     ) as element()
 {
     let $relatorCode := marcbib2bibframe:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1])) 
@@ -2515,17 +2522,26 @@ declare function marcbib2bibframe:get-name(
     let $resourceRoleTerms := 
         for $r in $d/marcxml:subfield[@code="e"]
         return element bf:resourceRole {fn:string($r)}
-    let $internal-name-link:=
+
+    let $bio-links:=
+        if ( $d/../marcxml:datafield[@tag eq "856"][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]) then         
+        (:set up annotations for each contributor bio link:)    
+        for $link in $d/../marcxml:datafield[@tag="856"][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]
+            return     marcbib2bibframe:generate-instance-from856($link, "test")            
+        else 
+            ()
+ (: this is no longer needed since we're embedding bio annotations here 
+ let $internal-name-link:=
             attribute rdf:about {
             fn:concat("http://id.loc.gov/temp/names/",  $tag,fn:replace(fn:string($d/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))            
-            }
+            }:)
     let $system-number:= 
         for $sys-num in $d/marcxml:subfield[@code="0"] 
                      return marcbib2bibframe:handle-system-number($sys-num)            
     return
 
        element {$resourceRole} {
-            element {$class} {  $internal-name-link,      
+            element {$class} {  (:$internal-name-link,      :)
                 element bf:label {$label},
                 element rdfs:label {$aLabel},
                 if ($d/@tag!='534') then element madsrdf:authoritativeLabel {$aLabel} else (),
@@ -2533,6 +2549,7 @@ declare function marcbib2bibframe:get-name(
                 $elementList,             
                 $resourceRoleTerms,
                  $system-number,
+                 $bio-links,
                 element bf:descriptionRole { $desc-role}
             }
         }
