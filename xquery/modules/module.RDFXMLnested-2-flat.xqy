@@ -204,17 +204,17 @@ declare function RDFXMLnested2flat:createIdentifiedResource(
 {
 
     let $rs := 
-        if ( fn:count($resources/madsrdf:authoritativeLabel) > 0 ) then
+        if ( fn:count($resources/madsrdf:authoritativeLabel) > 0 or fn:count($resources/bf:authorizedAccessPoint) > 0 ) then
             let $rs-labels := 
                 for $r in $resources
-                let $l := ($r/madsrdf:authoritativeLabel|$r/bf:label|$r/bf:label)[1]
+                let $l := ($r/madsrdf:authoritativeLabel|$r/bf:label|$r/bf:label|$r/bf:authorizedAccessPoint|$r/bf:title)[1]
                 return $l
             let $distinct-labels := fn:distinct-values($rs-labels)
             let $rs := 
                 for $dl in $distinct-labels
                 return 
-                    if ($resources[madsrdf:authoritativeLabel=$dl][1]) then
-                        $resources[madsrdf:authoritativeLabel=$dl][1]
+                    if ($resources[madsrdf:authoritativeLabel=$dl or bf:authorizedAccessPoint =$dl][1]) then
+                        $resources[madsrdf:authoritativeLabel=$dl or  bf:authorizedAccessPoint =$dl][1]
                     else
                         $resources[bf:label=$dl][1]
             return $rs
@@ -248,10 +248,10 @@ declare function RDFXMLnested2flat:createResourceOrNot(
             $haystack as element(rdf:RDF)
         ) as element()
 {
-    let $label := ($needle/bf:*[1]/madsrdf:authoritativeLabel|$needle/bf:*[1]/rdfs:label|$needle/bf:*[1]/bf:label)[1]
+    let $label := ($needle/bf:*[1]/bf:authorizedAccessPoint[1]|$needle/bf:*[1]/madsrdf:authoritativeLabel|$needle/bf:*[1]/rdfs:label|$needle/bf:*[1]/bf:label)[1]
     (: let $needle-found := $haystack/bf:*[child::node()=xs:string($label)] :)
     let $needle-found := 
-            (
+            (   $haystack/bf:*[xs:string(bf:authorizedAccessPoint[1]) eq xs:string($label)]|
                 $haystack/bf:*[xs:string(madsrdf:authoritativeLabel[1]) eq xs:string($label)]|
                 $haystack/bf:*[xs:string(rdfs:label[1]) eq xs:string($label)]|
                 $haystack/bf:*[xs:string(bf:label[1]) eq xs:string($label)]
@@ -290,7 +290,7 @@ declare function RDFXMLnested2flat:isolateAndIdentify
         else if ($isolate eq "Instance") then
             $rdfxml//bf:Instance
         else if ($isolate eq "IndexEntity") then
-            $rdfxml//bf:Agent|$rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC
+            $rdfxml//bf:Agent|$rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC|$rdfxml//bf:TemporalConcept
         else if ($isolate eq "Annotation") then
             $rdfxml//bf:Annotation|$rdfxml//bf:ContentDescription|$rdfxml//bf:Review|$rdfxml//bf:Abstract|$rdfxml//bf:ContentAdvice
         else 

@@ -3675,10 +3675,12 @@ declare function marcbib2bibframe:generate-work(
                         },
                         element bf:title {$t},
                             element bf:hasAuthority{
-                                element madsrdf:elementList {
-                                    attribute rdf:parseType {"Collection"},
-                                    element madsrdf:MainTitleElement {
-                                       element madsrdf:elementValue {$t}
+                                element madsrdf:Authority { 
+                                    element madsrdf:elementList {
+                                        attribute rdf:parseType {"Collection"},
+                                        element madsrdf:MainTitleElement {
+                                           element madsrdf:elementValue {$t}
+                                        }
                                     }
                                 }
                             },                       
@@ -3750,7 +3752,7 @@ declare function marcbib2bibframe:generate-work(
             $work-notes,
             $complex-notes,
             $work-relateds,
-            $schemes,            
+      (:      $schemes,  removing madsrdf      :)    
             $biblink,
             for $i in $instances 
                 return element  bf:hasInstance{$i},
@@ -3817,15 +3819,17 @@ declare function marcbib2bibframe:get-subject(
                     for $cl in $madsrdf/madsrdf:componentList
                     return
                         element bf:hasAuthority {
-                            element madsrdf:componentList {
-                                attribute rdf:parseType {"Collection"},
-                                for $a in $cl/madsrdf:*
-                                return
-                                    element {fn:name($a)} {
-                                        $a/rdf:type,
-                                        $madsrdf/madsrdf:authoritativeLabel 
-                                    }
-                            }
+                        element madsrdf:Authority {
+                                element madsrdf:componentList {
+                                    attribute rdf:parseType {"Collection"},
+                                    for $a in $cl/madsrdf:*
+                                    return
+                                        element {fn:name($a)} {
+                                            $a/rdf:type,
+                                            $madsrdf/madsrdf:authoritativeLabel 
+                                        }
+                                }
+                             }
                         },
                     for $sys-num in $d/marcxml:subfield[@code="0"] 
                         return marcbib2bibframe:handle-system-number($sys-num)                    
@@ -3880,9 +3884,11 @@ declare function marcbib2bibframe:get-subject(
                     element bf:label { fn:string($aLabel) },
                     element bf:authorizedAccessPoint { fn:string($aLabel) },
                     element bf:hasAuthority {
-                        element madsrdf:componentList {
-                            attribute rdf:parseType {"Collection"},
-                            $components 
+                         element madsrdf:Authority {
+                            element madsrdf:componentList {
+                                attribute rdf:parseType {"Collection"},
+                                $components 
+                            }
                         }
                     }
                 )
@@ -3988,35 +3994,37 @@ declare function marcbib2bibframe:get-name(
     
     let $elementList := if ($d/@tag!='534') then
       element bf:hasAuthority{
-        element madsrdf:elementList {
-        	attribute rdf:parseType {"Collection"},
-            for $s in $d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q']
-            return
-                if ($s/@code eq "a") then
-                     element madsrdf:NameElement {
-                        element madsrdf:elementValue {fn:string($s)}
-                     }
-                else if ($s/@code eq "b") then
-                     element madsrdf:PartNameElement {
-                        element madsrdf:elementValue {fn:string($s)}
-                     }
-                else if ($s/@code eq "c") then
-                     element madsrdf:TermsOfAddressNameElement {
-                        element madsrdf:elementValue {fn:string($s)}
-                     }
-                else if ($s/@code eq "d") then
-                     element madsrdf:DateNameElement {
-                        element madsrdf:elementValue {fn:string($s)}
-                     }
-                else if ($s/@code eq "q") then
-                     element madsrdf:FullNameElement {
-                        element madsrdf:elementValue {fn:string($s)}
-                     }
-                else 
-                    element madsrdf:NameElement {
-                        element madsrdf:elementValue {fn:string($s)}
-                     }
-           }
+         element madsrdf:Authority {
+            element madsrdf:elementList {
+            	attribute rdf:parseType {"Collection"},
+                for $s in $d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q']
+                return
+                    if ($s/@code eq "a") then
+                         element madsrdf:NameElement {
+                            element madsrdf:elementValue {fn:string($s)}
+                         }
+                    else if ($s/@code eq "b") then
+                         element madsrdf:PartNameElement {
+                            element madsrdf:elementValue {fn:string($s)}
+                         }
+                    else if ($s/@code eq "c") then
+                         element madsrdf:TermsOfAddressNameElement {
+                            element madsrdf:elementValue {fn:string($s)}
+                         }
+                    else if ($s/@code eq "d") then
+                         element madsrdf:DateNameElement {
+                            element madsrdf:elementValue {fn:string($s)}
+                         }
+                    else if ($s/@code eq "q") then
+                         element madsrdf:FullNameElement {
+                            element madsrdf:elementValue {fn:string($s)}
+                         }
+                    else 
+                        element madsrdf:NameElement {
+                            element madsrdf:elementValue {fn:string($s)}
+                         }
+               }
+            }   
         }
     else () (: 534 $a is not parsed:)
             
@@ -4287,6 +4295,8 @@ declare function marcbib2bibframe:get-uniformTitle(
     let $label := marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , ' '))
     let $aLabel := marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8' ] , ' '))    
     let $elementList := 
+        element bf:hasAuthority {
+        element madsrdf:Authority {
         element madsrdf:elementList {
         	attribute rdf:parseType {"Collection"},
             for $s in $d/marcxml:subfield
@@ -4323,6 +4333,8 @@ declare function marcbib2bibframe:get-uniformTitle(
                     element madsrdf:TitleElement {
                         element madsrdf:elementValue {marcbib2bibframe:clean-title-string(fn:string($s))}
                      }
+        }
+        }
         }
     return
     
