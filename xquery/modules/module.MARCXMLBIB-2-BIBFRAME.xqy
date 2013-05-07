@@ -185,7 +185,7 @@ declare variable $marcbib2bibframe:identifiers :=
        
    <vocab-identifiers>     
    	<property name="lccn" label="Library of Congress Control Number" domain="Instance"   marc="010--/a,z"   tag="010"   sfcodes="a,z"/>
-		 <property name="nbn" label="National Bibliography Number" domain="Instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
+	 <property name="nbn" label="National Bibliography Number" domain="Instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
 		 <property name="nban" label="National bibliography agency control number"   domain="Instance"   marc="016--/a,z"   tag="016"   sfcodes="a,z"/>
 		 <property name="legal-deposit" label="copyright or legal deposit number"   domain="Instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
 		 <property name="isbn" label="International Standard Bibliographic Number"   domain="Instance"   marc="020--/a,z"   tag="020"   sfcodes="a,z"/>
@@ -2267,7 +2267,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	                      	      element bf:derivedFromLccn {    
 	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
 	                            }
-			     else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
+			                   else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
 	                            	element bf:coden {    
 	                            		attribute rdf:resource {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(fn:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}                                         
 	                            	}		
@@ -2284,7 +2284,13 @@ declare function marcbib2bibframe:generate-identifiers(
 	                        else if (fn:contains(fn:string-join($this-tag[@tag="856"]/marcxml:subfield[@code="u"],""),"hdl" ) ) then
 	                        	for $hdl in $this-tag[@tag="856"]/marcxml:subfield[@code="u"][fn:contains(.,"hdl")]
 	                            		return element bf:hdl {fn:normalize-space( fn:string($hdl))           }
-	                        else (),	                    
+	                        else  
+	                            for $sub in $this-tag/marcxml:subfield[@code="a"]
+	                                   return element { fn:concat("bf:",$id/@name) } {
+	                                       fn:string($sub)
+	                              }	                         
+                          	,
+	                        
 	                    (:then deal with the z's:)
 		           if ( $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]) then
 	                            for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(y|z)")]     
@@ -2337,22 +2343,22 @@ let $id024-028:=
                             else (:not c,q,b:)
                                 let $property:= (:024 had a z only; no $a: bibid;17332794:)
                                     if ($this-tag/@ind1="7") then
-                                       "bf:identifier"
+                                       (:"bf:identifier":)
+                                       fn:concat("bf:", $scheme)
                                        (:fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"]):)								
-                                    else 
+                                    else
                                         fn:concat("bf:",fn:string($this-id/@name))					
                                 return
-                                    (
-                                        element {$property} {		  
-                                           if ($this-tag/@ind1="7") then
-                                           		fn:concat(fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"]),": ",
+                                    (if ( $this-tag/marcxml:subfield[fn:matches(@code,"a")]) then
+                                        element {$property} {		                                                                                        	
                                            			fn:normalize-space(fn:string($this-tag/marcxml:subfield[@code="a"]))
-                                           		)
-                                           		else fn:normalize-space(fn:string($this-tag/marcxml:subfield[@code="a"]))                                            
-                                        },
+                                                                                      
+                                        }
+                                        else ()
+                                        ,
                                         (:then deal with the z's:)
-                                        if ( $this-tag/marcxml:subfield[fn:matches(@code,"(m|y)")]) then
-                                            for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(m|y)")]
+                                        if ( $this-tag/marcxml:subfield[fn:matches(@code,"z")]) then
+                                            for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"z")]
                                             return          
                                                 element bf:IdentifierEntity{
                                                     element bf:identifierScheme {$scheme},		
@@ -2393,31 +2399,7 @@ declare function marcbib2bibframe:handle-system-number( $sys-num   )
 declare function marcbib2bibframe:handle-cancels($this-tag, $sf) 
 {
 
-    (: Kevin surgery - commenting out because do not know effect :)
-    (:
-    if ($this-tag[@tag="022"][marcxml:subfield[@code="y"]]) then
-        (
-            element bf:identifierValue { fn:string($this-tag[@tag="022"][marcxml:subfield[@code="y"]])},
-            element bf:identifierStatus{"incorrect"}
-        )
-    else if  ($this-tag[@tag="022"][marcxml:subfield[@code="z"]]) then 
-        (
-            element bf:identifierValue { fn:string($this-tag[@tag="022"][marcxml:subfield[@code="z"]])},
-            element bf:identifierStatus{"canceled/invalid"}
-        ) 
-    else if ($this-tag[@tag="022"][marcxml:subfield[@code="m"]]) then
-        (
-            element bf:identifierValue { fn:string($this-tag[@tag="022"][marcxml:subfield[@code="m"]])},
-			element bf:identifierStatus {"canceled/invalid"}
-        ) 
-    else if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|027|030|024|088)")][marcxml:subfield[@code="z"]] ) then
-        (
-            element bf:identifierValue { fn:string($this-tag/marcxml:subfield[@code="z"])},
-            element bf:identifierStatus{"canceled/invalid"}
-        ) 
-    else
-        ()
-	 :)
+   
     if ($this-tag[@tag="022"] and $sf[@code="y"]) then
         (
             element bf:identifierValue { fn:normalize-space(fn:string($sf))},
