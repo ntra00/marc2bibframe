@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-03-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-07-T11:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -247,8 +247,8 @@ declare variable $marcbib2bibframe:physdesc-list:=
         		<field tag="300" codes="g" property="unitSize">Size of unit </field>		
         		<field tag="306" codes="a" property="duration">Playing Time </field>
         		<field tag="307" codes="ab" property="hoursAvailable"> Hours Available</field>
-        		<field tag="310" codes="ab">Current Publication Frequency </field>
-        		<field tag="321" codes="ab"> Former Publication Frequency </field>
+        		<field tag="310" codes="a" property ="frequency">Current Publication Frequency </field>
+        		<field tag="321" codes="ab" property="formerFrequency"> Former Publication Frequency </field>
         		<field tag="337" codes="ab23">Media Type </field>
         		<field tag="338" codes="ab23">Carrier Type </field>
         		<field tag="340" codes="abcdefhijkmno023"> Physical Medium </field>
@@ -262,7 +262,7 @@ declare variable $marcbib2bibframe:physdesc-list:=
 	           <field tag="352" codes="abcdefgiq"> Digital Graphic Representation </field>
 	           <field tag="355" codes="abcdefghj"> Security Classification Control </field>
 	           <field tag="357" codes="abcg"> Originator Dissemination Control </field>
-	           <field tag="362" codes="az"> Dates of Publication and/or Sequential Designation </field>
+	           <!--  <field tag="362" codes="a" property="serialFirstIssue"> Dates of Publication and/or Sequential Designation </field>-->
 	           <field tag="363" codes="abcdefghijklmuvxz"> Normalized Date and Sequential Designation </field>
 	           <field tag="365" codes="abcdefghijkm2"> Trade Price </field>
 	           <field tag="366" codes="abcdefgjkm2"> Trade Availability Information </field>
@@ -284,12 +284,16 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
 		<!-- <note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
 		<!--<note tag ="505" property="contents" ind2="0">Formatted Contents Note</note>	-->
-		<note tag ="513" property="reportType">Type of Report and Period Covered Note</note>
+		<note tag ="513" property="contentNature" sfcodes="a">Nature of content</note>
+		<note tag ="245" property="contentNature" sfcodes="k">Nature of content</note>
+		<note tag ="336" property="contentNature" sfcodes="a">Nature of content</note>
+		<note tag ="513" property="contentCoverage" sfcodes="b">Period Covered Note</note>
 		<note tag ="514" property="dataQuality">Data Quality Note</note>
-		<note tag ="516" property="dataType">Type of Computer File or Data Note</note>
-		<note tag ="518" property="venue" sfcodes="adp" >Date/Time and Place of an Event Note</note>
+		<note tag ="516" property="contentNature" sfcodes="a">Type of Computer File or Data Note</note>
+		
+		<note tag ="518" property="contentCoverage" sfcodes="a" >Date/Time and Place of an Event Note</note>
 		<!-- has its own function<note tag ="521" property="targetAudience">Target Audience Note</note>-->
-		<note tag ="522" property="geographic">Geographic Coverage Note</note>
+		<note tag ="522" property="contentCoverage">Geographic Coverage Note</note>
 		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>		
 		<note tag ="526" property="studyProgram">Study Program Information Note</note>
 		<note tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="otherPhysicalFormat">Additional Physical Form Available Note </note>
@@ -328,7 +332,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="546" property="languageNote" sfcodes="3a" >Language Note</note>
 		<note tag ="550" property="issuers">Issuing Body Note</note>
 		<note tag ="556" property="documentation">Information about Documentation Note</note>
-		<note tag ="561" property="ownership">Ownership and Custodial History</note>
+		<note tag ="561" property="custodialHistory">Ownership and Custodial History</note>
 		<note tag ="562" property="versionIdentification">Copy and Version Identification Note</note>
 		<note tag ="563" property="binding">Binding Information</note>
 		<note tag ="583" comment="annotation later?" property="exhibitions">Action Note</note>
@@ -2570,10 +2574,53 @@ declare function marcbib2bibframe:generate-physdesc
                     else 
                         "propertyname"
                 return						
-                    element {fn:concat("bf:", $elname)} {					
+                    element {fn:concat("bf:", $elname)} {			                  
                         fn:normalize-space( fn:string($subelement))
-                    }
-	)
+                    },
+              for $issuedate in $marcxml/marcxml:datafield[@tag="362"]
+                let $subelement:=fn:string($issuedate/marcxml:subfield[@code="a"])
+                return
+                    if (   $issuedate/@ind1="0" and fn:contains($subelement,"-") ) then
+                       ( element bf:serialFirstIssue {		
+                            fn:normalize-space( fn:substring-before($subelement,"-"))
+                        },
+                        if ( fn:normalize-space(fn:substring-after($subelement,"-"))!="") then 
+                        element bf:serialLastIssue{		
+                            fn:normalize-space( fn:substring-after($subelement,"-"))
+                        }
+                        else ()
+                        )
+                    else  (:no hyphen or it's ind1=1:)
+                        element bf:serialFirstIssue {
+                            fn:normalize-space( $subelement)
+                        },
+                        for $d in $marcxml/marcxml:datafield[@tag="351"]                              
+                             return                             
+                                 element bf:organizationSystem {		
+                                    if (fn:count($d/marcxml:subfield) > 1  or fn:not($d/marcxml:subfield[@code="a"] ) ) then
+                                         element bf:OrganizationSystemEntity {
+                                         for $sub in $d/marcxml:subfield[@code="3"] 
+                                            return element bf:materialPart {
+                                                fn:normalize-space( fn:string($sub))
+                                                },
+                                            for $sub in $d/marcxml:subfield[@code="a"] 
+                                            return element bf:materialOrganization {
+                                                fn:normalize-space( fn:string($sub))
+                                                },
+                                            for $sub in $d/marcxml:subfield[@code="b"] 
+                                              return  element bf:materialArrangement {
+                                                fn:normalize-space( fn:string($sub))
+                                            },
+                                            for $sub in $d/marcxml:subfield[@code="c"] 
+                                              return
+                                                element bf:materialHierarchicalLevel {
+                                                fn:normalize-space( fn:string($sub))
+                                                }
+                                        }
+                                     
+                                     else fn:normalize-space( fn:string($d/marcxml:subfield[@code="a"]))
+                                     }                                
+        	)
 };
 
 (:~
@@ -3226,22 +3273,22 @@ declare function marcbib2bibframe:generate-related-work
             if ($d/marcxml:subfield[@code="w" or @code="x"] and fn:not($d/@tag="630")) then (:(identifiers):)
                 for $s in $d/marcxml:subfield[@code="w" or @code="x" ]
   	              let $iStr := fn:string($s)
-           	    return
+           	    return 
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
 	                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",marcbib2bibframe:clean-string(fn:replace($iStr, "\(OCoLC\)", ""))) }}
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
 	                    else if ($s/@code="x") then
 	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }                           	                	
-		        else ()
-	   else 
-	   (),		
+		               else ()		               
+     	   else 
+     	       (),		
             element bf:authorizedAccessPoint {$aLabel},
             $aLabelWork880,
             element bf:title {$title},
-            $name,
+            $name
             
-            if ($d/marcxml:subfield[@code="w"]) then
+          (: nate says:why was this repeated 2013-05-07 commented?  if ($d/marcxml:subfield[@code="w"]) then
                 for $s in $d/marcxml:subfield[@code="w"]
                 let $iStr := fn:string($s)
                 return
@@ -3253,7 +3300,7 @@ declare function marcbib2bibframe:generate-related-work
                     else 
                         element bf:system-number { fn:normalize-space($iStr) }   	                	
 			else ()
-
+:)
 			}
 		}
 };
@@ -3556,30 +3603,44 @@ declare function marcbib2bibframe:generate-work(
         8 - No display constant generated
     :)
 	let $abstract:= 
-		for $d in  $marcxml/marcxml:datafield[@tag="520"]
+		for $d in  $marcxml/marcxml:datafield[@tag="520"][fn:not(marcxml:subfield[@code="u"])] 
 			let $abstract-type:=
 				if ($d/@idn1="") then "summary"
              			else if ($d/@idn1="0") then "contentDescription"
 				else if ($d/@idn1="1") then "review"
-				else if ($d/@idn1="2") then "contentDescription"
+				else if ($d/@idn1="2") then "scopeContent"
 				else if ($d/@idn1="3") then "abstract"
 				else if ($d/@idn1="4") then "contentAdvice"
-				else 				"contentDescription"
+				else 				"summary"
 			return	
-				element {fn:concat("bf:",$abstract-type)} {
+			if ($d/marcxml:subfield[@code="c"]) then
+			 element bf:summary { 
+			     element bf:SummaryEntity {
+			         element bf:summaryType {$abstract-type},
+			          element bf:summaryNote {
+			             fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")
+			         },
+			         element bf:summaryAssigner {
+			             fn:string($d/marcxml:subfield[@code="c"])
+			         }
+			     }
+		     }
+		     
+			else
+				element bf:summary {
 					fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")
 				}      			
 			
-    let $abstract-annotation:= (: for now, do abstracts both as simple property and annotation:)
-        for $d in  $marcxml/marcxml:datafield[@tag="520"]
+    let $abstract-annotation:= 
+        for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[@code="u"]] 
         let $abstract-type:=
-            if ($d/@idn1="") then "Content Description"
+            if ($d/@idn1="") then "Summary"
             else if ($d/@idn1="0") then "Content Description"
             else if ($d/@idn1="1") then "Review"
-            else if ($d/@idn1="2") then "Content Description"
+            else if ($d/@idn1="2") then "Scope and Content"
             else if ($d/@idn1="3") then "Abstract"
-            else if ($d/@idn1="4") then "Content Advice"
-            else                        "Content Description"
+            else if ($d/@idn1="4") then "Content advice"
+            else                        "Summary"
         return
             element bf:hasAnnotation {
                 element bf:Annotation {
@@ -3819,14 +3880,15 @@ declare function marcbib2bibframe:get-subject(
                     for $cl in $madsrdf/madsrdf:componentList
                     return
                         element bf:hasAuthority {
-                        element madsrdf:Authority {
+                        element madsrdf:Authority {                        
+                        $madsrdf/madsrdf:authoritativeLabel,
                                 element madsrdf:componentList {
                                     attribute rdf:parseType {"Collection"},
                                     for $a in $cl/madsrdf:*
                                     return
                                         element {fn:name($a)} {
                                             $a/rdf:type,
-                                            $madsrdf/madsrdf:authoritativeLabel 
+                                           element madsrdf:authoritativeLabel{ fn:string($a/madsrdf:authoritativeLabel)} 
                                         }
                                 }
                              }
@@ -3995,6 +4057,7 @@ declare function marcbib2bibframe:get-name(
     let $elementList := if ($d/@tag!='534') then
       element bf:hasAuthority{
          element madsrdf:Authority {
+         element madsrdf:authoritativeLabel {$aLabel},
             element madsrdf:elementList {
             	attribute rdf:parseType {"Collection"},
                 for $s in $d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q']
