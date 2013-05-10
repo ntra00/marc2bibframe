@@ -62,7 +62,8 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
 {
     
     let $works := RDFXMLnested2flat:isolateAndIdentify($rdfxml, "Work", $baseuri)
-    let $instances := RDFXMLnested2flat:isolateAndIdentify($rdfxml, "Instance", $baseuri)
+    let $instances :=RDFXMLnested2flat:isolateAndIdentify($rdfxml, "Instance", $baseuri)
+    
     let $ientities := RDFXMLnested2flat:isolateAndIdentify($rdfxml, "IndexEntity", $baseuri)
     let $annotations := RDFXMLnested2flat:isolateAndIdentify($rdfxml, "Annotation", $baseuri)
     
@@ -73,7 +74,8 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
         let $w-works := 
             for $rw in $w-works
             return RDFXMLnested2flat:createResourceOrNot($rw, $works)
-
+let $test:= $w-works/fn:name()
+let $test2:=$w/bf:subject[1]/bf:Work
         let $w-ientities := $w/child::node()[
             fn:name(child::node()[1])="bf:Agent" or
             fn:name(child::node()[1])="bf:Person" or
@@ -81,14 +83,15 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             fn:name(child::node()[1])="bf:Topic" or
             fn:name(child::node()[1])="bf:Genre" or
             fn:name(child::node()[1])="bf:Organization" or
-            fn:name(child::node()[1])="bf:ClassificationEntity" or
+            fn:name(child::node()[1])="bf:ClassificationEntity" or            
+            fn:name(child::node()[1])="madsrdf:Authority" or            
             fn:name(child::node()[1])="bf:LCC"]
         let $w-ientities := 
             for $ie in $w-ientities
             return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
         
         let $w-id := $w/@rdf:about  
-        let $w-instances := $instances/bf:Instance[bf:instanceOf[@rdf:resource eq $w-id]]
+        let $w-instances := $instances/bf:Instance[bf:instanceOf[@rdf:resource eq $w-id]]        
         let $w-instances := 
             for $rw in $w-instances
             return 
@@ -102,6 +105,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             fn:name(child::node()[1]) eq "bf:Review" or 
             fn:name(child::node()[1]) eq "bf:Abstract" or 
             fn:name(child::node()[1]) eq "bf:ContentAdvice"]
+            
         let $w-annotations := $annotations/child::node()[bf:annotates[@rdf:resource eq $w-id]]
         let $w-annotations := 
             for $rw in $w-annotations
@@ -112,7 +116,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             
         return 
             element {fn:name($w)} {
-                $w/@*,
+                $w/@*,           
                 $w/child::node()[
                     fn:name(child::node()[1])!="bf:Work" and
                     fn:name(child::node()[1])!="bf:Agent" and
@@ -122,12 +126,17 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                     fn:name(child::node()[1])!="bf:Genre" and
                     fn:name(child::node()[1])!="bf:Organization" and
                     fn:name(child::node()[1])!="bf:ClassificationEntity" and
+                    fn:name(child::node()[1])!="bf:IdentifierEntity" and                    
                     fn:name(child::node()[1])!="bf:LCC" and
                     fn:name(child::node()[1])!="bf:Annotation" and
                     fn:name(child::node()[1])!="bf:ContentDescription" and
                     fn:name(child::node()[1])!="bf:Review" and
-                    fn:name(child::node()[1])!="bf:Abstract" and
-                    fn:name(child::node()[1])!="bf:ContentAdvice"],
+                    fn:name(child::node()[1])!="bf:Abstract" and                    
+                    fn:name(child::node()[1])!="bf:ContentAdvice" and
+                    fn:name(child::node()[1])!="madsrdf:Authority" 
+                    and
+                    fn:name(child::node()[1])!="bf:Instance"
+                    ],
                 $w-ientities,
                 $w-works,
                 $w-instances,
@@ -135,7 +144,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             }
             
     let $instances := 
-        for $i in $instances/bf:Instance
+        for $i in $instances//bf:Instance
 
         let $i-ientities := $i/bf:*[
             fn:name(bf:*[1])="bf:Person" or
@@ -145,10 +154,11 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             fn:name(bf:*[1])="bf:Genre" or
             fn:name(bf:*[1])="bf:Organization" or
             fn:name(bf:*[1])="bf:ClassificationEntity" or
-            fn:name(bf:*[1])="bf:LCC"]
+            fn:name(bf:*[1])="bf:LCC" or 
+            fn:name(bf:*[1])="madsrdf:Authority"]
         let $i-ientities := 
             for $ie in $i-ientities
-            return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
+                return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
         
         let $i-id := $i/@rdf:about  
         let $i-annotations := $instances/bf:Annotation[bf:annotates[@rdf:resource eq $i-id]]
@@ -170,21 +180,26 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
                     fn:name(child::node()[1])!="bf:Topic" and
                     fn:name(child::node()[1])!="bf:Genre" and
                     fn:name(child::node()[1])!="bf:Organization" and
-                    fn:name(child::node()[1])!="bf:ClassificationEntity" and
-                    fn:name(child::node()[1])!="bf:LCC"],
+                    fn:name(child::node()[1])!="bf:ClassificationEntity" and                                       
+                    fn:name(child::node()[1])!="bf:TemporalConcept" and                    
+                    fn:name(child::node()[1])!="bf:LCC" and
+                    fn:name(child::node()[1])!="madsrdf:Authority" 
+                    ],
                 $i-ientities,
                 $i-annotations
+                
             }
             
-    let $annotations := $annotations/bf:*
+    let $annotations := $annotations/bf:*    
     let $ientities := $ientities/*
     
     return 
         element rdf:RDF {
-            $works,
+            comment {fn:concat("works:", fn:count($works/*), ", instances: ",fn:count($instances/*), ", annotations: ",fn:count($annotations/*), ", distilled entities:", fn:count($ientities/*) ) },            
+            $works,        
             $instances,
             $annotations,
-            $ientities
+            $ientities            
         }
 
 };
@@ -204,17 +219,17 @@ declare function RDFXMLnested2flat:createIdentifiedResource(
 {
 
     let $rs := 
-        if ( fn:count($resources/madsrdf:authoritativeLabel) > 0 or fn:count($resources/bf:authorizedAccessPoint) > 0 ) then
+        if (  fn:count($resources/bf:authorizedAccessPoint) > 0 or  fn:count($resources/madsrdf:authoritativeLabel) > 0 ) then
             let $rs-labels := 
                 for $r in $resources
-                let $l := ($r/madsrdf:authoritativeLabel|$r/bf:label|$r/bf:label|$r/bf:authorizedAccessPoint|$r/bf:title)[1]
+                let $l := ($r/bf:authorizedAccessPoint|$r/madsrdf:authoritativeLabel|$r/bf:label|$r/bf:title)[1]
                 return $l
             let $distinct-labels := fn:distinct-values($rs-labels)
             let $rs := 
                 for $dl in $distinct-labels
                 return 
-                    if ($resources[madsrdf:authoritativeLabel=$dl or bf:authorizedAccessPoint =$dl][1]) then
-                        $resources[madsrdf:authoritativeLabel=$dl or  bf:authorizedAccessPoint =$dl][1]
+                    if ($resources[bf:authorizedAccessPoint =$dl or madsrdf:authoritativeLabel=$dl ]) then
+                        $resources[bf:authorizedAccessPoint =$dl or madsrdf:authoritativeLabel=$dl ][1]
                     else
                         $resources[bf:label=$dl][1]
             return $rs
@@ -227,10 +242,10 @@ declare function RDFXMLnested2flat:createIdentifiedResource(
     return
         element {fn:name($r)} { 
             if  ($r/@rdf:about) then
-                $r/@rdf:about
+                $r/@rdf:about                
             else
-                attribute rdf:about { fn:concat($baseuri, $n, $pos) },
-            $r/*
+                attribute rdf:about { fn:concat($baseuri, $n, $pos) },                
+            $r/*           
         }
 };
 
@@ -248,21 +263,26 @@ declare function RDFXMLnested2flat:createResourceOrNot(
             $haystack as element(rdf:RDF)
         ) as element()
 {
-    let $label := ($needle/bf:*[1]/bf:authorizedAccessPoint[1]|$needle/bf:*[1]/madsrdf:authoritativeLabel|$needle/bf:*[1]/rdfs:label|$needle/bf:*[1]/bf:label)[1]
+    let $label := ($needle/bf:*[1]/bf:authorizedAccessPoint[1]|$needle/bf:*[1]/madsrdf:authoritativeLabel|$needle/bf:*[1]/rdfs:label|$needle/bf:*[1]/bf:label|$needle/bf:*[1]/bf:title)[1]
     (: let $needle-found := $haystack/bf:*[child::node()=xs:string($label)] :)
     let $needle-found := 
             (   $haystack/bf:*[xs:string(bf:authorizedAccessPoint[1]) eq xs:string($label)]|
                 $haystack/bf:*[xs:string(madsrdf:authoritativeLabel[1]) eq xs:string($label)]|
                 $haystack/bf:*[xs:string(rdfs:label[1]) eq xs:string($label)]|
-                $haystack/bf:*[xs:string(bf:label[1]) eq xs:string($label)]
+                $haystack/bf:*[xs:string(bf:label[1]) eq xs:string($label)],
+                $haystack/bf:*[xs:string(bf:title[1]) eq xs:string($label)]
             )[1]
-    return
+    return 
         if ($needle-found[1]) then
             element {fn:name($needle)} {
                 attribute rdf:resource {xs:string($needle-found[1]/@rdf:about)}
-            }
-        else
+            }        
+        else            
             $needle
+     (: }:)
+           
+            
+         
 };
 
 
@@ -290,7 +310,7 @@ declare function RDFXMLnested2flat:isolateAndIdentify
         else if ($isolate eq "Instance") then
             $rdfxml//bf:Instance
         else if ($isolate eq "IndexEntity") then
-            $rdfxml//bf:Agent|$rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC|$rdfxml//bf:TemporalConcept
+            $rdfxml//bf:Agent|$rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC|$rdfxml//bf:TemporalConcept|$rdfxml//madsrdf:Authority|$rdfxml//bf:IdentifierEntity|$rdfxml//bf:IntendedAudienceEntity
         else if ($isolate eq "Annotation") then
             $rdfxml//bf:Annotation|$rdfxml//bf:ContentDescription|$rdfxml//bf:Review|$rdfxml//bf:Abstract|$rdfxml//bf:ContentAdvice
         else 
@@ -298,6 +318,6 @@ declare function RDFXMLnested2flat:isolateAndIdentify
     let $resources := RDFXMLnested2flat:createIdentifiedResource($resources, $baseuri)
     return 
         element rdf:RDF {
-            $resources
+            $resources           
         }
 };

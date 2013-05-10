@@ -3615,7 +3615,7 @@ declare function marcbib2bibframe:generate-work(
 		     }
 		     
 			else
-				element bf:summary {
+				element  bf:summary {
 					fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")
 				}      			
 			
