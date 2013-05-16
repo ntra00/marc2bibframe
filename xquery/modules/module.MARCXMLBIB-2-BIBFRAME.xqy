@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-07-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-16-T11:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -387,7 +387,7 @@ declare variable $marcbib2bibframe:relationships :=
 	  	    <type tag="490" ind1="0" property="inSeries">hasParts</type>
 	  	    <type tag="510" property="describedIn">isReferencedBy</type>
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
-	  	    <type tag="(400|410|411|440|760|800|810|811|830)" property="series">hasParts</type>	  	    
+	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>	  	    
             <type tag="730"  property="relatedWork">relatedItem</type>             
         </work-relateds>
         <!-- Instance to Work relationships (none!) -->
@@ -2189,19 +2189,19 @@ declare function marcbib2bibframe:generate-880-label
             else if ($node-name="place") then 
                 for $sf in $match/marcxml:subfield[@code="a"]
                 return
-                    element  rdfs:label {
+                    element  bf:label {
                         attribute xml:lang {$xmllang},                         
                         marcbib2bibframe:clean-string(fn:string($sf))
                     }
 	else if ($node-name="provider") then 
                 for $sf in $match/marcxml:subfield[@code="b"]
                 return
-                    element rdfs:label {
+                    element bf:label {
                         attribute xml:lang {$xmllang},   			
                         marcbib2bibframe:clean-string(fn:string($sf))
                 }
             else 
-                element rdfs:label {
+                element bf:label {
                     fn:string($match/marcxml:subfield[@code="a"])					
 				}				
 	else ()
@@ -2827,51 +2827,12 @@ declare function marcbib2bibframe:generate-instance-from856(
                 }
              else             	
                element bf:hasAnnotation {
-            	 	element bf:Annotation {            
-                    		if (fn:string($d/marcxml:subfield[@code="3"]) ne "") then
-                        		element bf:label {
-                            			fn:string($d/marcxml:subfield[@code="3"])       					
-                        		}
-                    		else (),
-                    		(:contributors are now handled in get-names:)
-		          (:if ( 
-		               $type="contributor" and 
-		                        $d/../marcxml:datafield[
-		                            fn:starts-with(@tag , "10") or
-		                            fn:starts-with(@tag , "11") or 
-		                            fn:starts-with(@tag , "71") or
-		                            fn:starts-with(@tag , "70") or 
-		                            fn:starts-with(@tag , "72")]
-		                        ) then
-		           let $df :=
-		                      $d/../marcxml:datafield[fn:starts-with(@tag , "10")]|
-                                		$d/../marcxml:datafield[fn:starts-with(@tag , "11")]|
-                                		$d/../marcxml:datafield[fn:starts-with(@tag , "70")]|
-                                		$d/../xml/marcxml:datafield[fn:starts-with(@tag , "71")]|
-                                		$d/../marcxml:datafield[fn:starts-with(@tag , "72")]:)
-			
-	                   	   (:  let $names := :)
-	                    	    (:for $datafield in $df
-	                    	      let $internal-name-link:=
-                                        attribute rdf:resource {                                                   
-                                                        fn:concat("http://id.loc.gov/temp/names/",     fn:string($datafield/@tag),fn:replace(fn:string($datafield/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))
-                                                   
-                                        }
-:)
-(:return marcbib2bibframe:get-name( $datafield ):)
-	                    	    	(: nate changed this so we annotate the names
-	                    	    	instead of looking like they created this annotation:)
-	                    	    	(:return element bf:annotates {$internal-name-link} 
-	                
-	                    else 		(:not contributor:)
-	                        element bf:annotationAssertedBy {
-	                                attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc"} 
-	                            },
-	                    
-	                    element bf:annotates {
-	                        attribute rdf:resource {$workID}
-	                    },
-	                    :)
+            	 	element bf:Annotation {
+            	 	element bf:label {
+                    		if (fn:string($d/marcxml:subfield[@code="3"]) ne "") then                        		
+                            			fn:string($d/marcxml:subfield[@code="3"])       					                        		
+                    		else  "No label"
+                    		},
 	                    
 	                    (:  
 			annotation service is restful in-id version of $u; 
@@ -3139,7 +3100,7 @@ return
 			element bf:Work{
 			    element bf:authorizedAccessPoint {$title},
 				element bf:title {$title},			
-				element rdfs:label{$title},	
+				element bf:label{$title},	
 				if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
 				element bf:hasInstance {
 					element bf:Instance {
@@ -3187,7 +3148,7 @@ return
         element bf:Work{ 
             element bf:authorizedAccessPoint {fn:string($d/marcxml:subfield[@code="a"])},
             element bf:title {fn:string($d/marcxml:subfield[@code="a"])},
-            element rdfs:label {fn:string($d/marcxml:subfield[@code="a"])},
+            element bf:label {fn:string($d/marcxml:subfield[@code="a"])},
             element bf:hasInstance {
                         element bf:Instance {
                             element  {$link-property} {fn:string($d/marcxml:subfield[@code="u"])}
@@ -3208,8 +3169,10 @@ declare function marcbib2bibframe:generate-related-work
 { 	 
 
     let $titleFields := 
-        if (fn:matches($d/@tag,"(440|630|730|740|830)")) then
+        if (fn:matches($d/@tag,"(630|730|740)")) then
             "(a|n|p)"            
+        else if  (fn:matches($d/@tag,"(440|490|830)")) then
+            "(a|n|p|v)"
         else if (fn:matches($d/@tag,"(534)")) then
             "(t|b|f)"
         else if (fn:matches($d/@tag,"(510)")) then
@@ -3228,7 +3191,7 @@ declare function marcbib2bibframe:generate-related-work
             marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])
 
                
-        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|800|810|811|510|630|730|740|830)")) ) then
+        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|490|800|810|811|510|630|730|740|830)")) ) then
             marcbib2bibframe:get-name($d)
         else ()
         
@@ -3258,6 +3221,7 @@ declare function marcbib2bibframe:generate-related-work
     return 
  	  element {fn:concat("bf:",fn:string($type/@property))} {
 		element bf:Work {		          
+		element bf:label {$title},
             element bf:authorizedAccessPoint {$aLabel},
             $aLabelWork880,
             if ($d/marcxml:subfield[@code="w" or @code="x"] and fn:not($d/@tag="630")) then (:(identifiers):)
@@ -3525,7 +3489,7 @@ declare function marcbib2bibframe:generate-work(
     let $language := fn:normalize-space(fn:substring($cf008, 36, 3))
     let $language := 
         if ($language ne "" and $language ne "|||") then
-            element bf:language {
+            element bf:primaryLanguage {
                 attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/" , $language) }
             }
         else
@@ -3591,7 +3555,7 @@ declare function marcbib2bibframe:generate-work(
         8 - No display constant generated
     :)
 	let $abstract:= 
-		for $d in  $marcxml/marcxml:datafield[@tag="520"][fn:not(marcxml:subfield[@code="u"])] 
+		for $d in  $marcxml/marcxml:datafield[@tag="520"][fn:not(marcxml:subfield[@code="c"]) and fn:not(marcxml:subfield[@code="u"])] 
 			let $abstract-type:=
 				if ($d/@idn1="") then "summary"
              			else if ($d/@idn1="0") then "contentDescription"
@@ -3601,26 +3565,13 @@ declare function marcbib2bibframe:generate-work(
 				else if ($d/@idn1="4") then "contentAdvice"
 				else 				"summary"
 			return	
-			if ($d/marcxml:subfield[@code="c"]) then
-			 element bf:summary { 
-			     element bf:SummaryEntity {
-			         element bf:summaryType {$abstract-type},
-			          element bf:summaryNote {
-			             fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")
-			         },
-			         element bf:summaryAssigner {
-			             fn:string($d/marcxml:subfield[@code="c"])
-			         }
-			     }
-		     }
-		     
-			else
+			
 				element  bf:summary {
-					fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"")
+					fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")
 				}      			
 			
     let $abstract-annotation:= 
-        for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[@code="u"]] 
+        for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] 
         let $abstract-type:=
             if ($d/@idn1="") then "Summary"
             else if ($d/@idn1="0") then "Content Description"
@@ -3649,7 +3600,7 @@ declare function marcbib2bibframe:generate-work(
                     for $sf in $d/marcxml:subfield[@code="u"]
                     return element bf:annotationBody { fn:string($sf) },
                         
-                    element bf:annotationBodyLiteral { fn:string-join($d/marcxml:subfield[@code="a" or @code="b"],"") },
+                    element bf:annotationBodyLiteral { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },
                         
                     element bf:annotates {
                         attribute rdf:resource {$workID}
@@ -3749,7 +3700,7 @@ declare function marcbib2bibframe:generate-work(
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
-            (:element rdfs:label {    fn:string(  $titles/bf:*[1])},:)
+       
             for $t in fn:distinct-values($types)
             return
                 element rdf:type {
@@ -4117,8 +4068,7 @@ declare function marcbib2bibframe:get-name(
 
        element {$resourceRole} {
             element {$class} {  (:$internal-name-link,      :)
-                element bf:label {$label},
-                element rdfs:label {$aLabel},
+                element bf:label {$label},                
                 if ($d/@tag!='534') then element bf:authorizedAccessPoint {$aLabel} else (),
                 marcbib2bibframe:generate-880-label($d,"name"),
                 $elementList,             
@@ -4161,8 +4111,7 @@ declare function marcbib2bibframe:get-name-fromSOR(
         return
             element {$prop} {
                 element bf:Agent {
-                    element bf:label {$name},
-                    element rdfs:label {$name},
+                    element bf:label {$name},                  
                     if ($role ne "") then
                         element bf:resourceRole {$role}
                     else
@@ -4197,7 +4146,7 @@ return if ($type= "Audience: ") then
 			if ($tag/marcxml:subfield[@code="a"]) then
 				element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])}
 			else (),	
-			element bf:audienceType {$type},
+			element bf:audienceLevel {$type},
 			if ($tag/marcxml:subfield[@code="b"]) then
 				element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}
 			else ()	
@@ -4373,8 +4322,8 @@ declare function marcbib2bibframe:get-uniformTitle(
     return
     
         element bf:Work {
-                element bf:authorizedAccessPoint{$label},
-                element rdfs:label {$aLabel},        
+                (:element bf:authorizedAccessPoint{$label},:)
+                element bf:label {$aLabel},        
 	  		    element bf:uniformTitle {$label},              
               $elementList
             }        
