@@ -74,8 +74,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
         let $w-works := 
             for $rw in $w-works
             return RDFXMLnested2flat:createResourceOrNot($rw, $works)
-let $test:= $w-works/fn:name()
-let $test2:=$w/bf:subject[1]/bf:Work
+
         let $w-ientities := $w/child::node()[
             fn:name(child::node()[1])="bf:Agent" or
             fn:name(child::node()[1])="bf:Person" or
@@ -83,6 +82,7 @@ let $test2:=$w/bf:subject[1]/bf:Work
             fn:name(child::node()[1])="bf:Topic" or
             fn:name(child::node()[1])="bf:Genre" or
             fn:name(child::node()[1])="bf:Organization" or
+            fn:name(child::node()[1])="bf:TemporalConcept" or
             fn:name(child::node()[1])="bf:ClassificationEntity" or            
             fn:name(child::node()[1])="madsrdf:Authority" or            
             fn:name(child::node()[1])="bf:LCC"]
@@ -125,6 +125,7 @@ let $test2:=$w/bf:subject[1]/bf:Work
                     fn:name(child::node()[1])!="bf:Topic" and
                     fn:name(child::node()[1])!="bf:Genre" and
                     fn:name(child::node()[1])!="bf:Organization" and
+                    fn:name(child::node()[1])!="bf:TemporalConcept" and
                     fn:name(child::node()[1])!="bf:ClassificationEntity" and
                     fn:name(child::node()[1])!="bf:IdentifierEntity" and                    
                     fn:name(child::node()[1])!="bf:LCC" and
@@ -153,7 +154,7 @@ let $test2:=$w/bf:subject[1]/bf:Work
             fn:name(bf:*[1])="bf:Topic" or
             fn:name(bf:*[1])="bf:Genre" or
             fn:name(bf:*[1])="bf:Organization" or
-            fn:name(bf:*[1])="bf:ClassificationEntity" or
+            fn:name(bf:*[1])="bf:ClassificationEntity" or          
             fn:name(bf:*[1])="bf:LCC" or 
             fn:name(bf:*[1])="madsrdf:Authority"]
         let $i-ientities := 
@@ -194,13 +195,16 @@ let $test2:=$w/bf:subject[1]/bf:Work
     let $ientities := $ientities/*
     
     return 
-        element rdf:RDF {
-            comment {fn:concat("works:", fn:count($works/*), ", instances: ",fn:count($instances/*), ", annotations: ",fn:count($annotations/*), ", distilled entities:", fn:count($ientities/*) ) },            
+       <rdf:RDF  xmlns:bf="http://bibframe.org/vocab/"      
+        xmlns:rdfs     = "http://www.w3.org/2000/01/rdf-schema#"
+        xmlns:madsrdf    = "http://www.loc.gov/mads/rdf/v1#"
+        > 
+        {    comment {fn:concat("works:", fn:count($works/*), ", instances: ",fn:count($instances/*), ", annotations: ",fn:count($annotations/*), ", distilled entities:", fn:count($ientities/*) ) },            
             $works,        
             $instances,
             $annotations,
-            $ientities            
-        }
+            $ientities}            
+        </rdf:RDF>
 
 };
 
