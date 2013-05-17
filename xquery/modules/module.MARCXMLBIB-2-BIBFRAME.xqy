@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-16-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-17-T11:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -357,7 +357,7 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="762" property="subseries">hasParts</type>	
 		    <type tag="765" property="translationOf">hasTranslation</type>
 		    <type tag="767" property="translation">translationOf</type>
-		    <type tag="770" property="supplement">translationOf</type>
+		    <type tag="770" property="supplement">supplement</type>
 		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>		    	
 		    <type tag="772" property="memberOf">host</type>-->
 		    <type tag="773" property="host">hasConstituent</type>
@@ -1918,15 +1918,15 @@ declare function marcbib2bibframe:marcbib2bibframe(
         if ($marcxml/marcxml:leader) then
             let $work := marcbib2bibframe:generate-work($marcxml, $about) 
             (:let $instances := marcbib2bibframe:generate-instances($marcxml, $about):)
-            let $holdings := marcbib2bibframe:generate-holdings($marcxml, $about)
+        (:    let $holdings := marcbib2bibframe:generate-holdings($marcxml, $about):)
             return
                 element rdf:RDF {        attribute dcterms:modified {$marcbib2bibframe:last-edit},                
-                    $work,
+                    $work
                     (:we might want to embed the instances in the work with hasInstance:)
                   (:  $instances,:)
                     (:,
                       generate-controlfields($marcxml):)
-                      $holdings
+                  (:    $holdings:)
                 }
         else
             element rdf:RDF {
@@ -2060,6 +2060,7 @@ let $physResourceData:=()
             "PhysicalResource"
         else 
             ""
+      let $holdings := marcbib2bibframe:generate-holdings($d/ancestor::marcxml:record, $workID)
     (: moved to generate-holdings :)
    (: let $call-num:= 
         if ($d/../marcxml:datafield[@tag eq "050"]) then
@@ -2109,7 +2110,8 @@ let $physResourceData:=()
             $notes,
           (:  $links,:)
          (:   $related-works,:)
-            $derivedFrom                      
+            $derivedFrom,
+            $holdings
         }
 };
 
@@ -2780,8 +2782,10 @@ declare function marcbib2bibframe:generate-instance-from856(
         element bf:derivedFrom {
             attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",$bibid)}
         } 
-
-    
+    let $annotates:=  element bf:annotates {
+                        attribute rdf:resource {$workID}
+                    }
+   
         
         let $category:=         
             if (      fn:contains(
@@ -2822,7 +2826,8 @@ declare function marcbib2bibframe:generate-instance-from856(
 	                    element bf:instanceOf {
 	                        attribute rdf:resource {$workID}
 	                  	},
-                    		$biblink              
+                    		$biblink,
+                    		$annotates
                 	}
                 }
              else             	
@@ -2850,7 +2855,8 @@ declare function marcbib2bibframe:generate-instance-from856(
 	                    		                 fn:normalize-space(fn:string($u))
 	                    		                }
 	                    		},                    		
-	                    $biblink
+	                    $biblink,
+	                    $annotates
               		}
               	}
 
@@ -2957,13 +2963,15 @@ declare function marcbib2bibframe:generate-holdings(
 	        		
 return 
         if ($call-num) then 
-         element bf:Holding {
-            element bf:annotates {
-                attribute rdf:resource {$workID}
-            },
-         	$call-num
-         }	
-         	else ()
+            element bf:hasHolding{   
+                element bf:Holding {
+                   (: element bf:annotates {
+                        attribute rdf:resource {$workID}
+                    },:)
+         	    $call-num
+                }
+            }
+      	else ()
     
 };
 (:~
@@ -3233,26 +3241,18 @@ declare function marcbib2bibframe:generate-related-work
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
 	                    else if ($s/@code="x") then
-	                        element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }                           	                	
+	                       element bf:hasInstance{ element bf:Instance{ 
+	                                   element bf:title {$title},
+	                                   element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:replace(marcbib2bibframe:clean-string($iStr)," ","")) } }
+	                                   }
+	                                   }
 		               else ()		               
      	   else 
      	       (),		
             element bf:title {$title},
             $name
             
-          (: nate says:why was this repeated 2013-05-07 commented?  if ($d/marcxml:subfield[@code="w"]) then
-                for $s in $d/marcxml:subfield[@code="w"]
-                let $iStr := fn:string($s)
-                return
-                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then                        
-                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",marcbib2bibframe:clean-string(fn:replace($iStr, "\(OCoLC\)", ""))) }}
-                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then                        
-                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:replace($iStr, "\(DLC\)", "")," ",""))}                   
-                        }
-                    else 
-                        element bf:system-number { fn:normalize-space($iStr) }   	                	
-			else ()
-:)
+          
 			}
 		}
 };
@@ -3425,7 +3425,7 @@ declare function marcbib2bibframe:generate-work(
     let $uniformTitle := 
         for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
         return marcbib2bibframe:get-uniformTitle($d)
-        
+                
     let $names := 
         for $d in (
                     $marcxml/marcxml:datafield[@tag eq "100"]|
@@ -3658,7 +3658,7 @@ declare function marcbib2bibframe:generate-work(
                         },
                         element bf:title {$t},
                             element bf:hasAuthority{
-                                element madsrdf:Authority { 
+                                element madsrdf:Authority { element madsrdf:authoritativeLabel{fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )},
                                     element madsrdf:elementList {
                                         attribute rdf:parseType {"Collection"},
                                         element madsrdf:MainTitleElement {
@@ -3737,7 +3737,8 @@ declare function marcbib2bibframe:generate-work(
             $biblink,
             for $i in $instances 
                 return element  bf:hasInstance{$i},
-             $instancesfrom856             
+             $instancesfrom856
+            
         }
 };
 
@@ -3869,6 +3870,7 @@ declare function marcbib2bibframe:get-subject(
                     element bf:label { fn:string($aLabel) },                    
                     element bf:hasAuthority {
                          element madsrdf:Authority {
+                          element madsrdf:authoritativeLabel{fn:string($aLabel)},
                             element madsrdf:componentList {
                                 attribute rdf:parseType {"Collection"},
                                 $components 
@@ -4056,11 +4058,6 @@ declare function marcbib2bibframe:get-name(
             return     marcbib2bibframe:generate-instance-from856($link, "test")            
         else 
             ()
- (: this is no longer needed since we're embedding bio annotations here 
- let $internal-name-link:=
-            attribute rdf:about {
-            fn:concat("http://id.loc.gov/temp/names/",  $tag,fn:replace(fn:string($d/marcxml:subfield[@code='a' ]),"( |,|\.|\]|\[)",""))            
-            }:)
     let $system-number:= 
         for $sys-num in $d/marcxml:subfield[@code="0"] 
                      return marcbib2bibframe:handle-system-number($sys-num)            
@@ -4074,8 +4071,9 @@ declare function marcbib2bibframe:get-name(
                 $elementList,             
                 $resourceRoleTerms,
                  $system-number,
-                 $bio-links,
-                element bf:descriptionRole { $desc-role}
+                 $bio-links
+                 (:nate removed this so we can re-use the agent. now we assume that creator is primary and contributors are not:)
+                (:element bf:descriptionRole { $desc-role}:)
             }
         }
 };
@@ -4258,8 +4256,31 @@ declare function marcbib2bibframe:get-title(
             marcbib2bibframe:generate-880-label($d,"title")
         )
 };
-
-
+(:~
+:   This function generates a related work, as translation of from the 100, 240.
+:   It takes a 130 or 240 element.
+:   It generates a bf:translationOf/bf:Work
+:
+:   @param  $d        element is the marcxml:datafield  
+:   @return bf:translationOf
+:)
+declare function marcbib2bibframe:generate-translationOf (    $d as element(marcxml:datafield)
+    ) as element(bf:translationOf)
+    
+{
+  let $aLabel :=  marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[fn:not(fn:matches(@code,"(0|6|8|l)") ) ]," "))    
+    
+return element bf:translationOf {
+               element bf:Work {
+                (:element bf:authorizedAccessPoint{$label},:)                
+                element bf:title {$aLabel},
+                element madsrdf:authoritativeLabel{$aLabel},
+                if ($d/../marcxml:datafield[@tag="100"]) then
+                    element bf:creator{fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
+                else ()
+                }
+       }
+};
 (:~
 :   This function generates a uniformTitle.
 :   It takes a specific datafield as input.
@@ -4275,11 +4296,16 @@ declare function marcbib2bibframe:get-uniformTitle(
     (:let $label := fn:string($d/marcxml:subfield["a"][1]):)
     (:??? filter out nonsorting chars???:)
     (:remove $o in musical arrangements???:)
-    let $label := marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , ' '))
-    let $aLabel := marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8' ] , ' '))    
+    let $aLabel := marcbib2bibframe:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , ' '))       
+    let $translationOf :=  
+        if ($d/marcxml:subfield[@code="l"]) then marcbib2bibframe:generate-translationOf($d)
+                else ()
+                
+    
     let $elementList := 
         element bf:hasAuthority {
         element madsrdf:Authority {
+       element madsrdf:authoritativeLabel{ fn:string($aLabel)},
         element madsrdf:elementList {
         	attribute rdf:parseType {"Collection"},
             for $s in $d/marcxml:subfield
@@ -4322,10 +4348,10 @@ declare function marcbib2bibframe:get-uniformTitle(
     return
     
         element bf:Work {
-                (:element bf:authorizedAccessPoint{$label},:)
                 element bf:label {$aLabel},        
-	  		    element bf:uniformTitle {$label},              
-              $elementList
+	  		    element bf:uniformTitle {$aLabel},              
+              $elementList,
+              $translationOf
             }        
             
 };
