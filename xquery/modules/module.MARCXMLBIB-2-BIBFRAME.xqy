@@ -3689,24 +3689,26 @@ declare function marcbib2bibframe:generate-work(
                 return 
                     element part {
                         element bf:authorizedAccessPoint {
-                            fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )
+                            fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
                         },
                         element bf:title {$t},
-                            element bf:hasAuthority{
-                                element madsrdf:Authority { element madsrdf:authoritativeLabel{fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )},
-                                    element madsrdf:elementList {
-                                        attribute rdf:parseType {"Collection"},
-                                        element madsrdf:MainTitleElement {
-                                           element madsrdf:elementValue {$t}
-                                        }
+                        (:
+                        element bf:hasAuthority{
+                            element madsrdf:Authority { element madsrdf:authoritativeLabel{fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )},
+                                element madsrdf:elementList {
+                                    attribute rdf:parseType {"Collection"},
+                                    element madsrdf:MainTitleElement {
+                                        element madsrdf:elementValue {$t}
                                     }
                                 }
-                            },                       
+                            }
+                        },
+                        :)                       
                         $details/*                                 
                     }
 		return						
-	                for $item in $set
-	                return
+                for $item in $set
+                return
 	                    element bf:contains {   
 	                        element bf:Work {	                            
 	                            $item/*
@@ -3826,15 +3828,20 @@ declare function marcbib2bibframe:get-subject(
             let $madsrdf := $madsrdf/madsrdf:*[1]
             let $details :=
                 ( 
-                    element rdf:type {
-                        attribute rdf:resource { 
-                            fn:concat("http://www.loc.gov/mads/rdf/v1#" , fn:local-name($madsrdf))
-                        }
-                    },
                     element bf:authorizedAccessPoint {fn:string($madsrdf/madsrdf:authoritativeLabel)},
                     element bf:label { fn:string($madsrdf/madsrdf:authoritativeLabel) },
+                    element bf:hasAuthority {
+                        element madsrdf:Authority {
+                            element rdf:type {
+                                attribute rdf:resource { 
+                                    fn:concat("http://www.loc.gov/mads/rdf/v1#" , fn:local-name($madsrdf))
+                                }
+                            },
+                            $madsrdf/madsrdf:authoritativeLabel
+                        }
+                    },
                     
-                    
+                    (:
                     for $cl in $madsrdf/madsrdf:componentList
                     return
                         element bf:hasAuthority {
@@ -3851,8 +3858,9 @@ declare function marcbib2bibframe:get-subject(
                                 }
                              }
                         },
+                    :)
                     for $sys-num in $d/marcxml:subfield[@code="0"] 
-                        return marcbib2bibframe:handle-system-number($sys-num)                    
+                    return marcbib2bibframe:handle-system-number($sys-num)                    
                 )
             return ($details)
             
@@ -4016,7 +4024,7 @@ declare function marcbib2bibframe:get-name(
     let $elementList := if ($d/@tag!='534') then
       element bf:hasAuthority{
          element madsrdf:Authority {
-         element madsrdf:authoritativeLabel {$aLabel},
+         element madsrdf:authoritativeLabel {$aLabel} (: ,
             element madsrdf:elementList {
             	attribute rdf:parseType {"Collection"},
                 for $s in $d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q']
@@ -4046,6 +4054,7 @@ declare function marcbib2bibframe:get-name(
                             element madsrdf:elementValue {fn:string($s)}
                          }
                }
+               :)
             }   
         }
     else () (: 534 $a is not parsed:)
