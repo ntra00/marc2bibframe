@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-17-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-21-T15:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -2630,15 +2630,30 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
     ) as element ()*
     
 {
- 
-                
+                 
     let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
-    let $volume:=fn:replace(marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2])),"\)","")   
-    
+    let $volume:= 
+        if (fn:contains($isbn-extra,":")) then    
+            fn:replace(marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2])),"\)","")
+        else
+            fn:replace(marcbib2bibframe:clean-string(fn:normalize-space($isbn-extra)),"\)","")
+let $v-test:= 
+    fn:replace(marcbib2bibframe:clean-string(fn:normalize-space($isbn-extra)),"\)","")
+ 
+ let $volume-test:= ($v-test, fn:tokenize($v-test,":")[1],fn:tokenize($v-test,":")[2])
+ let $volume-test:= fn:tokenize($v-test,":")[2]
+ 
+    let $volume-info-test:=
+        if (fn:not(fn:empty($volume-test ))) then
+        for $v in  $volume-test
+            for $vol in fn:tokenize(fn:string($d/marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$v)][1]           
+		      return if  (fn:contains($vol,$v)) then element bf:subtitle {fn:concat("experimental 505a matching to isbn:",$vol)} else ()
+        else ()
+                
     let $volume-info:=
         if ($volume ) then		
-            for $vol in fn:tokenize(fn:string($d//marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$volume)][1]           
-		  return if  (fn:contains($vol,$volume)) then element bf:partTitle {fn:concat("experimental 505a parsing/matching to isbn:",$vol)} else ()		  
+            for $vol in fn:tokenize(fn:string($d/marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$volume)][1]           
+		      return if  (fn:contains($vol,$volume)) then element bf:subtitle {fn:concat("experimental 505a matching to isbn:",$vol)} else ()
         else ()
 
     let $carrier:=
@@ -2656,9 +2671,11 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
             else if (fn:contains($carrier,"lib. bdg.") ) then
                 "library binding"			
             else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
-                "acid free"						  		
-            else fn:replace($carrier,"\)","")
-                                  
+                "acid free"					           
+                else ()
+            (:else fn:replace($carrier,"\)",""):)
+    (:9781555631185 (v. 4. print):)                              
+    let $extent-title:=if ($carrierType) then () else fn:replace($carrier,"\)","")
     
     let $clean-isbn:= 
         for $item in $isbn-set/bf:isbn
@@ -2693,11 +2710,18 @@ let $instance :=
         		if ($volume) then element bf:title{ $volume} else (),
         		if ($carrierType) then      element bf:carrierType {$carrierType} else (),
         		$volume-info,
+        (:not done yet: nate 2013-05-21
+        element bf:test{$v-test},
+        $volume-test,:)
+        		if ($extent-title) then      element bf:label {$extent-title} else (),
    	        		        
    	         if ( fn:exists($instance) ) then
 	                (
 	                    $instance/@*,
-	                    $instance/*
+	                    if ($volume or $volume-info) then
+	                       $instance/*[fn:not(fn:local-name()="title") and fn:not(fn:local-name()="extent")]
+	                    else
+	                       $instance/*
 	                )
 	            else 
 	                $instanceOf           
@@ -2782,9 +2806,11 @@ declare function marcbib2bibframe:generate-instance-from856(
         element bf:derivedFrom {
             attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",$bibid)}
         } 
-    let $annotates:=  element bf:annotates {
-                        attribute rdf:resource {$workID}
-                    }
+    let $annotates:=  if ($workID!="person") then
+                        element bf:annotates {
+                            attribute rdf:resource {$workID}
+                        }
+                       else ()
    
         
         let $category:=         
@@ -2949,17 +2975,24 @@ declare function marcbib2bibframe:generate-holdings(
 (:call numbers: if a is a class and b exists:)
  let $call-num:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
 	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|084)")]
-(:	multiple $a is possible: 2017290 :)
-		for $class in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
-		let $element:= 
-			if (fn:matches($class/../@tag,"(050|051|055|060|061|070|071)")) then "bf:callno-lcc" 
-			else if (fn:matches($class/../@tag,"082") ) then "bf:callno-ddc"
-			else if (fn:matches($class/../@tag,"084") ) then "bf:callno"
-				else ()
-	        	return if ($element!="bf:callno-udc") then
-	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b)")]," "))}
-	        		else 
-	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}
+(:	multiple $a is possible: 2017290 use $i to handle :)
+		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
+       		let $element:= 
+       			if (fn:matches($class/../@tag,"(050|051|055|060|061|070|071)")) then "bf:callno-lcc"
+       			else if (fn:matches($class/../@tag,"080") ) then "bf:callno-udc"
+       			else if (fn:matches($class/../@tag,"082") ) then "bf:callno-ddc"
+       			else if (fn:matches($class/../@tag,"084") ) then "bf:callno"
+       				else ()
+            let $value:= 
+                if ($i=1) then  
+                    fn:concat(fn:normalize-space(fn:string($class)),fn:normalize-space(fn:string($class/../marcxml:subfield[fn:matches(@code,"b")]))) 
+                else
+                    fn:normalize-space(fn:string($class))
+        (:080 doesnt' have $c, so took this out::)
+	       return (: if ($element!="bf:callno-udc") then:)
+	        		element {$element } {$value}
+	        		(:else 
+	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}:)
 	        		
 return 
         if ($call-num) then 
@@ -2968,6 +3001,8 @@ return
                    (: element bf:annotates {
                         attribute rdf:resource {$workID}
                     },:)
+                    (:this is for matching later:)
+                    element bf:label{fn:string($call-num[1])},
          	    $call-num
                 }
             }
@@ -4055,7 +4090,7 @@ declare function marcbib2bibframe:get-name(
         if ( $d/../marcxml:datafield[@tag eq "856"][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]) then         
         (:set up annotations for each contributor bio link:)    
         for $link in $d/../marcxml:datafield[@tag="856"][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]
-            return     marcbib2bibframe:generate-instance-from856($link, "test")            
+            return     marcbib2bibframe:generate-instance-from856($link, "person")            
         else 
             ()
     let $system-number:= 
