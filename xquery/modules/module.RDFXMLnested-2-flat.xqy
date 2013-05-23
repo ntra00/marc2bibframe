@@ -143,13 +143,18 @@ declare function RDFXMLnested2flat:identifyClasses
     let $identified-resources :=
         for $r at $pos in $resources
         let $n := fn:lower-case(fn:local-name($r))
+        let $baseuri-new := 
+            if  ($r/@rdf:about) then
+                xs:string($r/@rdf:about)                
+            else
+                $baseuri
         where fn:not(fn:contains($ignore, fn:local-name($r)))
         return
             element {fn:name($r)} { 
                 if  ($r/@rdf:about) then
                     $r/@rdf:about                
                 else
-                    attribute rdf:about { fn:concat($baseuri, $n, ($pos + $place)) },                
+                    attribute rdf:about { fn:concat($baseuri-new, $n, ($pos + $place)) },                
                 
                 for $p at $spot in $r/*
                 return
@@ -158,7 +163,7 @@ declare function RDFXMLnested2flat:identifyClasses
                         return
                             element { fn:name($p) } {
                                 $p/@*,
-                                RDFXMLnested2flat:identifyClasses(<rdf:RDF>{$classes}</rdf:RDF>, $baseuri, ($pos + $spot + $place))
+                                RDFXMLnested2flat:identifyClasses(<rdf:RDF>{$classes}</rdf:RDF>, $baseuri-new, ($pos + $spot + $place))
                             }
                     else
                         $p
