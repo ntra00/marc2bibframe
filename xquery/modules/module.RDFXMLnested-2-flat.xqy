@@ -108,8 +108,12 @@ declare function RDFXMLnested2flat:flatten($resources as element()*)
         as element()*
 {
     
-    let $resources := ($resources[1],$resources//child::node()[@rdf:about])
-    return $resources 
+    (:
+    let $resources := ($resources[@rdf:about],$resources//child::node()[@rdf:about])
+    return $resources
+    :)
+    for $r in $resources//@rdf:about
+    return $r/parent::node()[1]
 
 };
 
