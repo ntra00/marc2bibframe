@@ -64,7 +64,7 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
         let $type := fn:local-name($c)
         let $uri := xs:string($c/@rdf:about)
         let $id := fn:replace($uri, $baseuri, "")
-        let $l := ($c/madsrdf:authoritativeLabel|$c/bf:label|$c/rdfs:label)[1]
+        let $l := ($c/bf:authorizedAccessPoint|$c/bf:label|$c/bf:title|$c/madsrdf:authoritativeLabel|$c/rdfs:label)[1]
         let $l := fn:replace(xs:string($l), '"', '\\"')
         let $props-names := 
             for $p in $c/*[fn:name()]
@@ -78,7 +78,7 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
                     if ($p/@rdf:resource) then
                         fn:concat('"', fn:replace(xs:string($p/@rdf:resource), $baseuri, "") , '"')
                     else if ($p/madsrdf:authoritativeLabel or $p/bf:label or $p/rdfs:label) then
-                        let $label := ($p/madsrdf:authoritativeLabel|$p/bf:label|$p/rdfs:label)[1]
+                        let $label := ($p/madsrdf:authoritativeLabel|$p/bf:label|$p/rdfs:label|$p/bf:title)[1]
                         return fn:concat('"', fn:replace(xs:string($label), '"', '\\"') , '"')
                     (: else if (xs:string($p/@rdf:parseType)="Collection") then :)
                     else if ($p/child::node()[fn:name()]/child::node()[fn:name()]) then
