@@ -27,6 +27,7 @@ xquery version "1.0";
 :
 :   @author Kevin Ford (kefo@loc.gov)
 :   @since January 10, 2013
+:   @update May 23, 2013
 :   @version 1.0
 :)
 
@@ -42,6 +43,30 @@ declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
+declare variable $RDFXMLnested2flat:resourcesToIgnore := 
+    <ignore>
+        <class>ProviderEntity</class>
+        <class>Authority</class>
+    </ignore>;
+   
+declare variable $RDFXMLnested2flat:inverses := 
+    <inverses>
+        <inverse sourceResource="bf:Work" targetResource="bf:Annotation">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+        <inverse sourceResource="bf:Instance" targetResource="bf:Holding">
+            <replace lookForOnSource="bf:hasHolding" enterOnTarget="bf:holds" />
+        </inverse>
+        <inverse sourceResource="bf:Instance" targetResource="bf:Annotation">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+        <inverse sourceResource="bf:Person" targetResource="bf:Annotation">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+        <inverse sourceResource="bf:Work" targetResource="bf:Instance">
+            <replace lookForOnSource="bf:hasInstance" enterOnTarget="bf:instanceOf" />
+        </inverse>
+    </inverses>;
 
 (:~
 :   This is the main function.  Takes BIBFRAME RDF/XML, which can be
@@ -61,267 +86,203 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
         as element(rdf:RDF)
 {
     
-    let $works := RDFXMLnested2flat:isolateAndIdentify($rdfxml, "Work", $baseuri)
-    let $instances :=RDFXMLnested2flat:isolateAndIdentify($rdfxml, "Instance", $baseuri)
-    
-    let $ientities := RDFXMLnested2flat:isolateAndIdentify($rdfxml, "IndexEntity", $baseuri)
-    let $annotations := RDFXMLnested2flat:isolateAndIdentify($rdfxml, "Annotation", $baseuri)
-    
-    let $works := 
-        for $w in $works/bf:Work
-
-        let $w-works := $w/child::node()[fn:name(child::node()[1])="bf:Work"]
-        let $w-works := 
-            for $rw in $w-works
-            return RDFXMLnested2flat:createResourceOrNot($rw, $works)
-
-        let $w-ientities := $w/child::node()[
-            fn:name(child::node()[1])="bf:Agent" or
-            fn:name(child::node()[1])="bf:Person" or
-            fn:name(child::node()[1])="bf:Place" or
-            fn:name(child::node()[1])="bf:Topic" or
-            fn:name(child::node()[1])="bf:Genre" or
-            fn:name(child::node()[1])="bf:Organization" or
-            fn:name(child::node()[1])="bf:TemporalConcept" or
-            fn:name(child::node()[1])="bf:ClassificationEntity" or            
-            fn:name(child::node()[1])="madsrdf:Authority" or            
-            fn:name(child::node()[1])="bf:LCC"]
-        let $w-ientities := 
-            for $ie in $w-ientities
-            return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
-        
-        let $w-id := $w/@rdf:about  
-        let $w-instances := $instances/bf:Instance[bf:instanceOf[@rdf:resource eq $w-id]]        
-        let $w-instances := 
-            for $rw in $w-instances
-            return 
-                element bf:instance {
-                    attribute rdf:resource {xs:string($rw/@rdf:about)}
-                }
-                  
-        let $w-aentities := $w/bf:annotation[
-            fn:name(child::node()[1]) eq "bf:Annotation" or 
-            fn:name(child::node()[1]) eq "bf:ContentDescription" or 
-            fn:name(child::node()[1]) eq "bf:Review" or 
-            fn:name(child::node()[1]) eq "bf:Abstract" or 
-            fn:name(child::node()[1]) eq "bf:ContentAdvice"]
-            
-        let $w-annotations := $annotations/child::node()[bf:annotates[@rdf:resource eq $w-id]]
-        let $w-annotations := 
-            for $rw in $w-annotations
-            return 
-                element bf:annotation {
-                    attribute rdf:resource {xs:string($rw/@rdf:about)}
-                }
-            
-        return 
-            element {fn:name($w)} {
-                $w/@*,           
-                $w/child::node()[
-                    fn:name(child::node()[1])!="bf:Work" and
-                    fn:name(child::node()[1])!="bf:Agent" and
-                    fn:name(child::node()[1])!="bf:Person" and
-                    fn:name(child::node()[1])!="bf:Place" and
-                    fn:name(child::node()[1])!="bf:Topic" and
-                    fn:name(child::node()[1])!="bf:Genre" and
-                    fn:name(child::node()[1])!="bf:Organization" and
-                    fn:name(child::node()[1])!="bf:TemporalConcept" and
-                    fn:name(child::node()[1])!="bf:ClassificationEntity" and
-                    fn:name(child::node()[1])!="bf:IdentifierEntity" and                    
-                    fn:name(child::node()[1])!="bf:LCC" and
-                    fn:name(child::node()[1])!="bf:Annotation" and
-                    fn:name(child::node()[1])!="bf:ContentDescription" and
-                    fn:name(child::node()[1])!="bf:Review" and
-                    fn:name(child::node()[1])!="bf:Abstract" and                    
-                    fn:name(child::node()[1])!="bf:ContentAdvice" and
-                    fn:name(child::node()[1])!="madsrdf:Authority" 
-                    and
-                    fn:name(child::node()[1])!="bf:Instance"
-                    ],
-                $w-ientities,
-                $w-works,
-                $w-instances,
-                $w-annotations
-            }
-            
-    let $instances := 
-        for $i in $instances//bf:Instance
-
-        let $i-ientities := $i/bf:*[
-            fn:name(bf:*[1])="bf:Person" or
-            fn:name(bf:*[1])="bf:Agent" or
-            fn:name(bf:*[1])="bf:Place" or
-            fn:name(bf:*[1])="bf:Topic" or
-            fn:name(bf:*[1])="bf:Genre" or
-            fn:name(bf:*[1])="bf:Organization" or
-            fn:name(bf:*[1])="bf:ClassificationEntity" or          
-            fn:name(bf:*[1])="bf:LCC" or 
-            fn:name(bf:*[1])="madsrdf:Authority"]
-        let $i-ientities := 
-            for $ie in $i-ientities
-                return RDFXMLnested2flat:createResourceOrNot($ie, $ientities)
-        
-        let $i-id := $i/@rdf:about  
-        let $i-annotations := $instances/bf:Annotation[bf:annotates[@rdf:resource eq $i-id]]
-        let $i-annotations := 
-            for $ri in $i-annotations
-            return 
-                element bf:annotation {
-                    attribute rdf:resource {xs:string($ri/@rdf:about)}
-                }
-            
-        return 
-            element {fn:name($i)} {
-                $i/@*,
-                $i/child::node()[
-                    fn:name(child::node()[1])!="bf:Work" and
-                    fn:name(child::node()[1])!="bf:Person" and
-                    fn:name(child::node()[1])!="bf:Agent" and
-                    fn:name(child::node()[1])!="bf:Place" and
-                    fn:name(child::node()[1])!="bf:Topic" and
-                    fn:name(child::node()[1])!="bf:Genre" and
-                    fn:name(child::node()[1])!="bf:Organization" and
-                    fn:name(child::node()[1])!="bf:ClassificationEntity" and                                       
-                    fn:name(child::node()[1])!="bf:TemporalConcept" and                    
-                    fn:name(child::node()[1])!="bf:LCC" and
-                    fn:name(child::node()[1])!="madsrdf:Authority" 
-                    ],
-                $i-ientities,
-                $i-annotations
-                
-            }
-            
-    let $annotations := $annotations/bf:*    
-    let $ientities := $ientities/*
-    
-    return 
-       <rdf:RDF  xmlns:bf="http://bibframe.org/vocab/"      
-        xmlns:rdfs     = "http://www.w3.org/2000/01/rdf-schema#"
-        xmlns:madsrdf    = "http://www.loc.gov/mads/rdf/v1#"
-        > 
-        {    comment {fn:concat("works:", fn:count($works/*), ", instances: ",fn:count($instances/*), ", annotations: ",fn:count($annotations/*), ", distilled entities:", fn:count($ientities/*) ) },            
-            $works,        
-            $instances,
-            $annotations,
-            $ientities}            
-        </rdf:RDF>
-
-};
-
-(:~
-:   Return a resource with an identifer.  Identifier is added if
-:   the resource does not have one.
-:
-:   @param  $resources      element()* of all resources needing an identifier
-:   @param  $baseuri        xs:string is the baseuri to use with the identifier
-:   @return element()*      resources, with identifiers
-:)
-declare function RDFXMLnested2flat:createIdentifiedResource(
-            $resources as element()*,
-            $baseuri as xs:string
-        ) as element()*
-{
-
-    let $rs := 
-        if (  fn:count($resources/bf:authorizedAccessPoint) > 0 or  fn:count($resources/madsrdf:authoritativeLabel) > 0 ) then
-            let $rs-labels := 
-                for $r in $resources
-                let $l := ($r/bf:authorizedAccessPoint|$r/madsrdf:authoritativeLabel|$r/bf:label|$r/bf:title)[1]
-                return $l
-            let $distinct-labels := fn:distinct-values($rs-labels)
-            let $rs := 
-                for $dl in $distinct-labels
-                return 
-                    if ($resources[bf:authorizedAccessPoint =$dl or madsrdf:authoritativeLabel=$dl ]) then
-                        $resources[bf:authorizedAccessPoint =$dl or madsrdf:authoritativeLabel=$dl ][1]
-                    else
-                        $resources[bf:label=$dl][1]
-            return $rs
-        else
-            (: Probably have instances :)
-            $resources
-            
-    for $r at $pos in $rs
-    let $n := fn:lower-case(fn:local-name($r))
+    let $resources := RDFXMLnested2flat:identifyClasses($rdfxml, $baseuri, 0)
+    let $resources := RDFXMLnested2flat:flatten($resources)
+    let $resources := RDFXMLnested2flat:removeNesting($resources)
+    let $resources := RDFXMLnested2flat:insertInverses($resources)
     return
-        element {fn:name($r)} { 
-            if  ($r/@rdf:about) then
-                $r/@rdf:about                
-            else
-                attribute rdf:about { fn:concat($baseuri, $n, $pos) },                
-            $r/*           
+        element rdf:RDF {
+            $resources
         }
+
 };
 
+
 (:~
-:   Try to match label of a resource to an existing one.
-:   If there is a match, create an rdf:resource link;
-:   if not, return the node.
+:   Flattens the RDF/XML.  Extract all identified resources.
 :
-:   @param  $needle         node() is the resource to match
-:   @param  $haystack       node() is the RDF/XML of all resources
-:   @return element()       node as a link or fully inline
+:   @param  $resources      element()* are the resources.   
+:   @return element()       resources
 :)
-declare function RDFXMLnested2flat:createResourceOrNot(
-            $needle as element(),
-            $haystack as element(rdf:RDF)
-        ) as element()
+declare function RDFXMLnested2flat:flatten($resources as element()*)
+        as element()*
 {
-    let $label := ($needle/bf:*[1]/bf:authorizedAccessPoint[1]|$needle/bf:*[1]/madsrdf:authoritativeLabel|$needle/bf:*[1]/rdfs:label|$needle/bf:*[1]/bf:label|$needle/bf:*[1]/bf:title)[1]
-    (: let $needle-found := $haystack/bf:*[child::node()=xs:string($label)] :)
-    let $needle-found := 
-            (   $haystack/bf:*[xs:string(bf:authorizedAccessPoint[1]) eq xs:string($label)]|
-                $haystack/bf:*[xs:string(madsrdf:authoritativeLabel[1]) eq xs:string($label)]|
-                $haystack/bf:*[xs:string(rdfs:label[1]) eq xs:string($label)]|
-                $haystack/bf:*[xs:string(bf:label[1]) eq xs:string($label)],
-                $haystack/bf:*[xs:string(bf:title[1]) eq xs:string($label)]
-            )[1]
-    return 
-        if ($needle-found[1]) then
-            element {fn:name($needle)} {
-                attribute rdf:resource {xs:string($needle-found[1]/@rdf:about)}
-            }        
-        else            
-            $needle
-     (: }:)
-           
-            
-         
+    
+    let $resources := ($resources[1],$resources//child::node()[@rdf:about])
+    return $resources 
+
 };
 
 
 (:~
-:   Isolate and identify resources.
-:   This will isolate all the resources of a particular
-:   type and also given them identifiers.
+:   Identify resources.
+:   This maintains the nested structure.  It
+:   is called recursively.
 :
 :   @param  $rdfxml         node() is the RDF/XML
-:   @param  $isolate        xs:string is the type of isolate
-:   @param  $baseuri        xs:string is the base uri for identifiers  
-:   @return xs:string       rdf:RDF of only those types
+:   @param  $baseuri        xs:string is the base uri for identifiers
+:   @param  $place          xs:integer is passed on to ensure unique ID assignment  
+:   @return element()       resources
 :)
-declare function RDFXMLnested2flat:isolateAndIdentify
+declare function RDFXMLnested2flat:identifyClasses
         (
             $rdfxml as element(rdf:RDF),
-            $isolate as xs:string,
-            $baseuri as xs:string
+            $baseuri as xs:string,
+            $place as xs:integer
         )
-        as element(rdf:RDF)
+        as element()*
 {
-    let $resources := 
-        if ($isolate eq "Work") then
-            $rdfxml//bf:Work
-        else if ($isolate eq "Instance") then
-            $rdfxml//bf:Instance
-        else if ($isolate eq "IndexEntity") then
-            $rdfxml//bf:Agent|$rdfxml//bf:Person|$rdfxml//bf:Place|$rdfxml//bf:Topic|$rdfxml//bf:Genre|$rdfxml//bf:Organization|$rdfxml//bf:ClassificationEntity|$rdfxml//bf:LCC|$rdfxml//bf:TemporalConcept|$rdfxml//madsrdf:Authority|$rdfxml//bf:IdentifierEntity|$rdfxml//bf:IntendedAudienceEntity
-        else if ($isolate eq "Annotation") then
-            $rdfxml//bf:Annotation|$rdfxml//bf:ContentDescription|$rdfxml//bf:Review|$rdfxml//bf:Abstract|$rdfxml//bf:ContentAdvice
-        else 
-            ()
-    let $resources := RDFXMLnested2flat:createIdentifiedResource($resources, $baseuri)
-    return 
-        element rdf:RDF {
-            $resources           
-        }
+    
+    let $ignore := fn:string-join($RDFXMLnested2flat:resourcesToIgnore/class, " ")
+    
+    let $resources := $rdfxml/child::node()[fn:matches(fn:local-name(), "^([A-Z])([a-z]+)")]
+    let $identified-resources :=
+        for $r at $pos in $resources
+        let $n := fn:lower-case(fn:local-name($r))
+        where fn:not(fn:contains($ignore, fn:local-name($r)))
+        return
+            element {fn:name($r)} { 
+                if  ($r/@rdf:about) then
+                    $r/@rdf:about                
+                else
+                    attribute rdf:about { fn:concat($baseuri, $n, ($pos + $place)) },                
+                
+                for $p at $spot in $r/*
+                return
+                    if ($p/child::node()[fn:matches(fn:local-name(), "^([A-Z])([a-z]+)")]) then
+                        let $classes := $p/child::node()[fn:matches(fn:local-name(), "^([A-Z])([a-z]+)")]
+                        return
+                            element { fn:name($p) } {
+                                $p/@*,
+                                RDFXMLnested2flat:identifyClasses(<rdf:RDF>{$classes}</rdf:RDF>, $baseuri, ($pos + $spot + $place))
+                            }
+                    else
+                        $p
+            }
+    let $skipped-resources :=
+        for $r at $pos in $resources
+        let $n := fn:lower-case(fn:local-name($r))
+        where fn:contains($ignore, fn:local-name($r))
+        return $r
+        
+    return ($identified-resources, $skipped-resources) 
+
+};
+
+
+(:
+declare variable $RDFXMLnested2flat:inverses := 
+    <inverses>
+        <inverse sourceResource="bf:Work" targetResource="bf:Annotation">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+        <inverse sourceResource="bf:Instance" targetResource="bf:Holding">
+            <replace lookForOnSource="bf:hasHolding" enterOnTarget="bf:holds" />
+        </inverse>
+        <inverse sourceResource="bf:Instance" targetResource="bf:Annotation">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+        <inverse sourceResource="bf:Person" targetResource="bf:Annotation">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+        <inverse sourceResource="bf:Work" targetResource="bf:Instance">
+            <replace lookForOnSource="bf:hasInstance" enterOnTarget="bf:instanceOf" />
+        </inverse>
+    </inverses>;
+:)
+(:~
+:   Insert inverse relations.
+:
+:   @param  $resources      element()* are the resources.   
+:   @return element()       resources
+:)
+declare function RDFXMLnested2flat:insertInverses($resources as element()*)
+        as element()*
+{
+    
+    let $targets := fn:string-join($RDFXMLnested2flat:inverses/inverse/@targetResource, " ")
+    let $remove-props := fn:concat(
+            fn:string-join($RDFXMLnested2flat:inverses/inverse/replace/@enterOnTarget, " "),
+            " ",
+            fn:string-join($RDFXMLnested2flat:inverses/inverse/replace/@lookForOnSource, " ")
+        )
+        
+    let $modified-targets :=
+        for $r in $resources
+        let $uri := xs:string($r/@rdf:about)
+        let $n := xs:string(fn:name($r))
+        let $lookFors := $RDFXMLnested2flat:inverses/inverse[@targetResource = $n]
+        where fn:contains($targets, $n)
+        return
+            element {fn:name($r)} { 
+                $r/@*,
+                
+                $r/*[fn:not( fn:contains($remove-props, fn:name()) )],
+                
+                for $lf in $lookFors
+                let $replace := $lf/replace
+                let $related-resources := $resources[fn:name() = $lf/@sourceResource and child::node()[fn:name() = $replace/@lookForOnSource and xs:string(@rdf:resource) eq $uri]]
+                let $distinct-abouts := fn:distinct-values($related-resources/@rdf:about)
+                return
+                    for $rr in $distinct-abouts
+                    return
+                        element { xs:string($replace/@enterOnTarget) } {
+                            attribute rdf:resource { xs:string($rr) }
+                        }
+            }
+
+    (:
+        Need to figure out which resources were not processed as
+        targets in the above.
+        
+        Some "targets" may be sources in other situations, but
+        they will have already been processed and must be 
+        bypassed.
+    :)
+    let $unmodified-resources :=
+        for $r in $resources
+        let $uri := xs:string($r/@rdf:about)
+        let $n := xs:string(fn:name($r))
+        where fn:not(fn:contains($targets, $n))
+        return
+            element {fn:name($r)} { 
+                $r/@*,
+                $r/*[fn:not( fn:contains($remove-props, fn:name()) )]
+            }
+
+    return ($modified-targets, $unmodified-resources)  
+
+};
+
+(:~
+:   Remove nesting from extracted, identified resources.
+:
+:   @param  $resources      element()* are the resources.   
+:   @return element()       resources
+:)
+declare function RDFXMLnested2flat:removeNesting($resources as element()*)
+        as element()*
+{
+    
+    let $simplified-resources :=
+        for $r in $resources
+        let $n := fn:lower-case(fn:local-name($r))
+        return
+            element {fn:name($r)} { 
+                $r/@*,
+                
+                for $p in $r/*
+                return
+                    if ($p/child::node()[@rdf:about]) then
+                        let $classes := $p/child::node()[fn:matches(fn:local-name(), "^([A-Z])([a-z]+)")]
+                        return
+                            element { fn:name($p) } {
+                                attribute rdf:resource { xs:string($p/child::node()[@rdf:about]/@rdf:about) }
+                            }
+                    else
+                        $p
+            }
+
+    return $simplified-resources 
+
 };
