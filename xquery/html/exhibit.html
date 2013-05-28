@@ -192,8 +192,44 @@
 						<td>
 							<ul ex:content=".bf-contains" class="value instance">
 								<li>
-									<div class="titleWork"><span ex:content=".authoritativeLabel"></span></div>
-									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div>
+									<!-- <div class="titleWork"><span ex:content=".bf-authorizedAccessPoint"></span></div> -->
+									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-authorizedAccessPoint"></span></a></span></div>
+									<!-- <div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div> -->
+									<table class="table table-condensed">
+										<tr ex:if-exists=".bf-creator">
+											<td class="property span2">Creator(s)</td>
+											<td>
+												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
+												<ul ex:content=".bf-creator" class="value creator">
+													<li>
+														<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+														<span ex:if="exists(.uri)">
+															<span class="name">
+																<a ex:href-content=".uri"><span ex:content=".label"></span></a>
+															</span>
+														</span>
+														<span ex:if-exists=".bf-resourceRole">
+															<span class="name">
+																(<span ex:content=".bf-resourceRole"></span>)
+															</span>
+														</span>
+													</li>
+												</ul>
+											</td>
+										</tr>
+									</table>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr ex:if-exists=".bf-series">
+						<td class="property span2">In Series</td>
+						<td>
+							<ul ex:content=".bf-series" class="value instance">
+								<li>
+									<!-- <div class="titleWork"><span ex:content=".bf-authorizedAccessPoint"></span></div> -->
+									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-authorizedAccessPoint"></span></a></span></div>
+									<!-- <div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div> -->
 									<table class="table table-condensed">
 										<tr ex:if-exists=".bf-creator">
 											<td class="property span2">Creator(s)</td>
