@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-21-T15:00";
+declare variable $marcbib2bibframe:last-edit :="2013-05-28-T17:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -2662,7 +2662,7 @@ let $v-test:=
         else () 
     
     let $carrierType:=                                				  	                        
-               if (fn:matches($carrier,"(pbk|softcover)","i")) then
+            if (fn:matches($carrier,"(pbk|softcover)","i")) then
                 "paperback"
             else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
                 "hardback"
@@ -2672,11 +2672,40 @@ let $v-test:=
                 "library binding"			
             else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
                 "acid free"					           
-                else ()
+            else 
+                ""
             (:else fn:replace($carrier,"\)",""):)
-    (:9781555631185 (v. 4. print):)                              
-    let $extent-title:=if ($carrierType) then () else fn:replace($carrier,"\)","")
-    
+    (:9781555631185 (v. 4. print):)
+    let $i-title := 
+        if ($d/marcxml:datafield[@tag = "245"]) then
+            marcbib2bibframe:get-title($d/marcxml:datafield[@tag = "245"])
+        else
+            ()
+    let $extent-title :=
+        if ($volume ne "") then
+            for $t in $i-title
+            return
+                element bf:title {
+                    $t/@*,
+                    fn:normalize-space(fn:concat(xs:string($t), " (", $volume, ")"))
+                }
+        else if ($carrierType ne "") then
+            for $t in $i-title
+            return
+                element bf:title {
+                    $t/@*,
+                    fn:normalize-space(fn:concat(xs:string($t), " (", $carrierType, ")"))
+                }
+        else if ($carrier ne "") then
+            for $t in $i-title
+            return
+                element bf:title {
+                    $t/@*,
+                    fn:normalize-space(fn:concat(xs:string($t), " (", $carrier, ")"))
+                }
+        else
+            $i-title
+        
     let $clean-isbn:= 
         for $item in $isbn-set/bf:isbn
         	return marcbib2bibframe:clean-string(fn:normalize-space(fn:tokenize( fn:string($item),"\(")[1]))
@@ -2706,14 +2735,21 @@ let $instance :=
 
     return 
         element bf:Instance {
-        		$isbn,               	
-        		if ($volume) then element bf:title{ $volume} else (),
+        		$isbn,
+        		(: See extent-title above :)
+        		(: if ($volume) then element bf:title{ $volume} else (), :)
+        		$extent-title,
+        		for $t in $extent-title
+        		return 
+                    element bf:label {
+                        $t/@*,
+                        xs:string($t)
+                    },
         		if ($carrierType) then      element bf:carrierType {$carrierType} else (),
         		$volume-info,
         (:not done yet: nate 2013-05-21
         element bf:test{$v-test},
         $volume-test,:)
-        		if ($extent-title) then      element bf:label {$extent-title} else (),
    	        		        
    	         if ( fn:exists($instance) ) then
 	                (
