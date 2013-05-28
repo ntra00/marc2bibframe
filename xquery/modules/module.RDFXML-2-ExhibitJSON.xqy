@@ -108,6 +108,7 @@ declare function bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON
             fn:concat('{ 
                 "type": ', fn:concat('"', $type , '"'), ', 
                 "id": ', fn:concat('"', $id , '"'), ',
+                "bf-id": ', fn:concat('"', $id , '"'), ',
                 "uri": ', fn:concat('"', $uri , '"'), ',
                 "label": ', fn:concat('"', $l , '"'), ',
                 ', fn:string-join($props, ", &#10;"), '
