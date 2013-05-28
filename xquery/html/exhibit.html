@@ -19,16 +19,18 @@
     <script type="text/javascript" src="./js/bootstrap-collapse.js"></script>
 
     <script type="text/javascript">
-      $('.accordion').collapse()
+		//$('.collapse').collapse()
+		
+		$('.accordion').collapse()
 
-      $('.accordion').on('show', function() {
-      $('.icon').removeClass('icon-plus').addClass('icon-minus');
-      });
+		$('.accordion').on('show', function() {
+			$('.icon').removeClass('icon-plus').addClass('icon-minus');
+		});
 
-      // Reverse it for hide:
-      $('.accordion').on('hide', function() {
-      $('.icon').removeClass('icon-minus').addClass('icon-plus');
-      });
+		// Reverse it for hide:
+		$('.accordion').on('hide', function() {
+			$('.icon').removeClass('icon-minus').addClass('icon-plus');
+		});
 
     </script>
 
@@ -72,8 +74,10 @@
             <!-- <div ex:role="facet" ex:expression=".instance.isbnType" ex:facetLabel="Book Type" ex:sortMode="count"></div> -->
             <div ex:role="facet" ex:expression=".bf-creator.label" ex:facetLabel="Creators" ex:sortMode="count"></div>
             <div ex:role="facet" ex:expression=".bf-subject.label" ex:facetLabel="Subjects" ex:sortMode="count"></div>
-            <div ex:role="facet" ex:expression=".bf-instance.bf-contributor.label" ex:facetLabel="Contributors" ex:sortMode="count"></div>
-            <div ex:role="facet" ex:expression=".bf-instance.bf-provider.label" ex:facetLabel="Providers/Publishers" ex:sortMode="count"></div>
+            <div ex:role="facet" ex:expression="!bf-instanceOf.bf-carrierType" ex:facetLabel="Carrier type" ex:sortMode="count"></div>
+            <!-- <div ex:role="facet" ex:expression="!bf-instanceOf.bf-publication.bf-providerName" ex:facetLabel="Providers/Publishers" ex:sortMode="count"></div> -->
+            <!-- <div ex:role="facet" ex:expression=".bf-instance.bf-contributor.label" ex:facetLabel="Contributors" ex:sortMode="count"></div> -->
+            <!-- <div ex:role="facet" ex:expression=".bf-instance.bf-publication.bf-providerName" ex:facetLabel="Providers/Publishers" ex:sortMode="count"></div> -->
           </div>
         </div>
 
@@ -107,11 +111,11 @@
 						</tr>
 						<tr ex:if-exists=".bf-summary">
 							<td class="property span2">Summary</td>
-							<td><div ex:content=".summary" class="value summary"></div></td>
+							<td><div ex:content=".bf-summary" class="value summary"></div></td>
 						</tr>                    
 						<tr ex:if-exists=".bf-formatedContentsNote">
 							<td class="property span2">Contents</td>
-							<td><div ex:content=".formatedContentsNote" class="value contents"></div></td>
+							<td><div ex:content=".bf-formatedContentsNote" class="value contents"></div></td>
 						</tr>
 						<tr ex:if-exists=".bf-note">
 							<td class="property span2">Note(s)</td>
@@ -188,8 +192,9 @@
 						<td>
 							<ul ex:content=".bf-contains" class="value instance">
 								<li>
-									<div class="titleWork"><span ex:content=".authoritativeLabel"></span></div>
-									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div>
+									<!-- <div class="titleWork"><span ex:content=".bf-authorizedAccessPoint"></span></div> -->
+									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-authorizedAccessPoint"></span></a></span></div>
+									<!-- <div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div> -->
 									<table class="table table-condensed">
 										<tr ex:if-exists=".bf-creator">
 											<td class="property span2">Creator(s)</td>
@@ -217,10 +222,45 @@
 							</ul>
 						</td>
 					</tr>
-					<tr ex:if-exists=".bf-annotation">
+					<tr ex:if-exists=".bf-series">
+						<td class="property span2">In Series</td>
+						<td>
+							<ul ex:content=".bf-series" class="value instance">
+								<li>
+									<!-- <div class="titleWork"><span ex:content=".bf-authorizedAccessPoint"></span></div> -->
+									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-authorizedAccessPoint"></span></a></span></div>
+									<!-- <div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-title"></span></a> <span ex:content=".bf-titleStatement"></span></span></div> -->
+									<table class="table table-condensed">
+										<tr ex:if-exists=".bf-creator">
+											<td class="property span2">Creator(s)</td>
+											<td>
+												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
+												<ul ex:content=".bf-creator" class="value creator">
+													<li>
+														<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+														<span ex:if="exists(.uri)">
+															<span class="name">
+																<a ex:href-content=".uri"><span ex:content=".label"></span></a>
+															</span>
+														</span>
+														<span ex:if-exists=".bf-resourceRole">
+															<span class="name">
+																(<span ex:content=".bf-resourceRole"></span>)
+															</span>
+														</span>
+													</li>
+												</ul>
+											</td>
+										</tr>
+									</table>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr ex:if-exists="!bf-annotates">
 						<td class="property span2">Annotation(s)</td>
 						<td>
-							<ul ex:content=".bf-annotation" class="value instance">
+							<ul ex:content="!bf-annotates" class="value instance">
 								<li>
 									<div class="titleWork"><a ex:href-content=".uri"><span ex:content=".bf-label"></span></a></span></div>
 									<table class="table table-condensed">
@@ -251,20 +291,20 @@
 							</ul>
 						</td>
 					</tr>
-					<tr ex:if-exists=".bf-instance">
+					<tr ex:if-exists="!bf-instanceOf">
                     <td class="property span2">Instance(s)</td>
 					<td>
-                      <ul ex:content=".bf-instance" class="value instance">
+                      <ul ex:content="!bf-instanceOf" class="value instance">
                         <li>
                           <div class="titleInstance">
-                            <i ex:class-subcontent="icon-default icon-{{.resourceType}}"  ex:title-subcontent="{{.resourceType}}"></i>
+                            <i ex:class-subcontent="icon-default icon-{{.carrierType}}"  ex:title-subcontent="{{.carrierType}}"></i>
 
                             <span ex:if="exists(.uri)">
-                              <span class="title"><a ex:href-content=".uri"><span ex:content="!bf-instance.bf-title"></span> </a></span>
+                              <span class="title"><a ex:href-content=".uri"><span ex:content=".bf-title"></span> </a></span>
                             </span>
 
                             <span ex:if="not(exists(.uri))">
-                              <span class="title"><span ex:content="!bf-instance.bf-title"></span> </span></span>
+                              <span class="title"><span ex:content=".bf-title"></span> </span></span>
                             </span>
                           </div>
                           
@@ -293,12 +333,12 @@
                                     <span class="isbn" ex:content=".identifiers-dewey"></span></span> 
                                   </td>
                                 </tr>
-                                <tr ex:if-exists=".bf-provider">
+                                <tr ex:if-exists=".bf-publication">
                                   <td class="property span2">Publisher</td>
                                   <td class="value">
-                                    <span class="publishedAt" ex:content=".bf-placePub.label"></span> 
-                                    <span class="publisher" ex:content=".bf-provider.label"></span> 
-                                    <span class="publishedOn" ex:content=".bf-pubDate"></span> 
+                                    <span class="publishedAt" ex:content=".bf-publication.providerPlace"></span> 
+                                    <span class="publisher" ex:content=".bf-publication.providerName"></span> 
+                                    <span class="publishedOn" ex:content=".bf-publication.providerDate"></span> 
                                   </td>
                                 </tr>
                                 <tr ex:if-exists=".bf-isbn">
@@ -339,6 +379,22 @@
                                     </ul>
                                   </td>
                                 </tr>
+                                <tr ex:if-exists=".bf-illustrativeContentNote">
+                                  <td class="property span2">Illustration Note(s)</td>
+                                  <td>
+                                    <ul class="value allNotes" ex:content=".bf-illustrativeContentNote">
+                                      <li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+                                    </ul>
+                                  </td>
+                                </tr>
+                                <tr ex:if-exists=".bf-supplementaryContentNote">
+                                  <td class="property span2">Supplementary Content Note(s)</td>
+                                  <td>
+                                    <ul class="value allNotes" ex:content=".bf-supplementaryContentNote">
+                                      <li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+                                    </ul>
+                                  </td>
+                                </tr>
                               </table>
                               
                             </div>
@@ -347,22 +403,22 @@
                               
                               <!-- annotation pane -->
                               
-                              <div class="accordion" ex:id-subcontent="accordion-id{{.label}}">
+                              <div class="accordion" ex:id-subcontent="accordion-id{{.bf-id}}">
 
-                                <div ex:if-exists="!holds" class="accordion-group well">
+                                <div ex:if-exists="!bf-holds" class="accordion-group well">
 
                                   <div class="accordion-heading">
-                                    <a class="accordion-toggle" data-toggle="collapse" ex:data-parent-subcontent="#accordion-id{{.label}}" ex:href-subcontent="#collapseOne-id{{.label}}">
+                                    <a class="accordion-toggle" data-toggle="collapse" ex:data-parent-subcontent="#accordion-id{{.bf-id}}" ex:href-subcontent="#collapseOne-id{{.bf-id}}">
                                       <i class="icon icon-comment"></i> Holdings
                                     </a>
                                   </div>
-                                  <div ex:id-subcontent="collapseOne-id{{.label}}" class="accordion-body collapse">
+                                  <div ex:id-subcontent="collapseOne-id{{.bf-id}}" class="accordion-body collapse">
                                     <div class="accordion-inner">
-                                      <span ex:content="!holds.access"></span></br>
-                                      <span ex:content="!holds.shelving"></span></br>
-                                      <span ex:content="!holds.shelvingDetails"></span></br>                                      
-                                      <a ex:href-content="!holds.institution.link"><span ex:content="!holds.institution.label"></span></a><br /> 
-                                      <span ex:content="!holds.institution.address"></span><br />                            
+                                      <span ex:content="!bf-holds.bf-callno-lcc"></span><br />
+                                      <span ex:content="!bf-holds.shelving"></span><br />
+                                      <span ex:content="!bf-holds.shelvingDetails"></span><br />
+                                      <a ex:href-content="!bf-holds.institution.link"><span ex:content="!bf-holds.institution.label"></span></a><br /> 
+                                      <span ex:content="!bf-holds.institution.address"></span><br />                            
                                     </div>
                                   </div>
                                 </div>
