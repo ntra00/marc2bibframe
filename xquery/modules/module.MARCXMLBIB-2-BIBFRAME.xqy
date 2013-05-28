@@ -387,7 +387,7 @@ declare variable $marcbib2bibframe:relationships :=
 	  	    <type tag="490" ind1="0" property="inSeries">hasParts</type>
 	  	    <type tag="510" property="describedIn">isReferencedBy</type>
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
-	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>	  	    
+	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>
             <type tag="730"  property="relatedWork">relatedItem</type>             
         </work-relateds>
         <!-- Instance to Work relationships (none!) -->
@@ -3420,22 +3420,27 @@ declare function marcbib2bibframe:related-works
         	return
             if (fn:matches($type/@tag,"740")) then (: title is in $a , @ind2 needs attention:)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind2=$type/@ind2]		
-                    return marcbib2bibframe:generate-related-work($d,$type)
+                return marcbib2bibframe:generate-related-work($d,$type)
+     	    
      	    else if (fn:matches($type/@tag,"533")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]		
-				    return marcbib2bibframe:generate-related-reproduction($d,$type)                                           
+			    return marcbib2bibframe:generate-related-reproduction($d,$type)                                           
+            
             else if ($type/@ind2 and $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")] ) then 
                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
-				            return marcbib2bibframe:generate-related-work($d,$type)
+			   return marcbib2bibframe:generate-related-work($d,$type)
+            
             else if (fn:matches($type/@tag,"(510|630|730|830)")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="a"]]		
-				    return marcbib2bibframe:generate-related-work($d,$type)
+			    return marcbib2bibframe:generate-related-work($d,$type)
+            
             else if (fn:matches($type/@tag,"(534)")  and $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="f"]] ) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="f"]](:	series:)
-			     	return marcbib2bibframe:generate-related-work($d,$type)
+			  	return marcbib2bibframe:generate-related-work($d,$type)
+            
             else 	
                 for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t"]]		
-			     	return marcbib2bibframe:generate-related-work($d,$type)
+			   	return marcbib2bibframe:generate-related-work($d,$type)
 				
     return $relatedWorks
 				
