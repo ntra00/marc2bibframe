@@ -105,6 +105,7 @@
 													(<span ex:content=".bf-resourceRole"></span>)
 												</span>
 											</span>
+											<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
 									</li>
 								</ul>
 							</td>
@@ -214,6 +215,7 @@
 																(<span ex:content=".bf-resourceRole"></span>)
 															</span>
 														</span>
+														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
 													</li>
 												</ul>
 											</td>
@@ -318,8 +320,17 @@
 									<td class="property span2">Contributor</td>
 									<td>
 										<!-- <ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
-										<ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
-										<span ex:if="exists(.uri)"><span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span></li></ul>
+										<ul ex:content=".bf-contributor" class="value creator">
+											<li>
+												<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+												<span ex:if="exists(.uri)">
+													<span class="name">
+														<a ex:href-content=".uri"><span ex:content=".label"></span></a>
+													</span>
+												</span>
+												<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
+											</li>
+										</ul>
 									</td>
 								</tr>
                                 <tr ex:if-exists=".bf-callNumber">
