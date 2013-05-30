@@ -2061,24 +2061,14 @@ let $physResourceData:=()
         else 
             ""
       let $holdings := marcbib2bibframe:generate-holdings($d/ancestor::marcxml:record, $workID)
-    (: moved to generate-holdings :)
-   (: let $call-num:= 
-        if ($d/../marcxml:datafield[@tag eq "050"]) then
-	        (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$":)
-	         if ($d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]) then	         	
-	        			for $call in $d/../marcxml:datafield[@tag eq "050"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]        
-	            			return fn:normalize-space(fn:string-join($call," ")) 
-	            	
-		else ()
-        else ():)
-(:???? trash this???:)
+ 
     let $instance-identifiers :=
              (                       
             marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"Instance")    
         )
             
     (: all relationships at work level:)
-    (:let $related-works:= marcbib2bibframe:related-works($d/ancestor::marcxml:record,$workID,"instance"):) 
+     
     let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
   (:  let $links:=
@@ -2801,7 +2791,7 @@ declare function marcbib2bibframe:generate-instance-from-pubnum(
         	}
     (:get the physical details:)
     (: We only ask for the first 260 :)
-	let $instance :=  marcbib2bibframe:generate-instance-from260($d/../marcxml:datafield[@tag eq "260"][1], $workID)
+	let $instance :=  marcbib2bibframe:generate-instance-from260($d/../marcxml:datafield[@tag eq "260" or @tag eq "264"][1], $workID)
         
         
     let $instanceOf :=  
@@ -3146,6 +3136,7 @@ declare function marcbib2bibframe:generate-notes(
 	                    						fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
 	                				}
                         else ()
+                     
 		 	
         )
 };
@@ -4060,7 +4051,7 @@ declare function marcbib2bibframe:get-name(
     	else 
     	fn:string($d/marcxml:subfield[@code='a' ])
     	
-    let $aLabel := $label
+    let $aLabel :=  marcbib2bibframe:clean-name-string($label)
     
     let $elementList := if ($d/@tag!='534') then
       element bf:hasAuthority{
@@ -4115,7 +4106,7 @@ declare function marcbib2bibframe:get-name(
             "bf:Agent"
 
     let $tag := fn:string($d/@tag)
-    let $desc-role:=if (fn:starts-with($tag , "10") or fn:starts-with($tag , "11")) then "primary" else "secondary" 
+    let $desc-role:=if (fn:starts-with($tag , "10") or fn:starts-with($tag , "11")) then "primary" else () 
     let $resourceRole := 
         if ($relatorCode ne "") then
             (: 
@@ -4150,7 +4141,7 @@ declare function marcbib2bibframe:get-name(
 
        element {$resourceRole} {
             element {$class} {  (:$internal-name-link,      :)
-                element bf:label {$label},                
+                element bf:label { marcbib2bibframe:clean-name-string($label)},                
                 if ($d/@tag!='534') then element bf:authorizedAccessPoint {$aLabel} else (),
                 marcbib2bibframe:generate-880-label($d,"name"),
                 $elementList,             
@@ -4544,6 +4535,27 @@ declare function marcbib2bibframe:clean-string(
 	        if ( fn:ends-with($s, ",") ) then
 	            fn:substring($s, 1, (fn:string-length($s) - 1) )
 	        else
+	            $s
+	
+	else ""
+
+
+
+};
+(:~
+:   This function takes a name string and 
+:   attempts to clean it up (trailing commas only first).
+:
+:   @param  $s        is fn:string
+:   @return fn:string
+:)
+declare function marcbib2bibframe:clean-name-string(
+    $s as xs:string?
+    ) as xs:string
+{ 
+	if (fn:exists($s)) then
+	    let $s:= fn:replace($s,",$","","i")    	    
+	    return 	    
 	            $s
 	
 	else ""
