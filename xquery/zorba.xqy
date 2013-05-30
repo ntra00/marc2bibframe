@@ -9,7 +9,7 @@ xquery version "3.0";
 :
 :   Copyright: Public Domain
 :
-:   Proprietary XQuery Extensions Used: saxon (Saxon)
+:   Proprietary XQuery Extensions Used: Zorba (expath)
 :
 :   Xquery Specification: January 2007
 :
@@ -54,6 +54,9 @@ declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
+declare namespace an = "http://www.zorba-xquery.com/annotations";
+declare namespace httpexpath = "http://expath.org/ns/http-client";
+
 (:~
 :   This variable is for the base uri for your Authorites/Concepts.
 :   It is the base URI for the rdf:about attribute.
@@ -71,6 +74,55 @@ declare variable $marcxmluri as xs:string external;
 :)
 declare variable $serialization as xs:string external;
 
+(:~
+:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
+:)
+declare variable $resolveLabelsWithID as xs:string external := "false";
+
+(:~
+Performs an http get but does not follow redirects
+
+$l          as xs:string is the label
+$scheme     as xs:string is the scheme    
+:)
+declare %an:sequential function local:http-get(
+            $label as xs:string,
+            $scheme as xs:string
+    )
+{
+    let $l := fn:encode-for-uri($label)
+    let $request := 
+        http:send-request(
+            <httpexpath:request 
+                method="GET" 
+                href="http://id.loc.gov/authorities/{$scheme}/label/{$l}" 
+                follow-redirect="false"/>, 
+            (), 
+            ()
+        )
+    return $request
+};
+
+(:~
+Outputs a resource, replacing verbose hasAuthority property
+with a simple rdf:resource pointer
+
+$resource   as element() is the resource
+$authuri    as xs:string is the authority URI    
+:)
+declare %an:nondeterministic function local:generate-resource(
+            $r as element(),
+            $authuri as xs:string
+    )
+{
+    element { fn:name($r) } {
+        $r/@*,
+        $r/*[fn:name() ne "bf:hasAuthority"],
+        element bf:hasAuthority {
+            attribute rdf:resource { $authuri }
+        }
+    }
+};
 
 let $marcxml := 
     if ( fn:starts-with($marcxmluri, "http://" ) or fn:starts-with($marcxmluri, "https://" ) ) then
@@ -99,7 +151,49 @@ let $rdfxml-raw :=
         
 let $rdfxml := 
     if ( $serialization ne "rdfxml-raw" ) then
-        RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
+        let $flatrdfxml := RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
+        return
+            if ($resolveLabelsWithID eq "true") then
+                for $r in $flatrdfxml/*
+                let $n := fn:local-name($r)
+                let $scheme := 
+                    if ( fn:matches($n, "Person|Organization|Place|Meeting|Family") ) then
+                        "names"
+                    else
+                        "subjects"
+                return
+                    if ( fn:matches($n, "Place|Person|Organization|Topic") ) then
+                        let $label := ($r/bf:authorizedAccessPoint, $r/bf:label)[1]
+                        let $label := fn:normalize-space(xs:string($label))
+                        let $req1 := local:http-get($label, $scheme)
+                        let $resource := 
+                            if ($req1[1]/@status eq 302) then
+                                let $authuri := xs:string($req1[1]/httpexpath:header[@name eq "X-URI"][1]/@value)
+                                return local:generate-resource($r, $authuri)
+                            else if ( 
+                                $req1[1]/@status ne 302 and
+                                fn:ends-with($label, ".")
+                                ) then
+                                let $l := fn:substring($label, 1, fn:string-length($label)-1) 
+                                let $req2 := local:http-get($l, $scheme)
+                                return
+                                    if ($req2[1]/@status eq 302) then
+                                        let $authuri := xs:string($req2[1]/httpexpath:header[@name eq "X-URI"][1]/@value)
+                                        return local:generate-resource($r, $authuri)
+                                    else 
+                                        (: There was no match or some other message, keep moving :)
+                                        $r
+                                
+                            else 
+                                $r
+                                
+                                
+                        return $resource
+                    
+                    else
+                        $r
+            else
+                $flatrdfxml
     else
         $rdfxml-raw 
         
