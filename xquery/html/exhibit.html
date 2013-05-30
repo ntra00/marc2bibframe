@@ -181,7 +181,13 @@
 										<tr ex:if-exists=".bf-creator">
 											<td class="property span2">Creator</td>
 											<td>
-												<ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> <span class="name" ex:content=".label"></span></li></ul>
+												<ul ex:content=".bf-creator" class="value creator">
+													<li>
+														<i ex:class-subcontent="icon-{{.marcrType}}" ex:title-subcontent="{{.marcrType}}"></i> 
+														<span class="name" ex:content=".label"></span> 
+														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
+													</li>
+												</ul>
 											</td>
 										</tr>
 									</table>
@@ -251,6 +257,7 @@
 																(<span ex:content=".bf-resourceRole"></span>)
 															</span>
 														</span>
+														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
 													</li>
 												</ul>
 											</td>
