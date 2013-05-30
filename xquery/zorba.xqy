@@ -144,7 +144,7 @@ declare %an:sequential function local:resolve-labels(
             else
                 "subjects"
         return
-            if ( fn:matches($n, "Place|Person|Organization|Topic") ) then
+            if ( fn:matches($n, "Person|Organization|Place|Meeting|Family") ) then
                 let $label := ($r/bf:authorizedAccessPoint, $r/bf:label)[1]
                 let $label := fn:normalize-space(xs:string($label))
                 let $req1 := local:http-get($label, $scheme)
