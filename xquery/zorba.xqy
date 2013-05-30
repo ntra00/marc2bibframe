@@ -124,6 +124,57 @@ declare %an:nondeterministic function local:generate-resource(
     }
 };
 
+
+(:~
+Tries to resolve Labels to URIs
+
+$resource   as element() is the resource
+$authuri    as xs:string is the authority URI    
+:)
+declare %an:sequential function local:resolve-labels(
+        $flatrdfxml as element(rdf:RDF)
+    )
+{
+    let $resources := 
+        for $r in $flatrdfxml/*
+        let $n := fn:local-name($r)
+        let $scheme := 
+            if ( fn:matches($n, "Person|Organization|Place|Meeting|Family") ) then
+                "names"
+            else
+                "subjects"
+        return
+            if ( fn:matches($n, "Place|Person|Organization|Topic") ) then
+                let $label := ($r/bf:authorizedAccessPoint, $r/bf:label)[1]
+                let $label := fn:normalize-space(xs:string($label))
+                let $req1 := local:http-get($label, $scheme)
+                let $resource := 
+                    if ($req1[1]/@status eq 302) then
+                        let $authuri := xs:string($req1[1]/httpexpath:header[@name eq "X-URI"][1]/@value)
+                        return local:generate-resource($r, $authuri)
+                    else if ( 
+                        $req1[1]/@status ne 302 and
+                        fn:ends-with($label, ".")
+                        ) then
+                        let $l := fn:substring($label, 1, fn:string-length($label)-1) 
+                        let $req2 := local:http-get($l, $scheme)
+                        return
+                            if ($req2[1]/@status eq 302) then
+                                let $authuri := xs:string($req2[1]/httpexpath:header[@name eq "X-URI"][1]/@value)
+                                return local:generate-resource($r, $authuri)
+                            else 
+                                (: There was no match or some other message, keep moving :)
+                                $r
+                    else 
+                        $r
+                return $resource
+                    
+            else
+                $r
+    
+    return <rdf:RDF>{$resources}</rdf:RDF>
+};
+
 let $marcxml := 
     if ( fn:starts-with($marcxmluri, "http://" ) or fn:starts-with($marcxmluri, "https://" ) ) then
         let $http-response := http:get-node($marcxmluri) 
@@ -154,44 +205,7 @@ let $rdfxml :=
         let $flatrdfxml := RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
         return
             if ($resolveLabelsWithID eq "true") then
-                for $r in $flatrdfxml/*
-                let $n := fn:local-name($r)
-                let $scheme := 
-                    if ( fn:matches($n, "Person|Organization|Place|Meeting|Family") ) then
-                        "names"
-                    else
-                        "subjects"
-                return
-                    if ( fn:matches($n, "Place|Person|Organization|Topic") ) then
-                        let $label := ($r/bf:authorizedAccessPoint, $r/bf:label)[1]
-                        let $label := fn:normalize-space(xs:string($label))
-                        let $req1 := local:http-get($label, $scheme)
-                        let $resource := 
-                            if ($req1[1]/@status eq 302) then
-                                let $authuri := xs:string($req1[1]/httpexpath:header[@name eq "X-URI"][1]/@value)
-                                return local:generate-resource($r, $authuri)
-                            else if ( 
-                                $req1[1]/@status ne 302 and
-                                fn:ends-with($label, ".")
-                                ) then
-                                let $l := fn:substring($label, 1, fn:string-length($label)-1) 
-                                let $req2 := local:http-get($l, $scheme)
-                                return
-                                    if ($req2[1]/@status eq 302) then
-                                        let $authuri := xs:string($req2[1]/httpexpath:header[@name eq "X-URI"][1]/@value)
-                                        return local:generate-resource($r, $authuri)
-                                    else 
-                                        (: There was no match or some other message, keep moving :)
-                                        $r
-                                
-                            else 
-                                $r
-                                
-                                
-                        return $resource
-                    
-                    else
-                        $r
+                local:resolve-labels($flatrdfxml)
             else
                 $flatrdfxml
     else
