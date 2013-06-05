@@ -37,11 +37,11 @@ import module namespace file            =   "http://expath.org/ns/file";
 import module namespace parsexml        =   "http://www.zorba-xquery.com/modules/xml";
 import schema namespace parseoptions    =   "http://www.zorba-xquery.com/modules/xml-options";
 
-import module namespace marcbib2bibframe = "info:lc/id-modules/marcbib2bibframe#" at "modules/module.MARCXMLBIB-2-BIBFRAME.xqy";
-import module namespace rdfxml2nt = "info:lc/id-modules/rdfxml2nt#" at "modules/module.RDFXML-2-Ntriples.xqy";
-import module namespace rdfxml2json = "info:lc/id-modules/rdfxml2json#" at "modules/module.RDFXML-2-JSON.xqy";
-import module namespace bfRDFXML2exhibitJSON = "info:lc/bf-modules/bfRDFXML2exhibitJSON#" at "modules/module.RDFXML-2-ExhibitJSON.xqy";
-import module namespace RDFXMLnested2flat = "info:lc/bf-modules/RDFXMLnested2flat#" at "modules/module.RDFXMLnested-2-flat.xqy";
+import module namespace marcbib2bibframe = "info:lc/id-modules/marcbib2bibframe#" at "../modules/module.MARCXMLBIB-2-BIBFRAME.xqy";
+import module namespace rdfxml2nt = "info:lc/id-modules/rdfxml2nt#" at "../modules/module.RDFXML-2-Ntriples.xqy";
+import module namespace rdfxml2json = "info:lc/id-modules/rdfxml2json#" at "../modules/module.RDFXML-2-JSON.xqy";
+import module namespace bfRDFXML2exhibitJSON = "info:lc/bf-modules/bfRDFXML2exhibitJSON#" at "../modules/module.RDFXML-2-ExhibitJSON.xqy";
+import module namespace RDFXMLnested2flat = "info:lc/bf-modules/RDFXMLnested2flat#" at "../modules/module.RDFXMLnested-2-flat.xqy";
 
 (: NAMESPACES :)
 declare namespace marcxml       = "http://www.loc.gov/MARC21/slim";

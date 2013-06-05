@@ -1,7 +1,7 @@
 xquery version "1.0";
 
 (:
-:   Module Name: MARC/XML BIB 2 BIBFRAME RDF using Saxon
+:   Module Name: MARC/XML BIB 2 BIBFRAME RDF using MarkLogic
 :
 :   Module Version: 1.0
 :
@@ -9,7 +9,7 @@ xquery version "1.0";
 :
 :   Copyright: Public Domain
 :
-:   Proprietary XQuery Extensions Used: saxon (Saxon)
+:   Proprietary XQuery Extensions Used: xdmp (MarkLogic)
 :
 :   Xquery Specification: January 2007
 :
@@ -30,13 +30,14 @@ xquery version "1.0";
 :)
 
 (: IMPORTED MODULES :)
-import module namespace marcbib2bibframe = "info:lc/id-modules/marcbib2bibframe#" at "modules/module.MARCXMLBIB-2-BIBFRAME.xqy";
-import module namespace rdfxml2nt = "info:lc/id-modules/rdfxml2nt#" at "modules/module.RDFXML-2-Ntriples.xqy";
-import module namespace rdfxml2json = "info:lc/id-modules/rdfxml2json#" at "modules/module.RDFXML-2-JSON.xqy";
-import module namespace bfRDFXML2exhibitJSON = "info:lc/bf-modules/bfRDFXML2exhibitJSON#" at "modules/module.RDFXML-2-ExhibitJSON.xqy";
-import module namespace RDFXMLnested2flat = "info:lc/bf-modules/RDFXMLnested2flat#" at "modules/module.RDFXMLnested-2-flat.xqy";
+import module namespace marcbib2bibframe = "info:lc/id-modules/marcbib2bibframe#" at "../modules/module.MARCXMLBIB-2-BIBFRAME.xqy";
+import module namespace rdfxml2nt = "info:lc/id-modules/rdfxml2nt#" at "../modules/module.RDFXML-2-Ntriples.xqy";
+import module namespace rdfxml2json = "info:lc/id-modules/rdfxml2json#" at "../modules/module.RDFXML-2-JSON.xqy";
+import module namespace bfRDFXML2exhibitJSON = "info:lc/bf-modules/bfRDFXML2exhibitJSON#" at "../modules/module.RDFXML-2-ExhibitJSON.xqy";
+import module namespace RDFXMLnested2flat = "info:lc/bf-modules/RDFXMLnested2flat#" at "../modules/module.RDFXMLnested-2-flat.xqy";
 
 (: NAMESPACES :)
+declare namespace xdmp  = "http://marklogic.com/xdmp";
 
 declare namespace marcxml       = "http://www.loc.gov/MARC21/slim";
 declare namespace rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -48,26 +49,34 @@ declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
-declare option saxon:output "indent=yes";
+declare option xdmp:output "indent-untyped=yes" ; 
 
 (:~
 :   This variable is for the base uri for your Authorites/Concepts.
 :   It is the base URI for the rdf:about attribute.
 :   
 :)
-declare variable $baseuri as xs:string external;
+declare variable $baseuri as xs:string := xdmp:get-request-field("baseuri","http://base-uri/");
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
 :)
-declare variable $marcxmluri as xs:string external;
+declare variable $marcxmluri as xs:string := xdmp:get-request-field("marcxmluri","");
 
 (:~
-:   This variable is for desired serialzation.  Expected values are: rdfxml (default), ntriples, json
+:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
 :)
-declare variable $serialization as xs:string external;
+declare variable $serialization as xs:string := xdmp:get-request-field("serialization","rdfxml");
 
-let $marcxml := fn:doc($marcxmluri)//marcxml:record
+let $marcxml := 
+    xdmp:document-get(
+            $marcxmluri, 
+            <options xmlns="xdmp:document-get">
+                <format>xml</format>
+            </options>
+        )
+       
+let $marcxml := $marcxml//marcxml:record
 
 let $resources :=
     for $r in $marcxml
@@ -98,9 +107,6 @@ let $response :=
         $rdfxml
 
 return $response
-
-
-
 
 
 
