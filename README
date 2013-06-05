@@ -1,5 +1,11 @@
 XQuery utility to convert MARC/XML Bibliographic records to BIBFRAME resources.
 
+This XQuery version was developed by the Library of Congress Network 
+Development and MARC Standards Office.  This transformation is under 
+development and does not at this time represent a canonical transformation 
+of MARC Bib data to BIBFRAME resources. It is made available for 
+evaluation and comment.
+
 NOTE: The Python version of this code was split off into its own repository.
 See http://github.com/lcnetdev/marc2bibframe-python
 
@@ -73,7 +79,10 @@ Exhibit Display
 	
 
 
-Changes
+Changes (Generally see the commit history http://github.com/lcnetdev/marc2bibframe/commits/master)
+
+	Jun 5 2013
+		Removed Python tree, see http://github.com/lcnetdev/marc2bibframe-python
 
 	Mar 1 2013
 		Output data in closer alignment with vocabulary terms.
