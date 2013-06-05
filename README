@@ -1,5 +1,7 @@
 XQuery utility to convert MARC/XML Bibliographic records to BIBFRAME resources.
 
+NOTE: The Python version of this code was split off into its own repository.
+See http://github.com/lcnetdev/marc2bibframe-python
 
 Xquery scripts are provided for MarkLogic, Saxon, and Zorba.
 
