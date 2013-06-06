@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-05-28-T17:00";
+declare variable $marcbib2bibframe:last-edit :="2013-06-06-T17:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -2265,12 +2265,16 @@ declare function marcbib2bibframe:generate-identifiers(
 	                            		attribute rdf:resource {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(fn:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}                                         
 	                            	}		
 	                        else if ( fn:contains(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "(OCoLC)" ) ) then
-	                            element bf:oclc-number {
-	                            	attribute rdf:resource { fn:concat("http://oclc.org/oclc-number/",
+	                           let $iStr:=  marcbib2bibframe:clean-string(fn:replace(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "\(OCoLC\)", ""))
+                                return (element bf:oclc-number { $iStr },
+	                               element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr, "^ocm","")) }}
+	                               )
+(:                                element bf:oclc-number {
+	                            	attribute rdf:resource { fn:concat("http://www.worldcat.org/oclc/",	                            	
 	                            			fn:normalize-space( fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "") )
 	                            			)   
-	     				}                            	
-	                            }
+	     				}                    
+	                            }:)        	
 	                        else if (fn:contains(fn:string-join($this-tag[@tag="856"]/marcxml:subfield[@code="u"],""),"doi") ) then
 	                        	for $doi in $this-tag[@tag="856"]/marcxml:subfield[@code="u"][fn:contains(.,"doi")]
 	                            		return element bf:doi {        fn:normalize-space( fn:string($doi))                        }
@@ -2693,8 +2697,9 @@ let $v-test:=
                     $t/@*,
                     fn:normalize-space(fn:concat(xs:string($t), " (", $carrier, ")"))
                 }
-        else
-            $i-title
+        else (:ntra 2013-06-06 commented this cuplication of bf:title out; its' only using the extent title if there is "title" type info in extent. bf:title is handled elsewhere:)
+            (:$i-title:)
+            ()
         
     let $clean-isbn:= 
         for $item in $isbn-set/bf:isbn
@@ -2707,9 +2712,15 @@ let $v-test:=
                 "bf:isbn13" 
             else 
                 "bf:isbn10" 
-        return element {$element-name} {    
-            attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}                                         
-	   }    
+        return (
+                element {$element-name} {
+                    fn:normalize-space($i)
+                },
+                if (fn:string-length($i) lt 11  ) then 
+                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Lookup/Book/",fn:normalize-space($i),"/",fn:normalize-space($i),"/1")}}
+                 else ()
+                )
+	       
 
     (:get the physical details:)
     (: We only ask for the first 260 :)
@@ -2728,7 +2739,7 @@ let $instance :=
         		$isbn,
         		(: See extent-title above :)
         		(: if ($volume) then element bf:title{ $volume} else (), :)
-        		$extent-title,
+        	(:	$extent-title,:)
         		for $t in $extent-title
         		return 
                     element bf:label {
@@ -3296,10 +3307,12 @@ declare function marcbib2bibframe:generate-related-work
             $aLabelWork880,
             if ($d/marcxml:subfield[@code="w" or @code="x"] and fn:not($d/@tag="630")) then (:(identifiers):)
                 for $s in $d/marcxml:subfield[@code="w" or @code="x" ]
-  	              let $iStr := fn:string($s)
+  	              let $iStr :=  marcbib2bibframe:clean-string(fn:replace($s, "\(OCoLC\)", ""))
            	    return 
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-	                        element bf:oclc-number {  attribute rdf:resource {fn:concat("http://oclc.org/oclc-number/",marcbib2bibframe:clean-string(fn:replace($iStr, "\(OCoLC\)", ""))) }}
+	                        (element bf:oclc-number {  $iStr},
+	                        element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
+	                        )
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
 	                    else if ($s/@code="x") then
