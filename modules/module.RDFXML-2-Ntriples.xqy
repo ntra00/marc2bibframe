@@ -9,7 +9,7 @@ xquery version "1.0";
 :
 :   Copyright: Public Domain
 :
-:   Proprietary XQuery Extensions Used: none
+:   Proprietary XQuery Extensions Used: xdmp
 :
 :   Xquery Specification: January 2007
 :
@@ -17,9 +17,6 @@ xquery version "1.0";
 :       xdmp extension used in order to quote/escape otherwise valid
 :       XML.
 :
-:
-:   NB: This file has been modified to remove a ML dependency at
-:   around line 126 (xdmp:quote).  Could be a problem for Literal types. 
 :)
    
 (:~
@@ -32,6 +29,7 @@ xquery version "1.0";
 :)
 module namespace    rdfxml2nt   = "info:lc/id-modules/rdfxml2nt#";
 declare namespace   rdf         = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+declare namespace   xdmp        = "http://marklogic.com/xdmp";
 
 (:~
 :   This is the main function.  Input RDF/XML, output ntiples.
@@ -123,7 +121,7 @@ declare function rdfxml2nt:parse_property(
                 fn:replace(
                     fn:replace(
                         fn:replace(
-                            $node/child::node()/text() , 
+                            xdmp:quote($node/child::node()) , 
                             '&quot;',
                             '\\"'
                         ),
@@ -138,7 +136,7 @@ declare function rdfxml2nt:parse_property(
         else if (fn:local-name($node/child::node()[fn:name()][1]) ne "") then
             rdfxml2nt:return_bnode($node/child::node()[fn:name()][1])
         else
-            fn:concat('"' , fn:replace(xs:string($node) , '&quot;' , '\\"') , '"',
+            fn:concat('"' , rdfxml2nt:clean_string(xs:string($node)) , '"',
                 if ($node/@xml:lang) then
                     fn:concat('@' , xs:string($node/@xml:lang) )
                 else if ($node/@rdf:datatype) then
@@ -253,6 +251,24 @@ declare function rdfxml2nt:return_uri4bnode($uri as xs:string) as xs:string {
                 else ()
             return $str
     return fn:string-join( $uriparts4bnode , '')
+};
+
+
+(:~
+:   Clean string of odd characters.
+:
+:   @param  $string       string to clean
+:   @return xs:string
+:)
+declare function rdfxml2nt:clean_string($str as xs:string) as xs:string
+ {
+    let $str := fn:replace( $str, '\\', '\\\\')
+    let $str := fn:replace( $str , '&quot;' , '\\"')
+    let $str := fn:replace( $str, "\n", "\\r\\n")
+    let $str := fn:replace( $str, "’", "'")
+    let $str := fn:replace( $str, '“|”', '\\"')
+    let $str := fn:replace( $str, 'ā', '\\u0101')
+    return $str
 };
 
 
