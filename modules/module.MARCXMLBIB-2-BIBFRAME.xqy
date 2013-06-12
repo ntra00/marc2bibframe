@@ -2265,10 +2265,14 @@ declare function marcbib2bibframe:generate-identifiers(
 	                            		attribute rdf:resource {fn:concat("http://cassi.cas.org/coden/",fn:normalize-space(fn:string($this-tag[@tag="030"]/marcxml:subfield[@code="a"])))}                                         
 	                            	}		
 	                        else if ( fn:contains(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "(OCoLC)" ) ) then
-	                           let $iStr:=  marcbib2bibframe:clean-string(fn:replace(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "\(OCoLC\)", ""))
-                                return (element bf:oclc-number { $iStr },
-	                               element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr, "^ocm","")) }}
-	                               )
+                                let $iStr := marcbib2bibframe:clean-string(fn:replace(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "\(OCoLC\)", ""))
+                                return 
+                                (
+                                    element bf:oclc-number { $iStr },
+                                    element bf:relatedInstance {  
+                                        attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr, "[a-z]",""))}
+                                    }
+	                            )
 (:                                element bf:oclc-number {
 	                            	attribute rdf:resource { fn:concat("http://www.worldcat.org/oclc/",	                            	
 	                            			fn:normalize-space( fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "") )
@@ -3310,8 +3314,9 @@ declare function marcbib2bibframe:generate-related-work
   	              let $iStr :=  marcbib2bibframe:clean-string(fn:replace($s, "\(OCoLC\)", ""))
            	    return 
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
-	                        (element bf:oclc-number {  $iStr},
-	                        element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
+	                        (
+	                           element bf:oclc-number {$iStr},
+	                           element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
 	                        )
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
