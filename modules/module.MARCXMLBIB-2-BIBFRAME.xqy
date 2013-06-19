@@ -3330,9 +3330,7 @@ declare function marcbib2bibframe:generate-related-work
      	   else 
      	       (),		
             element bf:title {$title},
-            $name
-            
-          
+            $name                    
 			}
 		}
 };
@@ -4346,7 +4344,14 @@ declare function marcbib2bibframe:get-title(
                     }
             else
                 element bf:title {$title},
-            
+            element bf:fulltitleExperiment {
+                        element bf:TitleEntity{
+                                element bf:title {$title},
+                                (:need to sniff for begin and end nonsort codes also:)
+                                element bf:sortString {fn:substring($title, fn:number($d/@ind2)+1)
+                                }
+                            }
+            },
             marcbib2bibframe:generate-880-label($d,"title")
         )
 };
