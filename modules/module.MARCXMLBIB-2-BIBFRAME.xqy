@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-06-06-T17:00";
+declare variable $marcbib2bibframe:last-edit :="2013-06-20-T11:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -359,7 +359,7 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="767" property="translation">translationOf</type>
 		    <type tag="770" property="supplement">supplement</type>
 		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>		    	
-		    <type tag="772" property="memberOf">host</type>-->
+		    <type tag="772" ind2="0" property="memberOf">host</type>-->
 		    <type tag="773" property="host">hasConstituent</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
 		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
@@ -1982,8 +1982,12 @@ declare function marcbib2bibframe:generate-instance-from260(
         
         
     let $edition := 
-        for $e in $d/../marcxml:datafield[@tag eq "250"]
-        return element bf:edition {fn:string-join($e/marcxml:subfield[fn:not(@code="6")], " ")}
+     for $e in $d/../marcxml:datafield[@tag eq "250"]
+        (:$a may have stripable punctuation:)
+        return (element bf:edition {marcbib2bibframe:clean-string($e/marcxml:subfield[@code="a"])},        
+                element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
+                )
+            
         
     let $publication:=marcbib2bibframe:generate-publication($d)
     (:pub place is now in generate-publication:)
@@ -2162,7 +2166,7 @@ declare function marcbib2bibframe:generate-880-label
                 }
             else if ($node-name="title") then 
                 let $subfs := 
-                    if ( fn:matches($d/@tag, "(245|242|243|246|510|630|730|740|830)") ) then
+                    if ( fn:matches($d/@tag, "(245|242|243|246|490|510|630|730|740|830)") ) then
                         "(a|b|f|h|k|n|p)"
                     else
                         "(t|f|k|m|n|p|s)"
@@ -2279,11 +2283,11 @@ declare function marcbib2bibframe:generate-identifiers(
 	                            			)   
 	     				}                    
 	                            }:)        	
-	                        else if (fn:contains(fn:string-join($this-tag[@tag="856"]/marcxml:subfield[@code="u"],""),"doi") ) then
-	                        	for $doi in $this-tag[@tag="856"]/marcxml:subfield[@code="u"][fn:contains(.,"doi")]
+	                        else if (fn:contains(fn:string-join($this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"],""),"doi") ) then
+	                        	for $doi in $this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"][fn:contains(.,"doi")]
 	                            		return element bf:doi {        fn:normalize-space( fn:string($doi))                        }
 	                        else if (fn:contains(fn:string-join($this-tag[@tag="856"]/marcxml:subfield[@code="u"],""),"hdl" ) ) then
-	                        	for $hdl in $this-tag[@tag="856"]/marcxml:subfield[@code="u"][fn:contains(.,"hdl")]
+	                        	for $hdl in $this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"][fn:contains(.,"hdl")]
 	                            		return element bf:hdl {fn:normalize-space( fn:string($hdl))           }
 	                        else  
 	                            for $sub in $this-tag/marcxml:subfield[@code="a"]
@@ -3273,9 +3277,7 @@ declare function marcbib2bibframe:generate-related-work
             $d/@ind2="2" and
             $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1]
            ) then
-            marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])
-
-               
+            marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])               
         else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|490|800|810|811|510|630|730|740|830)")) ) then
             marcbib2bibframe:get-name($d)
         else ()
@@ -3424,11 +3426,14 @@ declare function marcbib2bibframe:related-works
     let $relatedWorks := 
     
         for $type in $relateds/type
-        	return
+        	return 
             if (fn:matches($type/@tag,"740")) then (: title is in $a , @ind2 needs attention:)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind2=$type/@ind2]		
                 return marcbib2bibframe:generate-related-work($d,$type)
-     	    
+     	    else if ( $type/@ind2 and $marcxml/marcxml:datafield[fn:matches(@tag,"772")] ) then 
+               for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))]		
+			   return marcbib2bibframe:generate-related-work($d,$type)
+             
      	    else if (fn:matches($type/@tag,"533")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]		
 			    return marcbib2bibframe:generate-related-reproduction($d,$type)                                           
@@ -3437,7 +3442,8 @@ declare function marcbib2bibframe:related-works
                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][fn:matches(@ind2,fn:string($type/@ind2))][marcxml:subfield[@code="t"]]		
 			   return marcbib2bibframe:generate-related-work($d,$type)
             
-            else if (fn:matches($type/@tag,"(510|630|730|830)")) then 
+           
+            else if (fn:matches($type/@tag,"(490|510|630|730|830)")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="a"]]		
 			    return marcbib2bibframe:generate-related-work($d,$type)
             
@@ -3493,9 +3499,9 @@ declare function marcbib2bibframe:generate-work(
 { (:2013-05-01 ntra moved instances inside work;  :)
     let $instances := marcbib2bibframe:generate-instances($marcxml, $workID)
     let $instancesfrom856:=
-     if ( $marcxml/marcxml:datafield[@tag eq "856"][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]) then         
+     if ( $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]) then         
         (:set up instances/annotations for each non-contributor bio link:)    
-        for $d in $marcxml/marcxml:datafield[@tag="856"][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]
+        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]
             return marcbib2bibframe:generate-instance-from856($d, $workID)            
         else 
             ()
@@ -4144,9 +4150,9 @@ declare function marcbib2bibframe:get-name(
         return element bf:resourceRole {fn:string($r)}
 
     let $bio-links:=
-        if ( $d/../marcxml:datafield[@tag eq "856"][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]) then         
+        if ( $d/../marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]) then         
         (:set up annotations for each contributor bio link:)    
-        for $link in $d/../marcxml:datafield[@tag="856"][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]
+        for $link in $d/../marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]
             return     marcbib2bibframe:generate-instance-from856($link, "person")            
         else 
             ()
