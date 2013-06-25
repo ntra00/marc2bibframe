@@ -2574,7 +2574,7 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierType {attribute rdf:about {fn:concat("http://www.loc.gov/standards/valuelist/marcsmd/convert-me/",fn:string($d/marcxml:subfield[@code="a"]))}		
+                           element bf:carrierType {attribute rdf:about {fn:concat("http://www.loc.gov/standards/valuelist/marcsmd/convert-me/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:carrierType { 
