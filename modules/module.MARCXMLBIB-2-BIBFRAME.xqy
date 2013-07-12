@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-06-25-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-07-12-T11:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -2684,9 +2684,9 @@ let $v-test:=
                     $t/@*,
                     fn:normalize-space(fn:concat(xs:string($t), " (", $carrier, ")"))
                 }
-        else (:ntra 2013-06-06 commented this cuplication of bf:title out; its' only using the extent title if there is "title" type info in extent. bf:title is handled elsewhere:)
-            (:$i-title:)
-            ()
+        else 
+            $i-title
+            
         
     let $clean-isbn:= 
         for $item in $isbn-set/bf:isbn
@@ -2726,13 +2726,13 @@ let $instance :=
         		$isbn,
         		(: See extent-title above :)
         		(: if ($volume) then element bf:title{ $volume} else (), :)
-        	(:	$extent-title,:)
-        		for $t in $extent-title
+        		$extent-title,
+        		(:for $t in $extent-title
         		return 
-                    element bf:label {
+                    element bf:label { 
                         $t/@*,
                         xs:string($t)
-                    },
+                    },:)
         		if ($physicalForm) then      element bf:physicalForm {$physicalForm} else (),
         		$volume-info,
         (:not done yet: nate 2013-05-21
