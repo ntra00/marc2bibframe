@@ -240,20 +240,6 @@ declare variable $marcbib2bibframe:physdesc-list:=
             <instance-physdesc>
                 <field tag="300" codes="3" property="materialsSpecified">Materials specified</field>
                 <field tag="300" codes="a" property="extent">Physical Description</field>
-<!-- now in notes
-           	<field tag="300" codes="b" property="illustrativeContentNote">Illustrative content note</field>-->
-	        <field tag="300" codes="c" property="dimensions">Dimensions</field>
-   		       <field tag="300" codes="e" property="additionalMaterial"> Accompanying material</field>
-        		<field tag="300" codes="f" property="unitType">Type of unit </field>
-        		<field tag="300" codes="g" property="unitSize">Size of unit </field>		
-        		<field tag="306" codes="a" property="duration">Playing Time </field>
-        		<field tag="307" codes="ab" property="hoursAvailable"> Hours Available</field>
-        		<field tag="310" codes="a" property ="frequency">Current Publication Frequency </field>
-        		<field tag="310" codes="ab" property="frequencyNote"> Current Publication Frequency and date range</field>
-        		<field tag="321" codes="ab" property="frequencyNote"> Former Publication Frequency and date range </field>
-                <field tag="337" codes="a" property="mediaType">Media Type </field>
-        		<field tag="338" codes="a" property="carrierType">Carrier Type </field>-->
-
         	   </instance-physdesc>
 	           <work-physdesc>	           
 	                <field tag="384" codes="a" property="key" > Key </field>
@@ -1967,46 +1953,14 @@ declare function marcbib2bibframe:generate-instance-from260(
      for $e in $d/../marcxml:datafield[@tag eq "250"]
         (:$a may have stripable punctuation:)
         return (element bf:edition {marcbib2bibframe:clean-string($e/marcxml:subfield[@code="a"])},        
-                element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
+                if ($e/marcxml:subfield[@code="b"]) then element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
+                else ()
                 )
             
         
     let $publication:=marcbib2bibframe:generate-publication($d)
     (:pub place is now in generate-publication:)
-  (:  let $place :=
-        for $a in $d/marcxml:subfield[@code eq "a"]
-        let $label:= marcbib2bibframe:clean-string(fn:string($a))        
-        return 
-            if (fn:not(fn:matches($label,"^n.[ ]?p.$","i"))) then
-                element bf:placePub {	            
-                    element bf:Place {                      
-                        element bf:label { marcbib2bibframe:clean-string(fn:string($a)) },
-                        marcbib2bibframe:generate-880-label($d,"place")
-                    }
-                }
-            else ()          
-         
-    let $providers:=
-            (
-                $d/marcxml:subfield[@code eq "b"],
-         		$d/../marcxml:datafield[@tag="028"]/marcxml:subfield[@code eq "b"]
-            )
-    
-    let $providers :=
-        for $a in fn:distinct-values($providers)
-        return
-            element bf:provider {
-                element bf:Organization {
-                    element bf:label {marcbib2bibframe:clean-string(fn:string($a))},
-                      marcbib2bibframe:generate-880-label($d,"provider"),
-                      element bf:resourceRole {"publisher"}
-                }
-            }
-     
-    let $pubdate :=
-        for $a in $d/marcxml:subfield[@code eq "c"]
-        return element bf:pubDate {marcbib2bibframe:clean-string(fn:string($a))}
-    :)
+ 
     
 
     let $physMapData := 
@@ -2084,10 +2038,8 @@ let $physResourceData:=()
             $physdesc,
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
-            },
-            $notes,
-          (:  $links,:)
-         (:   $related-works,:)
+                },
+            $notes,        
             $derivedFrom,
             $holdings
         }
@@ -2169,14 +2121,14 @@ declare function marcbib2bibframe:generate-880-label
             else if ($node-name="place") then 
                 for $sf in $match/marcxml:subfield[@code="a"]
                 return
-                    element  bf:label {
+                    element  bf:providerPlace {
                         attribute xml:lang {$xmllang},                         
                         marcbib2bibframe:clean-string(fn:string($sf))
                     }
 	else if ($node-name="provider") then 
                 for $sf in $match/marcxml:subfield[@code="b"]
                 return
-                    element bf:label {
+                    element bf:providerName {
                         attribute xml:lang {$xmllang},   			
                         marcbib2bibframe:clean-string(fn:string($sf))
                 }
@@ -2422,7 +2374,7 @@ declare function marcbib2bibframe:handle-cancels($this-tag, $sf)
 :	Returns bf: node of elname 
 : abc are repeatable!!! each repetition of b or c is another publication; should it be another instance????
 abc and def are parallel, so a and d are treated the same, etc, except the starting property name publication vs manufacture
-:   @param  $d       element is the datafield 260
+:   @param  $d       element is the datafield 260 or 264
 :   @param  $resource      string is the "work" or "instance"
 :   @return bf:* 	   element()
 
@@ -2437,7 +2389,11 @@ declare function marcbib2bibframe:generate-publication
     if ($d/marcxml:subfield[@code="b"]) then
     (: not sure why this is failing when there's a b and an e: 509288 ; currently set to [1] to move on:)
         for $pub at $x in $d/marcxml:subfield[@code="b"]
-	        let $propname :=  "bf:publication" 
+	        let $propname :=  
+	           if ($d/@tag="264" and $d/@ind2="3" ) then
+	               "bf:manufacture"
+	           else
+	                "bf:publication"
 	            
                             
 	        return 
@@ -2453,6 +2409,7 @@ declare function marcbib2bibframe:generate-publication
 	                    if ( $d/marcxml:subfield[@code="a"][$x]) then
 	                        (element bf:providerPlace {marcbib2bibframe:clean-string($d/marcxml:subfield[@code="a"][$x])},
 	                         marcbib2bibframe:generate-880-label($d,"place") )
+	                          
 	                    else (),
 	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
 	                        element bf:copyrightDate {marcbib2bibframe:clean-string($d/marcxml:subfield[@code="c"][$x])}
@@ -2552,7 +2509,8 @@ declare function marcbib2bibframe:generate-physdesc
                         fn:normalize-space( fn:string($subelement))                        
                     },
              (:---337,338:)
-               for $d in $marcxml/marcxml:datafield[@tag="337" ]
+             	if ($resource="instance") then 
+              ( for $d in $marcxml/marcxml:datafield[@tag="337" ]
                 let $src:=fn:string($d/marcxml:subfield[@code="2"])
                 
                 return
@@ -2586,7 +2544,7 @@ declare function marcbib2bibframe:generate-physdesc
                            element bf:carrierType {attribute rdf:about {fn:concat("http://id.loc.gov/authorities/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
                         } 
                      else  (),  
-              (:---338, 337:)
+              (:---337, 338 end ---:)
               for $issuedate in $marcxml/marcxml:datafield[@tag="362"]
                 let $subelement:=fn:string($issuedate/marcxml:subfield[@code="a"])
                 return
@@ -2628,7 +2586,8 @@ declare function marcbib2bibframe:generate-physdesc
                                                 }
                                         }
                                      }
-                                          
+                 )
+                 else () (:work physdesc excludes the above:)
         	)
 };
 
@@ -3058,9 +3017,27 @@ declare function marcbib2bibframe:generate-holdings(
 	        		element {$element } {$value}
 	        		(:else 
 	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}:)
-	        		
+let $d852:= 
+if ($marcxml/marcxml:datafield[@tag="852"]) then
+    for $d in $marcxml/marcxml:datafield[@tag="852"]
+    return 
+        (for $s in $d/marcxml:subfield[@code="a"] return element bf:location{fn:string($s)},
+        for $s in $d/marcxml:subfield[@code="b"] return element bf:sublocation{fn:string($s)},
+        for $s in $d/marcxml:subfield[@code="c"] return element bf:shelfLocation{fn:string($s)},
+        for $s in $d/marcxml:subfield[@code="e"] return element bf:address{fn:string($s)},
+for $s in $d/marcxml:subfield[@code="f"] return element bf:codedLocation{fn:string($s)},
+if ($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]) then element bf:call-num {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")} else (),
+for $s in $d/marcxml:subfield[@code="p"] return element bf:piece{fn:string($s)},
+for $s in $d/marcxml:subfield[@code="q"] return element bf:pieceCondition{fn:string($s)},
+for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},
+for $s in $d/marcxml:subfield[@code="u"] return element bf:uri{attribute rdf:resource{fn:string($s)},
+for $s in $d/marcxml:subfield[@code="z"] return element  bf:copyNote{fn:string($s)}
+}
+)
+    else 
+    ()
 return 
-        if ($call-num) then 
+        if ($call-num or $d852) then 
             element bf:hasHolding{   
                 element bf:Holding {
                    (: element bf:annotates {
@@ -3068,7 +3045,8 @@ return
                     },:)
                     (:this is for matching later:)
                     element bf:label{fn:string($call-num[1])},
-         	    $call-num
+         	    $call-num,
+         	    $d852
                 }
             }
       	else ()
@@ -3172,7 +3150,7 @@ declare function marcbib2bibframe:generate-notes(
 	                    					if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then	                    							                    						
 	                    						marcbib2bibframe:clean-string(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")))	                    						
 	                    					else 
-	                    						fn:normalize-space(fn:concat($marc-note/marcxml:subfield[@code="a"],$precede))
+	                    						fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[@code="a"]," ")))
 	                				}
                         else ()
                      
@@ -3246,11 +3224,6 @@ declare function marcbib2bibframe:generate-finding-aids
         $d as element(marcxml:datafield) 
     )
 { 	 
-let $link-property:=
-    if (fn:contains($d/marcxml:subfield[@code="u"],"hdl")) then "bf:hdl"
-            else if (fn:contains($d/marcxml:subfield[@code="u"],"doi")) then "bf:doi" 
-            else "bf:identifier"
-return
  element bf:index        
     {
     if ($d/marcxml:subfield[@code="u"]) then
@@ -3258,11 +3231,17 @@ return
             element bf:authorizedAccessPoint {fn:string($d/marcxml:subfield[@code="a"])},
             element bf:title {fn:string($d/marcxml:subfield[@code="a"])},
             element bf:label {fn:string($d/marcxml:subfield[@code="a"])},
-            element bf:hasInstance {
-                        element bf:Instance {
-                            element  {$link-property} {fn:string($d/marcxml:subfield[@code="u"])}
-                    }
-            }
+            for $u in $d/marcxml:subfield[@code="u"]
+                let $link-property:=
+                    if (fn:contains(fn:string($u),"hdl")) then "bf:hdl"
+                    else if (fn:contains(fn:string($u),"doi")) then "bf:doi" 
+                    else "bf:identifier"
+                return
+                    element bf:hasInstance {
+                                element bf:Instance {
+                                    element  {$link-property} {fn:string($u)}
+                            }
+                     }
           }
        
     else    
@@ -3835,7 +3814,7 @@ declare function marcbib2bibframe:generate-work(
             $abstract-annotation,
             $audience,           
             $genre,
-            $work3xx,
+            $work3xx, 
             $cartography,
             $subjects,
             $gacs,            
@@ -4368,6 +4347,7 @@ declare function marcbib2bibframe:get-title(
                         $title
                     },
        if (fn:matches($d/@tag,"(222|246|245)" )) then
+            if (fn:number($d/@ind2) gt 0) then
                 element bf:fulltitleExperiment {
                         element bf:TitleEntity{
                                 element bf:title {$title},
@@ -4376,8 +4356,9 @@ declare function marcbib2bibframe:get-title(
                                 },
                                 if ($d/@tag="222") then element bf:titleType {"key title"} else if ($d/@tag="246") then element bf:titleType {"variant title"} else ()
                             }
-            }
-            else (),
+                }
+            else ()
+        else (),
             if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then element bf:abbreviatedTitleSource{fn:string($d/marcxml:subfield[@code="2"])} else (),
             marcbib2bibframe:generate-880-label($d,"title")
         )
