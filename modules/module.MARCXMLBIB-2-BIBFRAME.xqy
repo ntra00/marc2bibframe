@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-07-12-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-07-18-T11:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -299,6 +299,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="541" sfcodes="cad" property="acquisition">Immediate Source of Acquisition Note</note>
 		<note tag ="542" property="copyrightStatus">Information Relating to Copyright Status</note>
 		<note tag ="546" property="languageNote" sfcodes="3a" >Language Note</note>
+		<note tag ="546" property="notation" sfcodes="b" >Language Notation(script)</note>
 		<note tag ="550" property="issuers">Issuing Body Note</note>
 		<note tag ="556" property="documentation">Information about Documentation Note</note>
 		<note tag ="561" property="custodialHistory">Ownership and Custodial History</note>
@@ -318,7 +319,7 @@ declare variable $marcbib2bibframe:relationships :=
         <!-- Work to Work relationships -->
         <work-relateds all-tags="()">
             <type tag="(700|710|711|720)" ind2="2" property="contains">isIncludedIn</type>
-            <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedWork">relatedWork</type>        		                        
+            <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
 		    <type tag="740" ind2="2" property="contains">isContainedIn</type>
 		    <type tag="760" property="subseriesOf">hasParts</type>	
@@ -351,7 +352,7 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
 		    <type tag="534" property="originalVersion"></type>
-    		<type tag="787" property="hasRelationship">relatedItem</type>					  	    	  	   
+    		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   
 	  	    <type tag="490" ind1="0" property="inSeries">hasParts</type>
 	  	    <type tag="510" property="describedIn">isReferencedBy</type>
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
@@ -361,6 +362,7 @@ declare variable $marcbib2bibframe:relationships :=
         <!-- Instance to Work relationships (none!) -->
 	  	<instance-relateds>
 	  	  (:<type tag="6d30"  property="subject">isSubjectOf</type>:)
+	  	  <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
 	  	</instance-relateds>
 	</relationships>
 );
@@ -1885,16 +1887,10 @@ declare function marcbib2bibframe:marcbib2bibframe(
     return
         if ($marcxml/marcxml:leader) then
             let $work := marcbib2bibframe:generate-work($marcxml, $about) 
-            (:let $instances := marcbib2bibframe:generate-instances($marcxml, $about):)
-        (:    let $holdings := marcbib2bibframe:generate-holdings($marcxml, $about):)
+            
             return
                 element rdf:RDF {        attribute dcterms:modified {$marcbib2bibframe:last-edit},                
-                    $work
-                    (:we might want to embed the instances in the work with hasInstance:)
-                  (:  $instances,:)
-                    (:,
-                      generate-controlfields($marcxml):)
-                  (:    $holdings:)
+                    $work                   
                 }
         else
             element rdf:RDF {
@@ -1950,17 +1946,30 @@ declare function marcbib2bibframe:generate-instance-from260(
         
         
     let $edition := 
-     for $e in $d/../marcxml:datafield[@tag eq "250"]
+     for $e in $d/../marcxml:datafield[@tag eq "250"][1]
         (:$a may have stripable punctuation:)
         return (element bf:edition {marcbib2bibframe:clean-string($e/marcxml:subfield[@code="a"])},        
                 if ($e/marcxml:subfield[@code="b"]) then element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
                 else ()
                 )
-            
-        
-    let $publication:=marcbib2bibframe:generate-publication($d)
-    (:pub place is now in generate-publication:)
- 
+    let $edition-instances:= 
+    for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
+        return 
+            element relatedInstance {
+                element Instance {
+                   $instance-title,
+                    $derivedFrom    ,            
+                    (element bf:edition {marcbib2bibframe:clean-string($e/marcxml:subfield[@code="a"])},        
+                        if ($e/marcxml:subfield[@code="b"]) then element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
+                        else ()
+                    )
+                }
+            }
+                
+    let $publication:= 
+            if (fn:matches($d/@tag, "(260|264)")) then marcbib2bibframe:generate-publication($d)
+            else if (fn:matches($d/@tag, "(261|262)")) then marcbib2bibframe:generate-26x-pub($d)
+            else ()
     
 
     let $physMapData := 
@@ -2011,13 +2020,7 @@ let $physResourceData:=()
      
     let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
-    
-    
-    (:  let $links:=
-     if ( $d/../marcxml:datafield[@tag eq "856"]) then
-            marcbib2bibframe:generate-instance-from856($d, $workID)            
-        else 
-            ():)
+  
     return 
         element bf:Instance {        
             if ($instanceType ne "") then
@@ -2069,8 +2072,7 @@ declare function marcbib2bibframe:generate-880-label
         let $hit-num := fn:substring(fn:tokenize($d/marcxml:subfield[@code="6"],'-')[2],1,2)
         
         let $lang := fn:substring(fn:string($d/../marcxml:controlfield[@tag="008"]), 36, 3)     
-    
-  	
+      	
         let $this-tag:= fn:string($d/@tag)
         let $hit-num:=fn:tokenize($d/marcxml:subfield[@code="6"],"-")[2]			
         let $match:=$d/../marcxml:datafield[@tag="880" and fn:starts-with(marcxml:subfield[@code="6"] , fn:concat($this-tag ,"-", $hit-num ))]
@@ -2133,7 +2135,7 @@ declare function marcbib2bibframe:generate-880-label
                         marcbib2bibframe:clean-string(fn:string($sf))
                 }
             else 
-                element bf:label {
+                element { fn:concat("bf:",$node-name)} {
                     fn:string($match/marcxml:subfield[@code="a"])					
 				}				
 	else ()
@@ -2368,13 +2370,45 @@ declare function marcbib2bibframe:handle-cancels($this-tag, $sf)
         ()
             
 };
+(:~
+:   This is the function generates publication  data for 261, 262 
+:
 
+:)
+declare function marcbib2bibframe:generate-26x-pub
+    (
+           $d as element(marcxml:datafield) 
+    ) as element ()*
+{
+    
+   (: 261  $f is place $a is producer name,    $d is date,
+    262 is $a place, $b publisher $c date.:)
+ 
+  element bf:publication {
+            element bf:ProviderEntity {	
+                for $pub in $d[@tag="261"]/marcxml:subfield[@code="a"][1] |
+                    $d[@tag="262"]/marcxml:subfield[@code="b"][1]
+	                 return              
+	                    element bf:providerName {marcbib2bibframe:clean-string(fn:string($pub))}	                    	                   
+	             ,
+	             for $pub in $d[@tag="261"]/marcxml:subfield[@code="f"][1] |
+                    $d[@tag="262"]/marcxml:subfield[@code="a"][1]
+	                 return              
+	                    element bf:providerPlace {marcbib2bibframe:clean-string(fn:string($pub))}	                    
+	                   ,
+	            for $pub in $d[@tag="261"]/marcxml:subfield[@code="d"][1] |
+                    $d[@tag="262"]/marcxml:subfield[@code="c"][1]
+	                 return              
+	                    element bf:providerDate {marcbib2bibframe:clean-string(fn:string($pub))}	                    	                  
+	       }
+	     }
+	};
 (:~
 :   This is the function generates publication  data for instance 
 :	Returns bf: node of elname 
 : abc are repeatable!!! each repetition of b or c is another publication; should it be another instance????
 abc and def are parallel, so a and d are treated the same, etc, except the starting property name publication vs manufacture
-:   @param  $d       element is the datafield 260 or 264
+:   @param  $d       element is the datafield 260 or 264 
 :   @param  $resource      string is the "work" or "instance"
 :   @return bf:* 	   element()
 
@@ -2387,7 +2421,7 @@ declare function marcbib2bibframe:generate-publication
     ) as element ()*
 { (:first handle abc, for each b, set up a publication with any associated A's and Cs:)
     if ($d/marcxml:subfield[@code="b"]) then
-    (: not sure why this is failing when there's a b and an e: 509288 ; currently set to [1] to move on:)
+    
         for $pub at $x in $d/marcxml:subfield[@code="b"]
 	        let $propname :=  
 	           if ($d/@tag="264" and $d/@ind2="3" ) then
@@ -2611,7 +2645,7 @@ declare function marcbib2bibframe:generate-instance-fromISBN(
     ) as element ()*
     
 {
-                 
+                
     let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
     let $volume:= 
         if (fn:contains($isbn-extra,":")) then    
@@ -2709,13 +2743,7 @@ let $v-test:=
                 )
 	       
 
-    (:get the physical details:)
-    (: We only ask for the first 260 :)
-(: instance is now calculated before this function and passed in
-let $instance := 
-        for $i in $d/marcxml:datafield[@tag eq "260"][1]
-        return marcbib2bibframe:generate-instance-from260($i, $workID)
-:)
+ 
     let $instanceOf :=  
         element bf:instanceOf {
             attribute rdf:resource {$workID}
@@ -2753,40 +2781,41 @@ let $instance :=
     
 };
 (:~
-:   This is the function generates publisher number-based instance resources.
+:   This is the function generates edition instance resources.
 :
-:   @param  $d        element is the 028  
+:   @param  $d        element is each  250 after the first  
 :   @return bf:* as element()
 :)
-declare function marcbib2bibframe:generate-instance-from-pubnum(
+declare function marcbib2bibframe:generate-instance-from250(
     $d as element(marcxml:datafield),
     $workID as xs:string
     ) as element ()*
 {
 
-    (:
-        028 ind1=0 $b$a with type="issue-number"    
-        028 ind1=1 $a$b  with type="matrix-number"  
-        028 ind1=3 $a$b  with type="music-publisher"  
-        028 ind1=2 $a$b  with type="music-plate"  
-    :)
+   
     
     let $pubnum := 
-        element bf:publisherNumber
- 			{
-            	marcbib2bibframe:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="a"])))              
-        	}
+            if ($d/marcxml:subfield[@code="a"]) then
+                element bf:publisherNumber
+         			{
+                    	marcbib2bibframe:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="a"])))              
+                	}
+        	else ()
     let $pubsource := 
-        element bf:publisherNumberSource
- 			{
-            	marcbib2bibframe:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="b"])))              
-        	}
+        if ($d/marcxml:subfield[@code="b"]) then
+                element bf:publisherNumberSource
+             		{
+                        marcbib2bibframe:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="b"])))              
+                    }
+                else ()
 		
-     let $pubqual := 
-        element bf:publisherNumberQualifier
- 			{
-            	marcbib2bibframe:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="q"])))              
-        	}
+     let $pubqual :=
+        if ($d/marcxml:subfield[@code="q"]) then
+            element bf:publisherNumberQualifier
+     			{
+                	marcbib2bibframe:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="q"])))              
+            	}
+        else ()
     (:get the physical details:)
     (: We only ask for the first 260 :)
 	let $instance :=  marcbib2bibframe:generate-instance-from260($d/../marcxml:datafield[@tag eq "260" or @tag eq "264"][1], $workID)
@@ -2799,13 +2828,13 @@ declare function marcbib2bibframe:generate-instance-from-pubnum(
 
     return 
         element bf:Instance {
-            if ( fn:exists($instance) ) then
+            (if ( fn:exists($instance) ) then
                 (
                     $instance/@*,
                     $instance/*
                 )
             else 
-                $instanceOf,                         
+                $instanceOf),                         
             $pubnum,$pubsource	
 		}
      
@@ -2888,17 +2917,7 @@ declare function marcbib2bibframe:generate-instance-from856(
                             			fn:string($d/marcxml:subfield[@code="3"])       					                        		
                     		else  "No label"
                     		},
-	                    
-	                    (:  
-			annotation service is restful in-id version of $u; 
-			dropped for now since it can't be live
-	                        11737193 has multiple $u	                        
-	                    :) 
-	                    (:if ($type ne "") then
-	                        element bf:annotation-service {
-	                            fn:concat("http://id.loc.gov/resources/bibs/",$bibid,".",$type,".xml")
-	                        }
-	                    else (),:)
+	                    	                    
 	                    for $u in $d/marcxml:subfield[@code="u"]
 	                    	return element bf:annotationBody { 
 	                    	                  attribute rdf:resource {                  	
@@ -3073,32 +3092,15 @@ let $isbn-sets:=
         if ( $isbn-sets//bf:set) then           
         	(:use the first 260 to set up a book instance:)
             let $instance:= 
-                for $i in $marcxml/marcxml:datafield[@tag eq "260" or @tag eq "264"][1]
+                for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264)")][1]
           		      return marcbib2bibframe:generate-instance-from260($i, $workID)        
 
             for $set in $isbn-sets/bf:set
           	  return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
-                (:
-                (
-                    for $i in $set/*
-                    return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
-	    	      )
-	    	    :)	    	      
-
-	   	(: always have a 260? 028s are handled in $instance-identifiers
-	   	else if ( $marcxml/marcxml:datafield[@tag eq "028"] ) then
-            for $i in $marcxml/marcxml:datafield[@tag eq "028"]
-	    	return marcbib2bibframe:generate-instance-from-pubnum($i, $workID) :)
-	    	
+	   	
         else 	        (: $isbn-sets//bf:set is false:)		
             for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]
-     	       return marcbib2bibframe:generate-instance-from260($i, $workID)
-            
-    (:,     if ( $marcxml/marcxml:datafield[@tag eq "856"]) then
-                for $d in $marcxml/marcxml:datafield[@tag eq "856"]
-                    return  marcbib2bibframe:generate-instance-from856($d, $workID)
-        else 
-            ()                 :)
+     	       return marcbib2bibframe:generate-instance-from260($i, $workID)   
     )
 };
 (:~
@@ -3644,14 +3646,14 @@ declare function marcbib2bibframe:generate-work(
     :)
 	let $abstract:= 
 		for $d in  $marcxml/marcxml:datafield[@tag="520"][fn:not(marcxml:subfield[@code="c"]) and fn:not(marcxml:subfield[@code="u"])] 
-			let $abstract-type:=
-				if ($d/@idn1="") then "summary"
+		(:	let $abstract-type:=
+				if ($d/@ind1="") then "summary"
              			else if ($d/@idn1="0") then "contentDescription"
-				else if ($d/@idn1="1") then "review"
-				else if ($d/@idn1="2") then "scopeContent"
-				else if ($d/@idn1="3") then "abstract"
-				else if ($d/@idn1="4") then "contentAdvice"
-				else 				"summary"
+				else if ($d/@ind1="1") then "review"
+				else if ($d/@ind1="2") then "scopeContent"
+				else if ($d/@ind1="3") then "abstract"
+				else if ($d/@ind1="4") then "contentAdvice"
+				else 				"summary":)
 			return	
 			
 				element  bf:summary {
@@ -3661,12 +3663,12 @@ declare function marcbib2bibframe:generate-work(
     let $abstract-annotation:= 
         for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] 
         let $abstract-type:=
-            if ($d/@idn1="") then "Summary"
-            else if ($d/@idn1="0") then "Content Description"
-            else if ($d/@idn1="1") then "Review"
-            else if ($d/@idn1="2") then "Scope and Content"
-            else if ($d/@idn1="3") then "Abstract"
-            else if ($d/@idn1="4") then "Content advice"
+            if ($d/@ind1="") then "Summary"
+            else if ($d/@ind1="0") then "Content Description"
+            else if ($d/@ind1="1") then "Review"
+            else if ($d/@ind1="2") then "Scope and Content"
+            else if ($d/@ind1="3") then "Abstract"
+            else if ($d/@ind1="4") then "Content advice"
             else                        "Summary"
         return
             element bf:hasAnnotation {
@@ -3675,7 +3677,7 @@ declare function marcbib2bibframe:generate-work(
                         attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , fn:replace($abstract-type, " ", "") ) }
                     },
                         
-                    element bf:label { $abstract-type },
+                    element bf:label { $abstract-type},
                         
                     if (fn:string($d/marcxml:subfield[@code="c"][1]) ne "") then
                         for $sf in $d/marcxml:subfield[@code="c"]
@@ -4590,8 +4592,6 @@ declare function marcbib2bibframe:clean-name-string(
 	            $s
 	
 	else ""
-
-
 
 };
 (:~
