@@ -42,6 +42,7 @@ declare namespace madsrdf       = "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
+declare namespace dcterms       = "http://purl.org/dc/terms/";
 
 declare variable $RDFXMLnested2flat:resourcesToIgnore := 
     <ignore>
@@ -91,7 +92,8 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
     let $resources := RDFXMLnested2flat:removeNesting($resources)
     let $resources := RDFXMLnested2flat:insertInverses($resources)
     return
-        element rdf:RDF {
+        element rdf:RDF {$rdfxml/@*,
+        
             $resources
         }
 
