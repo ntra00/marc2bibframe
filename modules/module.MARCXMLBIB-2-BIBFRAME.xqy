@@ -252,7 +252,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 	<work-notes>
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
 		<!-- <note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
-		<!--<note tag ="505" property="contents" ind2="0">Formatted Contents Note</note>	-->
+		<note tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
 		<note tag ="513" property="contentNature" sfcodes="a">Nature of content</note>
 		<note tag ="245" property="contentNature" sfcodes="k">Nature of content</note>
 		<note tag ="336" property="contentNature" sfcodes="a">Nature of content</note>
@@ -3162,7 +3162,8 @@ declare function marcbib2bibframe:generate-notes(
 		                    fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]," ")))
 		                },                
 		for $note in $notes/note[fn:not(@ind2)]
-			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag]								
+			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag]
+			
 					let $return-codes:=
  						if ($note/@sfcodes) then fn:string($note/@sfcodes)
  						else "a"
