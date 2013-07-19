@@ -1889,7 +1889,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
             let $work := marcbib2bibframe:generate-work($marcxml, $about) 
             
             return
-                element rdf:RDF {        attribute dcterms:modified {$marcbib2bibframe:last-edit},                
+                element rdf:RDF {       element dcterms:modified {$marcbib2bibframe:last-edit},                
                     $work                   
                 }
         else

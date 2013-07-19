@@ -92,10 +92,26 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
     let $resources := RDFXMLnested2flat:removeNesting($resources)
     let $resources := RDFXMLnested2flat:insertInverses($resources)
     return
-        element rdf:RDF {$rdfxml/@*,
+        (: ntra changed this to an inline element from constructed, so I control the namespaces added.
+        for some reason, dcterms is not coming through.        
+        element rdf:RDF {:)
         
+        <rdf:RDF
+            xmlns:rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:rdfs          = "http://www.w3.org/2000/01/rdf-schema#"
+            xmlns:bf            = "http://bibframe.org/vocab/"
+            xmlns:madsrdf       = "http://www.loc.gov/mads/rdf/v1#"
+            xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"
+            xmlns:identifiers   = "http://id.loc.gov/vocabulary/identifiers/"
+            xmlns:notes         = "http://id.loc.gov/vocabulary/notes/"
+            xmlns:dcterms       = "http://purl.org/dc/terms/"
+            >
+
+        {attribute dcterms:modified {$rdfxml/dcterms:modified},
+        $rdfxml/@*,
             $resources
-        }
+            }
+        </rdf:RDF>
 
 };
 
