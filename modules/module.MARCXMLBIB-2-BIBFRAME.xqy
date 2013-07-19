@@ -51,7 +51,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-07-18-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-07-19-T11:00";
 declare variable $marcbib2bibframe:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
@@ -1936,10 +1936,6 @@ declare function marcbib2bibframe:generate-instance-from260(
             for $t in $titles
             return marcbib2bibframe:get-title($t)
     
-    (:let $title := 
-        for $t in $d/../marcxml:datafield[@tag eq "245"]
-        return marcbib2bibframe:get-title($t):)
-        (:700 with $t is a related item, not a contributor:)
     let $names := 
         for $datafield in $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
         return marcbib2bibframe:get-name($datafield)
@@ -2707,8 +2703,8 @@ let $v-test:=
         else if ($physicalForm ne "") then
             for $t in $i-title
             return
-                element bf:title {
-                    $t/@*,
+                element bf:title {                
+                    $t/@*,                    
                     fn:normalize-space(fn:concat(xs:string($t), " (", $physicalForm, ")"))
                 }
         else if ($carrier ne "") then
@@ -3104,6 +3100,35 @@ let $isbn-sets:=
     )
 };
 (:~
+:   This is the function generates a nonsort version of titles using private language tags
+:   accepts element, property label
+:
+::   @param  $d       element is the marcxml datafield
+:   @param  $title      string is the title as merged subfields
+:   @param  $property      string is the title property name 
+:   @return {$property} as element()
+:)
+declare function marcbib2bibframe:generate-titleNonsort(
+   $d  as element(marcxml:datafield),   
+    $title as xs:string, 
+    $property as xs:string 
+    ) as element ()*
+{
+if (fn:matches($d/@tag,"(222|242|243|245|440)" ) and fn:number($d/@ind2) gt 0 ) then
+                (:need to sniff for begin and end nonsort codes also:)                
+                element {$property} {attribute xml:lang {"en-US-bf"},
+                        fn:substring($title, fn:number($d/@ind2)+1)
+                             }
+else if (fn:matches($d/@tag,"(130|630)" ) and fn:number($d/@ind1) gt 0 ) then
+                (:need to sniff for begin and end nonsort codes also:)                
+                element {$property} {attribute xml:lang {"en-US-bf"},
+                        fn:substring($title, fn:number($d/@ind1)+1)
+                             }
+
+else ()
+
+};
+(:~
 :   This is the function generates 0xx  data for instance or work, based on mappings in $notes-list
 :   Returns subfield $a
 :
@@ -3333,6 +3358,8 @@ declare function marcbib2bibframe:generate-related-work
      	   else 
      	       (),		
             element bf:title {$title},
+            marcbib2bibframe:generate-titleNonsort($d,$title, "bf:title"),
+            
             $name                    
 			}
 		}
@@ -3509,8 +3536,6 @@ declare function marcbib2bibframe:generate-work(
     let $types := marcbib2bibframe:get-resourceTypes($marcxml)
         
     let $mainType := "Work"
-     (:ldr06:   :)    
-    
     
     let $uniformTitle := 
         for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
@@ -4345,23 +4370,12 @@ declare function marcbib2bibframe:get-title(
                         ()
     return 
         (  element {$element-name} {
-                        $lang,
+                        $lang,                        
                         $title
                     },
-       if (fn:matches($d/@tag,"(222|246|245)" )) then
-            if (fn:number($d/@ind2) gt 0) then
-                element bf:fulltitleExperiment {
-                        element bf:TitleEntity{
-                                element bf:title {$title},
-                                (:need to sniff for begin and end nonsort codes also:)
-                                element bf:sortString {fn:substring($title, fn:number($d/@ind2)+1)
-                                },
-                                if ($d/@tag="222") then element bf:titleType {"key title"} else if ($d/@tag="246") then element bf:titleType {"variant title"} else ()
-                            }
-                }
-            else ()
-        else (),
-            if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then element bf:abbreviatedTitleSource{fn:string($d/marcxml:subfield[@code="2"])} else (),
+                     marcbib2bibframe:generate-titleNonsort($d,$title, $element-name),
+       
+       (:if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then element bf:abbreviatedTitleSource{fn:string($d/marcxml:subfield[@code="2"])} else (),:)
             marcbib2bibframe:generate-880-label($d,"title")
         )
 };
@@ -4383,6 +4397,7 @@ return element bf:translationOf {
                element bf:Work {
                 (:element bf:authorizedAccessPoint{$label},:)                
                 element bf:title {$aLabel},
+                marcbib2bibframe:generate-titleNonsort($d,$aLabel,"bf:title") ,                                    
                 element madsrdf:authoritativeLabel{$aLabel},
                 if ($d/../marcxml:datafield[@tag="100"]) then
                     element bf:creator{fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
@@ -4461,8 +4476,7 @@ declare function marcbib2bibframe:get-uniformTitle(
 	  		    element bf:uniformTitle {$aLabel},              
               $elementList,
               $translationOf
-            }        
-            
+            }                    
 };
 
 (:~
