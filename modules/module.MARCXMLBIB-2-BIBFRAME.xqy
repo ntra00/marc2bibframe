@@ -37,6 +37,7 @@ module namespace marcbib2bibframe  = 'info:lc/id-modules/marcbib2bibframe#';
 
 (: MODULES :)
 import module namespace marcxml2madsrdf = "info:lc/id-modules/marcxml2madsrdf#" at "module.MARCXML-2-MADSRDF.xqy";
+import module namespace marc2bfutils = "info:lc/id-modules/marc2bfutils#" at "module.MARCXMLBIB-BFUtils.xqy";
 
 (: NAMESPACES :)
 declare namespace marcxml       	= "http://www.loc.gov/MARC21/slim";
@@ -51,8 +52,9 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-07-19-T11:00";
-declare variable $marcbib2bibframe:resourceTypes := (
+declare variable $marcbib2bibframe:last-edit :="2013-08-01-T11:00";
+
+(:declare variable $marc2bfutils:resourceTypes := (
     <resourceTypes>
         <type leader6="a">LanguageMaterial</type>
         <type cf007="t">LanguageMaterial</type>       
@@ -68,7 +70,7 @@ declare variable $marcbib2bibframe:resourceTypes := (
         <type leader6="d">Manuscript</type>
         <type leader6="f">Manuscript</type>
         <type leader6="t">Manuscript</type>
-         <type leader6="e">Cartography</type>
+        <type leader6="e">Cartography</type>
         <type leader6="f">Cartography</type>
         <type cf007="adr">Cartography</type>
         <type sf336a="(cartographic dataset|cartographic image|cartographic moving image|cartographic tactile image|cartographic tactile three-dimensional form|cartographic three-dimensional form)">Cartography</type>
@@ -105,44 +107,10 @@ declare variable $marcbib2bibframe:resourceTypes := (
         <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Dataset</type>
         <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Dataset</type>
     </resourceTypes>
-    );
+    );:)
     
-declare variable $marcbib2bibframe:targetAudiences := (
-    <targetAudiences>
-        <type cf008-22="a">pre</type>
-        <type cf008-22="b">pri</type>
-        <type cf008-22="c">pra</type>
-        <type cf008-22="d">ado</type>
-        <type cf008-22="e">adu</type>
-        <type cf008-22="f">spe</type>
-        <type cf008-22="g">gen</type>
-        <type cf008-22="j">juv</type>
-    </targetAudiences>
-    );
-    
- declare variable $marcbib2bibframe:subject-types := (
-	 <subjectTypes> 
-		<subject tag="600">Person</subject>
-		<subject tag="610">Organization</subject>		
-		<subject tag="611">Meeting</subject>
-		<!--<subject tag="630">Work</subject>-->
-		<subject tag="648">TemporalConcept</subject>
-		<subject tag="650">Topic</subject>
-		<subject tag="651">Place</subject>
-		<subject tag="654">Topical</subject>
-		<subject tag="655">Genre</subject>
-		<subject tag="656">Occupation</subject>
-		
-		<subject tag="657">Function</subject>
-		<subject tag="658">Objective</subject>
-		<subject tag="662">HierarchicalPlace</subject>		
-		<!-- <subject tag="653">UncontrolledTopic</subject> -->
-		<subject tag="653">Topic</subject>
-		<subject tag="751">Place</subject>
-		<subject tag="752">HierarchicalPlace</subject>
-	</subjectTypes>
-);
 
+(:not in use?:)
 declare variable $marcbib2bibframe:formsOfItems := (
     <formsOfItems>
         <type rType="Text Book NotatedMusic MusicRecording MixedMaterial" cf008-23="a">Microfilm</type>
@@ -1894,7 +1862,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
                 }
         else
             element rdf:RDF {
-            	attribute dcterms:modified {$marcbib2bibframe:last-edit},
+            	element dcterms:modified {$marcbib2bibframe:last-edit},
                 comment {"No leader - invalid MARC/XML input"}
             }
 };
@@ -4304,32 +4272,32 @@ declare function marcbib2bibframe:get-resourceTypes(
     (:let $cf007-00 :=:)
     let $types:=
     (	for $cf in $record/marcxml:controlfield[@tag="007"]/fn:substring(text(),1,1)
-    		for $t in $marcbib2bibframe:resourceTypes/type[@cf007]
+    		for $t in $marc2bfutils:resourceTypes/type[@cf007]
     			where fn:matches($cf,$t/@cf007) 
     				return fn:string($t)    	
     (:let $sf336a :=:) ,
     	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="a"]    		
-    		for $t in $marcbib2bibframe:resourceTypes/type[@sf336a]
+    		for $t in $marc2bfutils:resourceTypes/type[@sf336a]
     			where fn:matches(fn:string($field),$t/@sf336a) 
     				return fn:string($t),   				
 (:    let $sf336b := :)
     	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="b"]    		
-    		for $t in $marcbib2bibframe:resourceTypes/type[@sf336b]
+    		for $t in $marc2bfutils:resourceTypes/type[@sf336b]
     			where fn:matches(fn:string($field),$t/@sf336b)
     				return fn:string($t), 
     				
     (:let $sf337a := :)
     	for $field in $record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="a"]		
-    		for $t in $marcbib2bibframe:resourceTypes/type[@sf337a]
+    		for $t in $marc2bfutils:resourceTypes/type[@sf337a]
     			where fn:matches(fn:string($field),$t/@sf337a)
     				return fn:string($t) ,   	
 (:let $sf337b := :)
     	for $field in $record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="b"]    		
-    		for $t in $marcbib2bibframe:resourceTypes/type[@sf337b]
+    		for $t in $marc2bfutils:resourceTypes/type[@sf337b]
     			where fn:matches(fn:string($field),$t/@sf337b)
     				return fn:string($t)  ,  	
     (:let $ldr6 :=:) 
-    	for $t in $marcbib2bibframe:resourceTypes/type
+    	for $t in $marc2bfutils:resourceTypes/type
         		where $t/@leader6 eq $leader06
         		return fn:string($t)
         		)

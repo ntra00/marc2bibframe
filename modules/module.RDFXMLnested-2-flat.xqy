@@ -107,7 +107,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             xmlns:dcterms       = "http://purl.org/dc/terms/"
             >
 
-        {attribute dcterms:modified {$rdfxml/dcterms:modified},
+        {attribute dcterms:modified {$rdfxml/dcterms:modified[1]},
         $rdfxml/@*,
             $resources
             }
