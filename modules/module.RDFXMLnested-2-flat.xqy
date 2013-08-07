@@ -110,6 +110,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
         {attribute dcterms:modified {$rdfxml/dcterms:modified[1]},
         $rdfxml/@*,
             $resources
+            
             }
         </rdf:RDF>
 

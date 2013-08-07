@@ -50,9 +50,10 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   	= "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	="http://purl.org/dc/terms/";
+ declare namespace hld            = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-08-06-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-08-07-T11:00";
 
 
 
@@ -244,10 +245,10 @@ declare variable $marcbib2bibframe:relationships :=
 );
 
 (:~
-:   This is the main function.  It expects MARCXML as input.
+:   This is the main function.  It expects a MARCXML record (with embedded hld:holdings optionally) as input.
 :   It generates bibframe RDF data as output.
 :
-:   @param  $marcxml        element is the MARCXML  
+:   @param  $marcxml        element is the top  level (may include marcxml and holdings)
 :   @return rdf:RDF as element()
 :)
 declare function marcbib2bibframe:marcbib2bibframe(
@@ -255,6 +256,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
         $identifier as xs:string
         ) as element(rdf:RDF) 
 {   
+
     let $about := 
         if ($identifier eq "") then
             ()
@@ -269,12 +271,13 @@ declare function marcbib2bibframe:marcbib2bibframe(
             
             return
                 element rdf:RDF {       element dcterms:modified {$marcbib2bibframe:last-edit},                
-                    $work                   
+                    $work               
                 }
         else
             element rdf:RDF {
             	element dcterms:modified {$marcbib2bibframe:last-edit},
-                comment {"No leader - invalid MARC/XML input"}
+            	
+                comment {"No leader - invalid MARC/XML input"}                
             }
 };
 
@@ -1379,9 +1382,36 @@ else
   
 };
 (:~
+:   This is the function generates holdings properties from hld:holdings.
+: 
+:   @param  $marcxml        element is the MARCXML
+:                           may also contain hld:holdings
+:   @return bf:* as element()
+:)
+declare function marcbib2bibframe:generate-holdings-from-hld(
+    $holdings as element(hld:holdings)?
+    
+    ) as element ()* 
+{(
+for $hold in $holdings/hld:holding
+    return  element bf:hasHolding{   
+               element bf:Holding {
+                    for $property in $hold/*                
+                        return 
+                            if ( fn:matches(              fn:local-name($property),     "(localLocation|callNumber|copyNumber|enumeration|enumAndChron)")) then
+                            element {fn:concat("bf:", fn:local-name($property))} {fn:string($property)}
+                            else ()
+                                                      
+                    }
+            }
+     )
+        
+};
+(:~
 :   This is the function generates holdings resources.
 : 
-:   @param  $marcxml        element is the MARCXML  
+:   @param  $marcxml        element is the MARCXML
+:                           may also contain hld:holdings
 :   @return bf:* as element()
 :)
 declare function marcbib2bibframe:generate-holdings(
@@ -1389,6 +1419,7 @@ declare function marcbib2bibframe:generate-holdings(
     $workID as xs:string
     ) as element ()* 
 {
+let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings)
 (:udc is abc; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $call-num:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
@@ -1403,7 +1434,7 @@ declare function marcbib2bibframe:generate-holdings(
        				else ()
             let $value:= 
                 if ($i=1) then  
-                    fn:concat(fn:normalize-space(fn:string($class)),fn:normalize-space(fn:string($class/../marcxml:subfield[fn:matches(@code,"b")]))) 
+                    fn:concat(fn:normalize-space(fn:string($class))," ",fn:normalize-space(fn:string($class/../marcxml:subfield[fn:matches(@code,"b")]))) 
                 else
                     fn:normalize-space(fn:string($class))
         (:080 doesnt' have $c, so took this out::)
@@ -1412,38 +1443,44 @@ declare function marcbib2bibframe:generate-holdings(
 	        		(:else 
 	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}:)
 let $d852:= 
-if ($marcxml/marcxml:datafield[@tag="852"]) then
-    for $d in $marcxml/marcxml:datafield[@tag="852"]
-    return 
-        (for $s in $d/marcxml:subfield[@code="a"] return element bf:location{fn:string($s)},
-        for $s in $d/marcxml:subfield[@code="b"] return element bf:sublocation{fn:string($s)},
-        for $s in $d/marcxml:subfield[@code="c"] return element bf:shelfLocation{fn:string($s)},
-        for $s in $d/marcxml:subfield[@code="e"] return element bf:address{fn:string($s)},
-for $s in $d/marcxml:subfield[@code="f"] return element bf:codedLocation{fn:string($s)},
-if ($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]) then element bf:call-num {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")} else (),
-for $s in $d/marcxml:subfield[@code="p"] return element bf:piece{fn:string($s)},
-for $s in $d/marcxml:subfield[@code="q"] return element bf:pieceCondition{fn:string($s)},
-for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},
-for $s in $d/marcxml:subfield[@code="u"] return element bf:uri{attribute rdf:resource{fn:string($s)},
-for $s in $d/marcxml:subfield[@code="z"] return element  bf:copyNote{fn:string($s)}
-}
-)
+    if ($marcxml/marcxml:datafield[@tag="852"]) then
+        for $d in $marcxml/marcxml:datafield[@tag="852"]
+        return 
+            (
+            for $s in $d/marcxml:subfield[@code="a"] return element bf:location{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="b"] return element bf:sublocation{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="c"] return element bf:shelfLocation{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="e"] return element bf:address{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="f"] return element bf:codedLocation{fn:string($s)},
+            if ($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]) then 
+                    element bf:call-num {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")}
+            else (),
+            for $s in $d/marcxml:subfield[@code="p"] return element bf:piece{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="q"] return element bf:pieceCondition{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="u"] return
+                        element bf:uri { 
+                             attribute rdf:resource{fn:string($s)}
+                            },
+            for $s in $d/marcxml:subfield[@code="z"] return element  bf:copyNote{fn:string($s)}        
+            )
     else 
     ()
+    
 return 
-        if ($call-num or $d852) then 
+        if (fn:not($hld) and ($call-num or $d852  )) then        
             element bf:hasHolding{   
                 element bf:Holding {
-                   (: element bf:annotates {
-                        attribute rdf:resource {$workID}
-                    },:)
-                    (:this is for matching later:)
+                   
+                   (:this is for matching later:)
                     element bf:label{fn:string($call-num[1])},
          	    $call-num,
          	    $d852
+         	     	
                 }
             }
-      	else ()
+            
+      	else if ($hld) then $hld else ()
     
 };
 (:~
