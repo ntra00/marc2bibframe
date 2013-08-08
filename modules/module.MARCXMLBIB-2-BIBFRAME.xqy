@@ -53,7 +53,7 @@ declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
  declare namespace hld            = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-08-07-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-08-08-T11:00";
 
 
 

@@ -1,7 +1,7 @@
 xquery version "1.0";
 
 (:
-:   Module Name: BIBFRAME RDF/XML Nested (RAW) 2 RDF/XML Nested (Condensed) 
+:   Module Name: BIBFRAME RDF/XML Nested (RAW) 2 RDF/XML Flat (Condensed) 
 :
 :   Module Version: 1.0
 :
@@ -109,7 +109,12 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
 
         {attribute dcterms:modified {$rdfxml/dcterms:modified[1]},
         $rdfxml/@*,
-            $resources
+            $resources/self::bf:Work,
+            $resources/self::bf:Instance,
+            $resources/self::bf:Authority,
+            $resources/self::bf:Annotation,
+            $resources/self::bf:Holding,
+            $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding)"))]
             
             }
         </rdf:RDF>
