@@ -46,7 +46,7 @@ declare namespace dcterms       = "http://purl.org/dc/terms/";
 
 declare variable $RDFXMLnested2flat:resourcesToIgnore := 
     <ignore>
-        <class>ProviderEntity</class>
+        <class>Provider</class>
         <class>Authority</class>
     </ignore>;
    
@@ -93,8 +93,8 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
     let $resources := RDFXMLnested2flat:insertInverses($resources)
     return
         (: ntra changed this to an inline element from constructed, so I control the namespaces added.
-        for some reason, dcterms is not coming through.        
-        element rdf:RDF {:)
+       
+        :)
         
         <rdf:RDF
             xmlns:rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"

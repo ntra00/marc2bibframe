@@ -48,12 +48,12 @@ declare namespace bf            	= "http://bibframe.org/vocab/";
 declare namespace madsrdf       	= "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   	= "http://id.loc.gov/vocabulary/identifiers/";
-declare namespace notes  		= "http://id.loc.gov/vocabulary/notes/";
- declare namespace dcterms	="http://purl.org/dc/terms/";
- declare namespace hld            = "http://www.loc.gov/opacxml/holdings/" ;
+declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
+ declare namespace dcterms	        = "http://purl.org/dc/terms/";
+ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-08-08-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-08-12-T11:00";
 
 
 
