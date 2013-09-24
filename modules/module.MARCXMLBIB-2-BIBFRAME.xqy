@@ -53,7 +53,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-08-12-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-09-10-T11:00";
 
 
 
@@ -69,7 +69,7 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="legalDeposit" label="copyright or legal deposit number"   domain="Instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
 		 <property name="isbn" label="International Standard Bibliographic Number"   domain="Instance"   marc="020--/a,z"   tag="020"   sfcodes="a,z"/>
 		 <property name="issn" label="International Standard Serial Number" domain="Instance"   marc="022--/a,z,y"   tag="022"   sfcodes="a,z,y"/>
-		 <property name="issn-l" label="linking International Standard Serial Number"   domain="Work"   marc="022--/l,m"   tag="022"   sfcodes="l,m"/>
+		 <property name="issnL" label="linking International Standard Serial Number"   domain="Work"   marc="022--/l,m"   tag="022"   sfcodes="l,m"/>
 		 <property name="isrc" label="International Standard Recording Code" domain="Instance"   marc="0240-/a,z"   tag="024"   ind1="0"   sfcodes="a,z"/>
 		 <property name="upc" label="Universal Product Code" domain="Instance" marc="0241-/a,z"   tag="024"   ind1="1"   sfcodes="a,z" uri="http://www.checkupc.com/search.php?keyword=076714006997"/>
 		 <property name="ismn" label="International Standard Music Number" domain="Instance"   marc="0242-/a,z"   tag="024"   ind1="2"   sfcodes="a,z" uri="http://www.loc.gov/ismn/987-10-11110" />
@@ -352,24 +352,24 @@ declare function marcbib2bibframe:generate-instance-from260(
     let $physMapData := 
         (
             for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "a"]   
-            return element bf:scale {
+            return element bf:cartographicScale {
             		if (fn:string($i)="a") then "Linear scale" 
             		else if (fn:string($i)="b") then "Angular scale" else if (fn:string($i)="z") then "Other scale type" else "invalid"
             		},
 	for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "b" or @code eq "c"]  
-            	return element bf:scale { fn:string($i)},
+            	return element bf:cartographicScale { fn:string($i)},
             
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "a"]
-            return element bf:scale {fn:string($i)},
+            return element bf:cartographicScale {fn:string($i)},
                        
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "b"]
-            return element bf:projection {fn:string($i)},
+            return element bf:cartographicProjection {fn:string($i)},
             
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "c"]
-            return element bf:latLong {fn:string($i)},
+            return element bf:cartographicCoordinates  {fn:string($i)},
             
             for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "d" or @code eq "e" or @code eq "f" or @code eq "g"]  
-            return element bf:latLong {fn:string($i)}
+            return element bf:cartographicCoordinates {fn:string($i)}
         ) 
 let             $physBookData:=()
 let $physSerialData:=()
@@ -1115,7 +1115,7 @@ let $v-test:=
                     fn:normalize-space($i)
                 },
                 if (fn:string-length($i) lt 11  ) then 
-                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Lookup/Book/",fn:normalize-space($i),"/",fn:normalize-space($i),"/1")}}
+                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}}
                  else ()
                 )
 	       
@@ -1691,7 +1691,14 @@ declare function marcbib2bibframe:generate-finding-aids
         fn:string($d/marcxml:subfield[@code="a"])       
         }
 };
+(:
+For RDA:   040$e = rda
+For AACR2:  Leader/18 = a
 
+Under AACR2, when two works were published together the first work in the compilation was given the 1XX/240, and the second work was given a 700 analytic (name/title).  This essentially resulted in identifying the aggregate work by only the first work in the compilation.
+Under RDA, we identify the aggregate work in the 240 (not just one of the works), and provide analytical added entries (name/title) for the works in the compilation.
+(245 would be the instance title, 240 the UT)
+:)
 declare function marcbib2bibframe:generate-related-work
     (
         $d as element(marcxml:datafield), 
@@ -2097,8 +2104,10 @@ declare function marcbib2bibframe:generate-work(
 				else 				"summary":)
 			return	
 			
-				element  bf:summary {
-					fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")
+				element  bf:summary {				
+				        element    bf:Summary {				            
+				            	element bf:label {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")}
+					}
 				}      			
 			
     let $abstract-annotation:= 
@@ -2187,7 +2196,7 @@ declare function marcbib2bibframe:generate-work(
                         element bf:authorizedAccessPoint {
                             fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
                         },
-                        element bf:title {$t},
+                        element bf:preferredTitle {$t},
                         (:
                         element bf:hasAuthority{
                             element madsrdf:Authority { element madsrdf:authoritativeLabel{fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )},
@@ -3042,7 +3051,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                             "class"                        	
                     return	 
                         element  {fn:concat("bf:",$property)} {          
-                     			if ($property="class-lcc" ) then 
+                     			if ($property="classLcc" ) then 
                      				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
                      			else
                                                  		fn:string($cl)                            
