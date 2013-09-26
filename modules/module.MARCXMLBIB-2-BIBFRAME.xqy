@@ -577,7 +577,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	                    	else 	(: not    @code,"(b|q|2):)                
 	                        (
 	                           if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
-	                      	      element bf:derivedFromLccn {    
+	                      	      element bf:lccn {    
 	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
 	                            }
 			                   else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
@@ -1397,7 +1397,9 @@ for $hold in $holdings/hld:holding
                element bf:Holding {
                     for $property in $hold/*                
                         return 
-                            if ( fn:matches(              fn:local-name($property),     "(localLocation|callNumber|copyNumber|enumeration|enumAndChron)")) then
+                        if ( fn:matches(fn:local-name($property), "callNumber")) then
+                            element bf:shelfMark {fn:string($property)}
+                        else if ( fn:matches(              fn:local-name($property),     "(localLocation|callNumber|copyNumber|enumeration|enumAndChron)")) then
                             element {fn:concat("bf:", fn:local-name($property))} {fn:string($property)}
                             else ()
                                                       
@@ -1419,17 +1421,17 @@ declare function marcbib2bibframe:generate-holdings(
     ) as element ()* 
 {
 let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings)
-(:udc is abc; the rest are ab:) 
+(:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $call-num:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
 	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|084)")]
 (:	multiple $a is possible: 2017290 use $i to handle :)
 		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
        		let $element:= 
-       			if (fn:matches($class/../@tag,"(050|051|055|060|061|070|071)")) then "bf:callno-lcc"
-       			else if (fn:matches($class/../@tag,"080") ) then "bf:callno-udc"
-       			else if (fn:matches($class/../@tag,"082") ) then "bf:callno-ddc"
-       			else if (fn:matches($class/../@tag,"084") ) then "bf:callno"
+       			if (fn:matches($class/../@tag,"(050|051|055|060|061|070|071)")) then "bf:shelfMarkLcc"
+       			else if (fn:matches($class/../@tag,"080") ) then "bf:shelfMarkUdc"
+       			else if (fn:matches($class/../@tag,"082") ) then "bf:shelfMarkDdc"
+       			else if (fn:matches($class/../@tag,"084") ) then "bf:shelfMark"
        				else ()
             let $value:= 
                 if ($i=1) then  
@@ -1770,7 +1772,7 @@ declare function marcbib2bibframe:generate-related-work
 	                           element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
 	                        )
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-	                        element bf:derivedFromLccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
+	                        element bf:lccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
 	                    else if ($s/@code="x") then
 	                       element bf:hasInstance{ element bf:Instance{ 
 	                                   element bf:title {$title},

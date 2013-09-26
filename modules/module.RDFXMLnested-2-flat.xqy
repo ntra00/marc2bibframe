@@ -108,8 +108,12 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             >
 
         {attribute dcterms:modified {$rdfxml/dcterms:modified[1]},
-        $rdfxml/@*,
-            $resources/self::bf:Work,
+            $rdfxml/@*,
+            for $w in    $resources/self::bf:Work
+                order by $w/@rdf:about
+                    return $w,
+             
+        
             $resources/self::bf:Instance,
             $resources/self::bf:Authority,
             $resources/self::bf:Annotation,
