@@ -55,6 +55,15 @@ declare variable $RDFXMLnested2flat:inverses :=
         <inverse sourceResource="bf:Work" targetResource="bf:Annotation">
             <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
         </inverse>
+        <inverse sourceResource="bf:Instance" targetResource="bf:HeldMaterial">
+            <replace lookForOnSource="bf:heldMaterial" enterOnTarget="bf:holds" />
+        </inverse>
+        <inverse sourceResource="bf:HeldMaterial" targetResource="bf:HeldItem">
+            <replace lookForOnSource="bf:heldItem" enterOnTarget="bf:holds" />
+        </inverse>
+        <inverse sourceResource="bf:Instance" targetResource="bf:HeldItem">
+            <replace lookForOnSource="bf:heldItem" enterOnTarget="bf:holds" />
+        </inverse>
         <inverse sourceResource="bf:Instance" targetResource="bf:Holding">
             <replace lookForOnSource="bf:hasHolding" enterOnTarget="bf:holds" />
         </inverse>
@@ -117,8 +126,10 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             $resources/self::bf:Instance,
             $resources/self::bf:Authority,
             $resources/self::bf:Annotation,
+            $resources/self::bf:HeldMaterial,
+            $resources/self::bf:HeldItem,
             $resources/self::bf:Holding,
-            $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding)"))]
+            $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding|HeldMaterial|HeldItem)"))]
             
             }
         </rdf:RDF>

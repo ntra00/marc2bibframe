@@ -51,9 +51,10 @@ declare namespace identifiers   	= "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace dcterms	        = "http://purl.org/dc/terms/";
  declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
+ declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-09-10-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-11-08-T11:00";
 
 
 
@@ -90,8 +91,8 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="issueNumber" label="sound recording publisher issue number"   domain="Instance"   marc="0280-/a"   tag="028"   ind1="0"   sfcodes="a"/>
 		 <property name="matrixNumber" label="sound recording publisher matrix master number"   domain="Instance"   marc="0281-/a"   tag="028"   ind1="1"   sfcodes="a"/>
 		 <property name="musicPlate" label="music publication number assigned by publisher"   domain="Instance"   marc="0282-/a"   tag="028"   ind1="2"   sfcodes="a"/>
-		 <property name="musicPublisher" label="other publisher number for music"   domain="Instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
-		 <property name="videorecordingIdentifier"   label="publisher assigned videorecording number"   domain="Instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
+		 <property name="musicPublisherNumber" label="other publisher number for music"   domain="Instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
+		 <property name="videorecordingNumber"   label="publisher assigned videorecording number"   domain="Instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
 		 <property name="publisherNumber" label="other publisher assigned number"   domain="Instance"   marc="0285-/a"   tag="028"   ind1="5"   sfcodes="a"/>
 		 <property name="coden" label="CODEN" domain="Instance" marc="030--/a,z" tag="030"   sfcodes="a,z" uri="http://cassi.cas.org/coden/"/>
 		 <property name="postalRegistration" label="postal registration number" domain="Instance"   marc="032--/a"   tag="032"   sfcodes="a"/>
@@ -101,9 +102,9 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="stockNumber" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
 		 <property name="reportNumber" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
 		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="555;856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
-		 <property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
+		 <!--<property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
 		 <property name="orcid" label="Open Researcher and Contributor Identifier" domain="Agent"   marc="authority:0247-+2'orcid'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
-		 <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
+		 <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>-->
              </vocab-identifiers>
     </identifiers>
     );
@@ -117,6 +118,7 @@ declare variable $marcbib2bibframe:physdesc-list:=
             <instance-physdesc>
                 <field tag="300" codes="3" property="materialsSpecified">Materials specified</field>
                 <field tag="300" codes="a" property="extent">Physical Description</field>
+                <field tag="300" codes="c" property="dimensions">Physical Size</field>
         	   </instance-physdesc>
 	           <work-physdesc>	           
 	                <field tag="384" codes="a" property="key" > Key </field>
@@ -127,20 +129,22 @@ declare variable $marcbib2bibframe:physdesc-list:=
 declare variable $marcbib2bibframe:notes-list:= (
 <notes>
 	<work-notes>
+		<note tag ="245" property="contentType" sfcodes="k">Nature of content</note>
+		<note tag ="306" property="duration" sfcodes="a">Playing time</note>		
+		<note tag ="310" property="frequency" sfcodes="a">Issue frequency</note>
+		<note tag ="336" property="contentType" sfcodes="a">Nature of content</note>
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
 		<!-- <note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
 		<note tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
-		<note tag ="513" property="contentType" sfcodes="a">Nature of content</note>
-		<note tag ="245" property="contentType" sfcodes="k">Nature of content</note>
-		<note tag ="336" property="contentType" sfcodes="a">Nature of content</note>
-		<note tag ="513" property="contentCoverage" sfcodes="b">Period Covered Note</note>
-		<note tag ="514" property="dataQuality">Data Quality Note</note>
+		<note tag ="513" property="contentType" sfcodes="a">Nature of content</note>		
+		<note tag ="513" property="temporalCoverageNote" sfcodes="b">Period Covered Note</note>
+		<!--<note tag ="514" property="dataQuality">Data Quality Note</note> -->
 		<note tag ="516" property="contentType" sfcodes="a">Type of Computer File or Data Note</note>		
 		<note tag ="518" property="contentCoverage" sfcodes="a" >Date/Time and Place of an Event Note</note>
 		<!-- has its own function<note tag ="521" property="targetAudience">Target Audience Note</note>-->
-		<note tag ="522" property="contentCoverage">Geographic Coverage Note</note>
+		<note tag ="522" property="geographicCoverageNote">Geographic Coverage Note</note>
 		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>		
-		<note tag ="526" property="studyProgram">Study Program Information Note</note>
+		<!-- <note tag ="526" property="studyProgram">Study Program Information Note</note>-->
 		<note tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="otherPhysicalFormat">Additional Physical Form Available Note </note>
 <!-- moved to relateds;			<note tag ="533"  comment="(develop link) (Delsey - Manifestation)" property="reproduction">Reproduction Note</note>
  		<note tag ="534" comment="(develop link)(Delsey - Manifestation)" sfcodes="b" property="originalVersion">Original Version Note</note>-->
@@ -154,13 +158,13 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="565" property="caseFile">Case File Characteristics Note</note>
 		<note tag ="567" property="methodology">Methodology Note</note>
 		<note tag ="580" property="linkingEntryComplexity">Linking Entry Complexity Note</note>
-		<note tag ="581" property="publicationsAbout" sfcodes="3a" startswith="Publications about: ">Publications About Described Materials Note</note>
+		<note tag ="581" property="publicationAbout" sfcodes="3a" startswith="Publications about: ">Publications About Described Materials Note</note>
 		<note tag ="586" property="awardNote" sfcodes="3a">Awards Note</note>
 		<note tag ="588" comment="(actually Annotation? Admin?)" property="source" >Source of Description Note </note>
 	
 	</work-notes>
 	<instance-notes>	
-		<note tag ="300" property="illustrativeContentNote" sfcodes="b">Illustrative content note</note>
+		<note tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</note>
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>
 		<note tag ="501" property="with" sfcodes="a">With Note</note>
 		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
@@ -172,7 +176,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</note>
 		<note tag ="538" property="systemDetails">System Details Note</note>
 		<note tag ="540" comment="(Delsey - Manifestation)" property="useAndReproduction">Terms Governing Use and Reproduction Note </note>
-		<note tag ="541" sfcodes="cad" property="acquisition">Immediate Source of Acquisition Note</note>
+		<note tag ="541" sfcodes="cad" property="immediateAcquisition">Immediate Source of Acquisition Note</note>
 		<note tag ="542" property="copyrightStatus">Information Relating to Copyright Status</note>
 		<note tag ="546" property="languageNote" sfcodes="3a" >Language Note</note>
 		<note tag ="546" property="notation" sfcodes="b" >Language Notation(script)</note>
@@ -195,6 +199,7 @@ declare variable $marcbib2bibframe:relationships :=
         <!-- Work to Work relationships -->
         <work-relateds all-tags="()">
             <type tag="(700|710|711|720)" ind2="2" property="contains">isIncludedIn</type>
+            
             <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
 		    <type tag="740" ind2="2" property="contains">isContainedIn</type>
@@ -204,33 +209,38 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="767" property="translation">translationOf</type>
 		    <type tag="770" property="supplement">supplement</type>
 		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>		    	
-		    <type tag="772" ind2="0" property="memberOf">host</type>-->
-		    <type tag="773" property="host">hasConstituent</type>
+		   <!-- <type tag="772" ind2="0" property="memberOf">host</type>-->
+		    <type tag="773" property="containedIn">hasConstituent</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
 		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
-		    <type tag="777" property="issuedWith">issuedWith</type>		
+		   
+		   <type tag="777" property="issuedWith">issuedWith</type>
+		   <!--???the generic preceeding and succeeding may not be here -->
 		    <type tag="780" ind2="0" property="continues">continuationOf</type>		    
 		    <type tag="780" ind2="1" property="continuesInPart">partiallyContinuedBy</type>
-		    <type tag="780" ind2="2" property="supercedes">continuationOf</type>
-		    <type tag="780" ind2="3" property="supercedesInPart">partiallyContinuedBy</type>
+		    <type tag="780" ind2="2" property="supersedes">continuationOf</type>
+		    <type tag="780" ind2="3" property="supersedesInPartBy">partiallyContinuedBy</type>
 		    <type tag="780" ind2="4" property="unionOf">preceding</type>
-		    <type tag="780" ind2="5" property="absorbed">isAbsorbedBy</type>
+		    <type tag="780" ind2="5" property="absorbedBy">isAbsorbedBy</type>
+		    <type tag="780" ind2="6" property="absorbedInPartBy">isPartlyAbsorbedBy</type>
 		    <type tag="780" ind2="7" property="separatedFrom">formerlyIncluded</type>				   
 		    <type tag="785" ind2="0"  property="continuedBy">continues</type>
 		    <type tag="785" ind2="1" property="continuedInPartBy">partiallyContinues</type>	
-		    <type tag="785" ind2="2"  property="supercededBy">continues</type>
-		    <type tag="785" ind2="3" property="supercededInPartBy">partiallyContinues</type>
+		    <type tag="785" ind2="2"  property="supersededBy">continues</type>
+		    <type tag="785" ind2="3" property="supersededInPartBy">partiallyContinues</type>
 		    <type tag="785" ind2="4" property="absorbedBy">absorbs</type>
 		    <type tag="785" ind2="5"  property="absorbedInPartBy">partiallyAbsorbs</type>
 		    <type tag="785" ind2="6"  property="splitInto">splitFrom</type>
-		    <type tag="785" ind2="7"  property="mergedInto">mergedFrom</type>	
-    		<type tag="785" ind2="8"  property="changedBackTo">formerlyNamed</type>			
+		    <type tag="785" ind2="7"  property="mergedToForm">mergedFrom</type>	
+    		<!--<type tag="785" ind2="8"  property="changedBackTo">formerlyNamed</type> -->
+    	<type tag="785" ind2="8"  property="succeeds">formerlyNamed</type>
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
 		    <type tag="534" property="originalVersion"></type>
     		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   
 	  	    <!--<type tag="490" ind1="0" property="inSeries">hasParts</type>-->
 	  	    <type tag="510" property="describedIn">isReferencedBy</type>
+	  	    (:??? this may not work:::)
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>
             <type tag="730" property="relatedWork">relatedItem</type>             
@@ -588,7 +598,7 @@ declare function marcbib2bibframe:generate-identifiers(
                                 let $iStr := marc2bfutils:clean-string(fn:replace(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "\(OCoLC\)", ""))
                                 return 
                                 (
-                                    element bf:oclc-number { $iStr },
+                                    element bf:oclcNumber { $iStr },
                                     element bf:relatedInstance {  
                                         attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr, "[a-z]",""))}
                                     }
@@ -703,7 +713,7 @@ let $id024-028:=
 :   This is the function that handles $0 in various fields
 :   @param  $sys-num       element is the marc subfield $0
      
-:   @return  element() either bf:system-number or bf:hasAuthority with uri
+:   @return  element() either bf:systemNumber or bf:hasAuthority with uri
 :)
 declare function marcbib2bibframe:handle-system-number( $sys-num   ) 
 {
@@ -711,7 +721,7 @@ declare function marcbib2bibframe:handle-system-number( $sys-num   )
                                     let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
                                     return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
                                 else
-                                    element bf:system-number {fn:string($sys-num)}
+                                    element bf:systemNumber {fn:string($sys-num)}
 };
 (:~
 :   This is the function generates full Identifier classes from m,y,z cancel/invalid identifiers and qualifiers
@@ -975,9 +985,9 @@ declare function marcbib2bibframe:generate-physdesc
                         },
                         for $d in $marcxml/marcxml:datafield[@tag="351"]                              
                              return                             
-                                 element bf:organizationSystem {		
+                                 element bf:arrangement {		
                                     
-                                         element bf:OrganizationSystem {
+                                         element bf:Arrangement {
                                          for $sub in $d/marcxml:subfield[@code="3"] 
                                             return element bf:materialPart {
                                                 fn:normalize-space( fn:string($sub))
@@ -1017,7 +1027,9 @@ declare function marcbib2bibframe:generate-physdesc
 declare function marcbib2bibframe:generate-instance-fromISBN(
     $d as element(marcxml:record),
     $isbn-set as element (bf:set),   
-    $instance as element (bf:Instance),
+    (:something needed to be a null instance???:)
+    $instance as element (bf:Instance)?,
+    
     $workID as xs:string
     ) as element ()*
     
@@ -1391,21 +1403,64 @@ declare function marcbib2bibframe:generate-holdings-from-hld(
     $holdings as element(hld:holdings)?
     
     ) as element ()* 
-{(
+{
 for $hold in $holdings/hld:holding
-    return  element bf:hasHolding{   
-               element bf:Holding {
-                    for $property in $hold/*                
-                        return 
-                        if ( fn:matches(fn:local-name($property), "callNumber")) then
-                            element bf:shelfMark {fn:string($property)}
-                        else if ( fn:matches(              fn:local-name($property),     "(localLocation|callNumber|copyNumber|enumeration|enumAndChron)")) then
-                            element {fn:concat("bf:", fn:local-name($property))} {fn:string($property)}
-                            else ()
-                                                      
+    let $elm := if (  $hold/hld:volumes/hld:volume[2]) then "HeldMaterial" else "HeldItem"
+    let $summary-set :=
+            for $property in $hold/*
+                return                 
+                    if ( fn:matches(fn:local-name($property), "callNumber")) then
+                        (element bf:label {fn:string($property)},
+                        element bf:shelfMark {fn:string($property)})      
+                    else if ( fn:matches( fn:local-name($property), "(localLocation|callNumber|publicNote|copyNumber|enumeration|enumAndChron)")) then
+                        element {fn:concat("bf:", fn:local-name($property))} {fn:string($property)}
+                    else ()
+                        
+   let $item-set :=
+               if  ($hold/hld:volumes ) then
+                        for $vol in $hold/hld:volumes/hld:volume
+                            let $enum:=fn:normalize-space(fn:string($vol/hld:enumAndChron))
+                            let $circs:= $vol/ancestor::hld:holding/hld:circulations
+                            let $circ   := 
+                                for $circ in $circs/hld:circulation[fn:normalize-space(fn:string(hld:enumAndChron ))=$enum]
+                                    let $status:= if ($circ/hld:availableNow/@value="1") then "available" else  "not available" 
+                                        return (element bf:circulationStatus {$status},
+                                                if ($circ/hld:itemId) then element bf:itemId  {fn:string($circ/hld:itemId )} else ()
+                                                )
+                           return            
+                              element bf:heldItem {
+                                element bf:HeldItem {
+                                    element bf:label {fn:string($vol/hld:enumAndChron)},
+                                    element bf:enumAndChron {$enum },     
+                                      element bf:enumeration {fn:string($vol/hld:enumeration)},   
+                                    $circ
+                                  }
+                               }
+             else  (: no volumes,  just add circ  to the summary heldmaterial:)              
+                        let $status:= if ($hold/hld:circulations/hld:circulation/hld:availableNow/@value="1") then "available" else  "not available" 
+                        return (element bf:circulationStatus {$status},                                
+                                element bf:itemId  {fn:string($hold/hld:circulations/hld:circulation/hld:itemId )}
+                                )
+         
+            
+     return
+      if ($elm = "HeldItem" ) then
+         element bf:heldItem {
+            element bf:HeldItem {
+             $summary-set, $item-set//bf:HeldItem/*[fn:not(fn:local-name()='label')]
+            }
+            }
+         
+            
+      else
+        element bf:heldMaterial{   
+               element bf:HeldMaterial {
+                     $summary-set,
+                      $item-set
+                                                 
                     }
             }
-     )
+    
         
 };
 (:~
@@ -1503,7 +1558,7 @@ let $isbn-sets:=
     return    
         (        
         if ( $isbn-sets//bf:set) then           
-        	(:use the first 260 to set up a book instance:)
+        	(:use the first 260 to set up a book instance... what else is an instance in other formats?:)
             let $instance:= 
                 for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264)")][1]
           		      return marcbib2bibframe:generate-instance-from260($i, $workID)        
@@ -1636,7 +1691,7 @@ return
 				if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
 				element bf:hasInstance {
 					element bf:Instance {
-						element bf:title {$title},
+						element bf:instanceTitle {element bf:Title {element bf:titleValue{$title}}},
 						element bf:publication {
 							element bf:Provider {
 								$pubPlace,
@@ -1669,7 +1724,7 @@ declare function marcbib2bibframe:generate-finding-aids
         $d as element(marcxml:datafield) 
     )
 { 	 
- element bf:index        
+ element bf:findingAid        
     {
     if ($d/marcxml:subfield[@code="u"]) then
         element bf:Work{ 
@@ -2107,7 +2162,7 @@ declare function marcbib2bibframe:generate-work(
 			return	
 			
 				element  bf:summary {				
-				        element    bf:Summary {				            
+				        element    bf:Summary {						        
 				            	element bf:label {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")}
 					}
 				}      			
@@ -2115,20 +2170,20 @@ declare function marcbib2bibframe:generate-work(
     let $abstract-annotation:= 
         for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] 
         let $abstract-type:=
-            if ($d/@ind1="") then "Summary"
-            else if ($d/@ind1="0") then "Content Description"
+            if ($d/@ind1="") then "Description" (:Summary:)
+            else if ($d/@ind1="0") then "Description"(:Content Description:) 
             else if ($d/@ind1="1") then "Review"
-            else if ($d/@ind1="2") then "Scope and Content"
-            else if ($d/@ind1="3") then "Abstract"
-            else if ($d/@ind1="4") then "Content advice"
-            else                        "Summary"
-        return
+            else if ($d/@ind1="2") then "Description" (:Scope and Content:)
+            else if ($d/@ind1="3") then "Description" (:Abstract:)
+            else if ($d/@ind1="4") then "Description" (:Content advice:)
+            else                        "Description"
+        return (:link direction should be reversed:)
             element bf:hasAnnotation {
                 element bf:Annotation {
                     element rdf:type {
                         attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , fn:replace($abstract-type, " ", "") ) }
                     },
-                        
+                       
                     element bf:label { $abstract-type},
                         
                     if (fn:string($d/marcxml:subfield[@code="c"][1]) ne "") then
@@ -2138,12 +2193,13 @@ declare function marcbib2bibframe:generate-work(
                         element bf:annotationAssertedBy { 
                             attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc" }
                         },
-                        
+                        (:??? annotationbody  and literal aren't right:)
                     for $sf in $d/marcxml:subfield[@code="u"]
-                    return element bf:annotationBody { fn:string($sf) },
+                    return element bf:annotationBody { attribute rdf:resource {fn:string($sf)} },
                         
-                    element bf:annotationBodyLiteral { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },
-                        
+                        element cnt:chars { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },
+                    (:element bf:annotationBody { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },
+                        :)
                     element bf:annotates {
                         attribute rdf:resource {$workID}
                     }
@@ -2802,7 +2858,9 @@ declare function marcbib2bibframe:get-title(
                     },
                      marcbib2bibframe:generate-titleNonsort($d,$title, $element-name),
        
-       (:if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then element bf:abbreviatedTitleSource{fn:string($d/marcxml:subfield[@code="2"])} else (),:)
+            if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
+             element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
+            else (),
             marcbib2bibframe:generate-880-label($d,"title")
         )
 };
@@ -3523,7 +3581,7 @@ return
 			element bf:dateissuedstart-q{$dateissued008start},
 			element bf:dateissuedend-q{$dateissued008end},
 			element bf:datecopyright{$datecopyright008},
-			element bf:issuance{$issuance},
+			element bf:modeOfIssuance{$issuance},
 			element bf:frequency{$frequency},
 			element bf:language{$lang008},
 			element bf:digitalOrigin{$digorigin008},
