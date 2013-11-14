@@ -27,8 +27,8 @@ xquery version "1.0";
 :)
 
 module namespace marc2bfutils  = 'info:lc/id-modules/marc2bfutils#';
-
-
+declare namespace marcxml      = "http://www.loc.gov/MARC21/slim";
+declare namespace bf           	= "http://bibframe.org/vocab/";
 
 (: VARIABLES :)
 declare variable $marc2bfutils:resourceTypes := (
@@ -1738,7 +1738,7 @@ declare function marc2bfutils:clean-title-string(
 :  $marcxml    is marcxml:record
 :   @return ??
 :)
-declare function marcbib2bibframe:generate-controlfields(
+declare function marc2bfutils:generate-controlfields(
     $r as element(marcxml:record)
     ) 
 {
