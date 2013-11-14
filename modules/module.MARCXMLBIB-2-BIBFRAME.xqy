@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-11-08-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-11-13-T11:00";
 
 
 
@@ -118,10 +118,11 @@ declare variable $marcbib2bibframe:physdesc-list:=
             <instance-physdesc>
                 <field tag="300" codes="3" property="materialsSpecified">Materials specified</field>
                 <field tag="300" codes="a" property="extent">Physical Description</field>
+                <field tag="300" codes="b" property="illustrationNote">Illustrative content note</field>
                 <field tag="300" codes="c" property="dimensions">Physical Size</field>
         	   </instance-physdesc>
 	           <work-physdesc>	           
-	                <field tag="384" codes="a" property="key" > Key </field>
+	                <field tag="384" codes="a" property="musicKey" > Key </field>
 	       </work-physdesc>
         </physdesc>
     );
@@ -160,7 +161,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="580" property="linkingEntryComplexity">Linking Entry Complexity Note</note>
 		<note tag ="581" property="publicationAbout" sfcodes="3a" startswith="Publications about: ">Publications About Described Materials Note</note>
 		<note tag ="586" property="awardNote" sfcodes="3a">Awards Note</note>
-		<note tag ="588" comment="(actually Annotation? Admin?)" property="source" >Source of Description Note </note>
+		(:<note tag ="588" comment="(actually Annotation? Admin?)" property="source" >Source of Description Note </note>:)
 	
 	</work-notes>
 	<instance-notes>	
@@ -1127,7 +1128,8 @@ let $v-test:=
                     fn:normalize-space($i)
                 },
                 if (fn:string-length($i) lt 11  ) then 
-                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}}
+                 (:element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}}:)
+                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://isbn.org/fakelookup/",fn:normalize-space($i))}}
                  else ()
                 )
 	       
@@ -1405,14 +1407,20 @@ declare function marcbib2bibframe:generate-holdings-from-hld(
     ) as element ()* 
 {
 for $hold in $holdings/hld:holding
-    let $elm := if (  $hold/hld:volumes/hld:volume[2]) then "HeldMaterial" else "HeldItem"
+    let $elm :=  
+    if (  $hold/hld:volumes/hld:volume[2]) then "HeldMaterial" else "HeldItem"
     let $summary-set :=
             for $property in $hold/*
                 return                 
                     if ( fn:matches(fn:local-name($property), "callNumber")) then
                         (element bf:label {fn:string($property)},
-                        element bf:shelfMark {fn:string($property)})      
-                    else if ( fn:matches( fn:local-name($property), "(localLocation|callNumber|publicNote|copyNumber|enumeration|enumAndChron)")) then
+                        element bf:shelfMark {fn:string($property)})  
+                    else if ( fn:matches(fn:local-name($property), "localLocation")) then
+                        element bf:subLocation {fn:string($property)} 
+                    else if ( fn:matches(fn:local-name($property), "(enumeration|enumAndChron)")) then
+                        element bf:enumerationAndChronology {fn:string($property)}
+                      
+                    else if ( fn:matches( fn:local-name($property), "(publicNote|copyNumber)")) then
                         element {fn:concat("bf:", fn:local-name($property))} {fn:string($property)}
                     else ()
                         
@@ -1431,8 +1439,8 @@ for $hold in $holdings/hld:holding
                               element bf:heldItem {
                                 element bf:HeldItem {
                                     element bf:label {fn:string($vol/hld:enumAndChron)},
-                                    element bf:enumAndChron {$enum },     
-                                      element bf:enumeration {fn:string($vol/hld:enumeration)},   
+                                    element bf:enumerationAndChronology  {$enum },     
+                                     element bf:enumerationAndChronology {fn:string($vol/hld:enumeration)},   
                                     $circ
                                   }
                                }
@@ -1478,7 +1486,7 @@ declare function marcbib2bibframe:generate-holdings(
 let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings)
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
- let $call-num:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
+ let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
 	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|084)")]
 (:	multiple $a is possible: 2017290 use $i to handle :)
 		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
@@ -1509,11 +1517,11 @@ let $d852:=
             for $s in $d/marcxml:subfield[@code="e"] return element bf:address{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="f"] return element bf:codedLocation{fn:string($s)},
             if ($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]) then 
-                    element bf:call-num {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")}
+                    element bf:shelfMark{fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")}
             else (),
-            for $s in $d/marcxml:subfield[@code="p"] return element bf:piece{fn:string($s)},
+           (: for $s in $d/marcxml:subfield[@code="p"] return element bf:piece{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="q"] return element bf:pieceCondition{fn:string($s)},
-            for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},:)
             for $s in $d/marcxml:subfield[@code="u"] return
                         element bf:uri { 
                              attribute rdf:resource{fn:string($s)}
@@ -1524,13 +1532,13 @@ let $d852:=
     ()
     
 return 
-        if (fn:not($hld) and ($call-num or $d852  )) then        
-            element bf:hasHolding{   
-                element bf:Holding {
+        if (fn:not($hld) and ($shelfmark or $d852  )) then        
+            element bf:heldItem{   
+                element bf:HeldItem {
                    
                    (:this is for matching later:)
-                    element bf:label{fn:string($call-num[1])},
-         	    $call-num,
+                    element bf:label{fn:string($shelfmark[1])},
+         	    $shelfmark,
          	    $d852
          	     	
                 }
@@ -1827,11 +1835,11 @@ declare function marcbib2bibframe:generate-related-work
 	                           element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
 	                        )
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-	                        element bf:lccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
+	                        element bf:lccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/fakelookup/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
 	                    else if ($s/@code="x") then
 	                       element bf:hasInstance{ element bf:Instance{ 
 	                                   element bf:title {$title},
-	                                   element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
+	                                   element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/fakelookup", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
 	                                   }
 	                                   }
 		               else ()		               
@@ -1931,8 +1939,7 @@ declare function marcbib2bibframe:related-works
         else 
             $marcbib2bibframe:relationships/work-relateds
 
-    let $relatedWorks := 
-    
+    let $relatedWorks :=     
         for $type in $relateds/type
         	return 
             if (fn:matches($type/@tag,"740")) then (: title is in $a , @ind2 needs attention:)
@@ -3189,408 +3196,4 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     }
             }
             else ()
-};
-
-(:~
-:   This function processes out the leader and control fields
-:
-:   not used; copied from marc2mods
-:
-:  $marcxml    is marcxml:record
-:   @return ??
-:)
-declare function marcbib2bibframe:generate-controlfields(
-    $r as element(marcxml:record)
-    ) 
-{
-		let $leader:=$r/marcxml:leader
-		let $leader6:=fn:substring($leader,7,1)
-		let $leader7:=fn:substring($leader,8,1)
-		let $leader19:=fn:substring($leader,20,1)
-		
-		let $cf008 :=fn:string($r/marcxml:controlfield[@tag="008"])
-		let $leader67type:=
-			if ($leader6="a") then
-					if (fn:matches($leader7,"(a|c|d|m)")) then
-						"BK"
-					else if (fn:matches($leader7,"(b|i|s)")) then
-						"SE"
-					else ()					
-					
-			else
-				if ($leader6="t") then "BK" 
-				else if ($leader6="p") then "MM"
-				else if ($leader6="m") then "CF"
-				else if (fn:matches($leader6,"(e|f|s)")) then "MP"
-				else if (fn:matches($leader6,"(g|k|o|r)")) then "VM"
-				else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
-				else ()
-				
-			let $modscollection:=if ($leader7="c") then "yes" else ()
-			let $modsmanuscript:= if (fn:matches($leader6,"(d|f|p|t)")) then "yes" else ()
-			let $modstypeOfResource:=						
-				if  ($leader6="a" or $leader6="t") then "text" 
-				else if ($leader6="e" or $leader6="f") then "cartographic"
-				else if  ($leader6="c" or $leader6="d") then "notated music"
-				else if  ($leader6="i" ) then "sound recording-nonmusical"
-				else if  ($leader6="j") then "sound recording-musical"
-				else if  ($leader6="k") then "still image"
-				else if  ($leader6="g") then "moving image"
-				else if  ($leader6="r") then "three dimensional object"
-				else if  ($leader6="m") then "software, multimedia"
-				else if  ($leader6="p") then "mixed material"
-				else ()
-		let $genre008:= 
-			if (fn:substring($cf008,26,1)="d") then "globe" else ()
-		let $genre007:=  if	($r/marcxml:controlfield[@tag="007"][fn:substring(text(),1,2)="ar"]) then "remote-sensing image" else ()
-		let $genreMP:=
-		 	if ($leader67type="MP") then
-		 		if  (fn:matches(fn:substring($cf008,26,1),"(a|b|c)") or  $r/marcxml:controlfield[@tag=007][fn:substring(text(),1,2)="aj"]) then "map" 
-				else if ($leader67type="MP" and fn:matches(fn:substring($cf008,26,1),"e") or  $r/marcxml:controlfield[@tag=007][fn:substring(text(),1,2)="ad"]) then "atlas" 
-				else ()
-			else ()
-		let $genreSE:=  
-			if ($leader67type="SE") then 		
-				let$cf008-21 :=fn:substring($cf008,22,1)
-				return 			
-					if  ($cf008-21="d") then "database"				
-						else if  ($cf008-21="l") then "loose-leaf"			
-						else if  ($cf008-21="m") then "series"				
-						else if ($cf008-21="n") then "newspaper"
-						else if ($cf008-21="p") then "periodical"
-						else if  ($cf008-21="w") then "web site"
-						else ()
-			else ()
-			
-		let $genreBKSE:=
-			if ($leader67type="BK" or $leader67type="SE") then 
-				let$cf008-24:= fn:substring($cf008,25,4)
-				return
-					if (fn:contains($cf008-24,'a')) then "abstract or summary"
-					else if (fn:contains($cf008-24,'b')) then "bibliography"
-					else if (fn:contains($cf008-24,'c')) then "catalog"
-					else if (fn:contains($cf008-24,'d')) then "dictionary"
-					else if (fn:contains($cf008-24,'e')) then "encyclopedia"
-					else if (fn:contains($cf008-24,'f')) then "handbook"
-					else if (fn:contains($cf008-24,'g')) then "legal article"
-					else if (fn:contains($cf008-24,'i')) then "index"
-					else if (fn:contains($cf008-24,'k')) then "discography"
-					else if (fn:contains($cf008-24,'l')) then "legislation"
-					else if (fn:contains($cf008-24,'m')) then "theses"
-					else if (fn:contains($cf008-24,'n')) then "survey of literature"
-					else if (fn:contains($cf008-24,'o')) then "review"
-					else if (fn:contains($cf008-24,'p')) then "programmed text"
-					else if (fn:contains($cf008-24,'q')) then "filmography"
-					else if (fn:contains($cf008-24,'r')) then "directory"
-					else if (fn:contains($cf008-24,'s')) then "statistics"
-					else if (fn:contains($cf008-24,'t')) then "technical report"
-					else if (fn:contains($cf008-24,'v')) then "legal case and case notes"
-					else if (fn:contains($cf008-24,'w')) then "law report or digest"
-					else if (fn:contains($cf008-24,'z')) then "treaty"
-					else if (fn:substring($cf008,30,1)="1") then "conference publication"
-					else ()
-				else ()	
-			
-	let $genreCF:=
-		if ($leader67type="CF") then 
-			if (fn:substring($cf008,27,1)="a") then "numeric data"
-			else if (fn:substring($cf008,27,1)="e") then "database"
-			else if (fn:substring($cf008,27,1)="f") then "font"
-			else if (fn:substring($cf008,27,1)="g") then "game"
-			else ()
-		else ()
-			
-	let $genreBK:=
-		if ($leader67type="BK") then 
-			if (fn:substring($cf008,25,1)="j") then "patent"
-			else if (fn:substring($cf008,25,1)="2") then "offprint"
-			else if (fn:substring($cf008,31,1)="1") then "festschrift"
-			else if (fn:matches(fn:substring($cf008,35,1),"(a|b|c|d)")) then "biography"
-			else if (fn:substring($cf008,34,1)="e") then "essay"
-			else if (fn:substring($cf008,34,1)="d") then "drama"
-			else if (fn:substring($cf008,34,1)="c") then "comic strip"
-			else if (fn:substring($cf008,34,1)="l") then "fiction"
-			else if (fn:substring($cf008,34,1)="h") then "humor, satire"
-			else if (fn:substring($cf008,34,1)="i") then "letter"
-			else if (fn:substring($cf008,34,1)="f") then "novel"
-			else if (fn:substring($cf008,34,1)="j") then "short story"
-			else if (fn:substring($cf008,34,1)="s") then "speech"
-			else ()
-				
-		else ()
-	let $genreMU:=
-		if ($leader67type="MU") then 
-			let $cf008-30-31:=fn:substring($cf008,31,2)
-			return
-			if (fn:contains($cf008-30-31,'b')) then "biography"
-			else if (fn:contains($cf008-30-31,'c')) then "conference publication"
-			else if (fn:contains($cf008-30-31,'d')) then "drama"
-			else if (fn:contains($cf008-30-31,'e')) then "essay"
-			else if (fn:contains($cf008-30-31,'f')) then "fiction"
-			else if (fn:contains($cf008-30-31,'o')) then "folktale"
-			else if (fn:contains($cf008-30-31,'h')) then "history"
-			else if (fn:contains($cf008-30-31,'k')) then "humor, satire"
-			else if (fn:contains($cf008-30-31,'m')) then "memoir"
-			else if (fn:contains($cf008-30-31,'p')) then "poetry"
-			else if (fn:contains($cf008-30-31,'r')) then "rehearsal"
-			else if (fn:contains($cf008-30-31,'g')) then "reporting"
-			else if (fn:contains($cf008-30-31,'s')) then "sound"
-			else if (fn:contains($cf008-30-31,'l')) then "speech"
-			else ()
-		else ()
-		let $genreVM:=
-		if ($leader67type="VM") then 
-			let $cf008-33 :=fn:substring($cf008,34,1)
-			return 
-				if($cf008-33="a") then "art original"
-				else if ($cf008-33="b") then "kit"
-				else if ($cf008-33="c") then "art reproduction"
-				else if ($cf008-33="d") then "diorama"
-				else if ($cf008-33="f") then "filmstrip"
-				else if ($cf008-33="g") then "legal article"
-				else if ($cf008-33="i") then "picture"
-				else if ($cf008-33="k") then "graphic"
-				else if ($cf008-33="l") then "technical drawing"
-				else if ($cf008-33="m") then "motion picture"
-				else if ($cf008-33="n") then "chart"
-				else if ($cf008-33="o") then "flash card"
-				else if ($cf008-33="p") then "microscope slide"						
-				else if ($cf008-33="q" or $r/marcxml:controlfield[@tag="007"][fn:substring(text(),1,2)="aq"]) then "model"
-				else if ($cf008-33="r") then "realia"
-				else if ($cf008-33="s") then "slide"
-				else if ($cf008-33="t") then "transparency"
-				else if ($cf008-33="v") then "videorecording"
-				else if ($cf008-33="w") then "toy"
-				else ()
-			
-		else ()
-let $edited:=fn:concat(fn:substring(($r/marcxml:controlfield[@tag="005"]),1,4),"-",fn:substring(($r/marcxml:controlfield[@tag="005"]),5,2),"-",fn:substring(($r/marcxml:controlfield[@tag="005"]),7,2),"T",fn:substring(($r/marcxml:controlfield[@tag="005"]),9,2),":",fn:substring(($r/marcxml:controlfield[@tag="005"]),11,2)) 
-(:let $date008:=:)
-let $cf008-7-10:=fn:normalize-space(fn:substring($cf008, 8, 4))
-let $cf008-11-14:=fn:normalize-space(fn:substring($cf008, 12, 4))
-let $cf008-6:=fn:normalize-space(fn:substring($cf008, 7, 1))
-let $datecreated008:= if (fn:matches($cf008-6,"(e|p|r|s|t)") and fn:matches($leader6,"(d|f|p|t)") and $cf008-7-10 ) then  					
-					$cf008-7-10 
-				else () 										
-
-	let $dateissued008:=
-		if (fn:matches($cf008-6,"(e|p|r|s|t)") and fn:not(fn:matches($leader6,"(d|f|pt)")) and $cf008-7-10 ) then					
-					$cf008-7-10 
-		else ()
-let $dateissued008start:=
-			if (fn:matches($cf008-6,"(c|d|i|k|m|u)") and 	$cf008-7-10) then 			
-						$cf008-7-10
-			else ()
-			
-let $dateissued008end:=
-			if (fn:matches($cf008-6,"(c|d|i|k|m|u)") and 	$cf008-11-14) then 			
-						$cf008-11-14
-				else ()
-			
-let $dateissued008start-q:=
-			if ($cf008-6="q" and $cf008-7-10) then					
-					$cf008-7-10					
-			else ()
-let $dateissued008end-q:=
-			if ($cf008-6="q" and $cf008-11-14) then					
-					$cf008-11-14			
-			else ()
-			
-let $datecopyright008 :=
-			if ($cf008-6="t" and  $cf008-11-14) then				
-					$cf008-11-14		
-			else ()
-let $issuance:=
-	if (fn:matches($leader7,"(a|c|d|m)")) 				then "monographic"
-	else if ($leader7="b") 						then "continuing"
-	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "multipart monograph"
-	else if ($leader7='m' and $leader19='#') 				then "single unit"
-	else if ($leader7='i') 							then "integrating resource"
-	else if ($leader7='s') 						then "serial"
-	else ()
-				
-let $frequency:=
-	if ($leader67type="SE") then
-		if (fn:substring($cf008,19,1)="a") 		     then	"Annual"						
-			else if (fn:substring($cf008,19,1)="b") then "Bimonthly"
-			else if (fn:substring($cf008,19,1)="c") then "Semiweekly"
-			else if (fn:substring($cf008,19,1)="d") then "Daily"
-			else if (fn:substring($cf008,19,1)="e") then "Biweekly"
-			else if (fn:substring($cf008,19,1)="f") then "Semiannual"
-			else if (fn:substring($cf008,19,1)="g") then "Biennial"
-			else if (fn:substring($cf008,19,1)="h") then "Triennial"
-			else if (fn:substring($cf008,19,1)="i") then "Three times a week"
-			else if (fn:substring($cf008,19,1)="j") then "Three times a month"
-			else if (fn:substring($cf008,19,1)="k") then "Continuously updated"
-			else if (fn:substring($cf008,19,1)="m") then "Monthly"
-			else if (fn:substring($cf008,19,1)="q") then "Quarterly"
-			else if (fn:substring($cf008,19,1)="s") then "Semimonthly"
-			else if (fn:substring($cf008,19,1)="t") then "Three times a year"
-			else if (fn:substring($cf008,19,1)="u") then "Unknown"
-			else if (fn:substring($cf008,19,1)="w") then "Weekly"
-			else if (fn:substring($cf008,19,1)="#") then "Completely irregular"
-			else ()
-					
-		else ()
-
-let $lang008:=
-    if (fn:normalize-space(fn:replace(fn:substring($cf008,36,3),"\|#",''))!="") then		
-        fn:substring($cf008,36,3)
-    else ()		
-
-let $digorigin008:=	
-    if ($leader67type='CF' and $r/marcxml:controlfield[@tag=007][fn:substring(.,12,1)='a']) then "reformatted digital"
-    else if ($leader67type='CF' and $r/marcxml:controlfield[@tag=007][fn:substring(.,12,1)='b']) then "digitized microfilm"
-    else if ($leader67type='CF' and $r/marcxml:controlfield[@tag=007][fn:substring(.,12,1)='d']) then "digitized other analog"
-    else ()
-		
-let $cf008-23 :=fn:substring($cf008,24,1)
-let $cf008-29:=fn:substring($cf008,30,1)
-let $check008-23:= 
-    if (fn:matches($leader67type,"(BK|MU|SE|MM)")) then 
-        fn:true()
-    else ()
-let $check008-29:= 
-    if (fn:matches($leader67type,"(MP|VM)")) then 
-        fn:true()  	
-    else ()
-let $form008:=
-	if ( ($check008-23 and $cf008-23="f") or ($check008-29 and $cf008-29='f') ) then 			"braille"
-				else if (($cf008-23=" " and ($leader6="c" or $leader6="d")) or (($leader67type="BK" or $leader67type="SE") and ($cf008-23=" " or $cf008="r"))) then "print"
-				else if ($leader6 = 'm' or ($check008-23 and $cf008-23='s') or ($check008-29 and $cf008-29='s')) then "electronic"				
-				else if ($leader6 = "o") then "kit"
-				else if (($check008-23 and $cf008-23='b') or ($check008-29 and $cf008-29='b')) then "microfiche"
-				else if (($check008-23 and $cf008-23='a') or ($check008-29 and $cf008-29='a')) then "microfilm"
-				else ()
-let $reformatqual:=			
-		if ($r/marcxml:controlfield[@tag="007"][fn:substring(text(),1,2)='ca']) then "access"
-			else if ($r/marcxml:controlfield[@tag="007"][fn:substring(text(),1,2)='cp']) then "preservation" 
-			else if ($r/marcxml:controlfield[@tag="007"][fn:substring(text(),1,2)='cr']) then "replacement"
-		else ()
-		
-(: use this table: to simplify the ifs below: :)
-let $forms:=<set>
-<form c007-1-2="ad" marccat="map" marcsmd="atlas"/>
-<form c007-1-2="ag" marccat="map" marcsmd="diagram"/>
-<form c007-1-2="aj" marccat="map" marcsmd="map"/>
-<form c007-1-2="aq" marccat="map" marcsmd="model"/>
-<form c007-1-2="ak" marccat="map" marcsmd="profile"/>
-<form c007-1-2="rr" marccat="remote-sensing image"/>
-<form c007-1-2="as" marccat="map" marcsmd="section"/>
-<form c007-1-2="ay" marccat="map" marcsmd="view"/>
-<form c007-1-2="cb" marccat="electronic resource" marcsmd="chip cartridge"/>
-<form c007-1-2="cc" marccat="electronic resource" marcsmd="computer optical disc cartridge"/>
-<form c007-1-2="cj" marccat="electronic resource" marcsmd="magnetic disc"/>
-<form c007-1-2="cm" marccat="electronic resource" marcsmd="magneto-optical disc"/>
-<form c007-1-2="co" marccat="electronic resource" marcsmd="optical disc"/>
-<form c007-1-2="cr" marccat="electronic resource" marcsmd="remote"/>
-<form c007-1-2="ca" marccat="electronic resource" marcsmd="tape cartridge"/>
-<form c007-1-2="cf" marccat="electronic resource" marcsmd="tape cassette"/>
-<form c007-1-2="ch" marccat="electronic resource" marcsmd="tape reel"/>
-<form c007-1-2="da" marccat="globe" marcsmd="celestial globe"/>
-<form c007-1-2="de" marccat="globe" marcsmd="earth moon globe"/>
-<form c007-1-2="db" marccat="globe" marcsmd="planetary or lunar globe"/>
-<form c007-1-2="dc" marccat="globe" marcsmd="terrestrial globe"/>
-<form c007-1-2="fc" marccat="tactile material" marcsmd="braille"/>
-<form c007-1-2="fb" marccat="tactile material" marcsmd="combination"/>
-<form c007-1-2="fa" marccat="tactile material" marcsmd="moon"/>
-<form c007-1-2="fd" marccat="tactile material" marcsmd="tactile, with no writing system"/>
-<form c007-1-2="gd" marccat="projected graphic" marcsmd="filmslip"/>
-<form c007-1-2="gc" marccat="projected graphic" marcsmd="filmstrip cartridge"/>
-<form c007-1-2="go" marccat="projected graphic" marcsmd="filmstrip roll"/>
-<form c007-1-2="gf" marccat="projected graphic" marcsmd="other filmstrip type"/>
-<form c007-1-2="gs" marccat="projected graphic" marcsmd="slide"/>
-<form c007-1-2="gt" marccat="projected graphic" marcsmd="transparency"/>
-<form c007-1-2="ha" marccat="microform" marcsmd="aperture card"/>
-<form c007-1-2="he" marccat="microform" marcsmd="microfiche"/>
-<form c007-1-2="hf" marccat="microform" marcsmd="microfiche cassette"/>
-<form c007-1-2="hb" marccat="microform" marcsmd="microfilm cartridge"/>
-<form c007-1-2="hc" marccat="microform" marcsmd="microfilm cassette"/>
-<form c007-1-2="hd" marccat="microform" marcsmd="microfilm reel"/>
-<form c007-1-2="hg" marccat="microform" marcsmd="microopaque"/>
-<form c007-1-2="kn" marccat="nonprojected graphic" marcsmd="chart"/>
-<form c007-1-2="kc" marccat="nonprojected graphic" marcsmd="collage"/>
-<form c007-1-2="kd" marccat="nonprojected graphic" marcsmd="drawing"/>
-<form c007-1-2="ko" marccat="nonprojected graphic" marcsmd="flash card"/>
-<form c007-1-2="ke" marccat="nonprojected graphic" marcsmd="painting"/>
-<form c007-1-2="kf" marccat="nonprojected graphic" marcsmd="photomechanical print"/>
-<form c007-1-2="kg" marccat="nonprojected graphic" marcsmd="photonegative"/>
-<form c007-1-2="kh" marccat="nonprojected graphic" marcsmd="photoprint"/>
-<form c007-1-2="ki" marccat="nonprojected graphic" marcsmd="picture"/>
-<form c007-1-2="kj" marccat="nonprojected graphic" marcsmd="print"/>
-<form c007-1-2="kl" marccat="nonprojected graphic" marcsmd="technical drawing"/>
-<form c007-1-2="mc" marccat="motion picture" marcsmd="film cartridge"/>
-<form c007-1-2="mf" marccat="motion picture" marcsmd="film cassette"/>
-<form c007-1-2="mr" marccat="motion picture" marcsmd="film reel"/>
-<form c007-1-2="oo" marccat="kit" marcsmd="kit"/>
-<form c007-1-2="qq" marccat="notated music" marcsmd="notated music"/>
-<form c007-1-2="rr" marccat="remote-sensing image" marcsmd="remote-sensing image"/>
-<form c007-1-2="se" marccat="sound recording" marcsmd="cylinder"/>
-<form c007-1-2="sq" marccat="sound recording" marcsmd="roll"/>
-<form c007-1-2="sg" marccat="sound recording" marcsmd="sound cartridge"/>
-<form c007-1-2="ss" marccat="sound recording" marcsmd="sound cassette"/>
-<form c007-1-2="sd" marccat="sound recording" marcsmd="sound disc"/>
-<form c007-1-2="st" marccat="sound recording" marcsmd="sound-tape reel"/>
-<form c007-1-2="si" marccat="sound recording" marcsmd="sound-track film"/>
-<form c007-1-2="sw" marccat="sound recording" marcsmd="wire recording"/>
-<form c007-1-2="tc" marccat="text" marcsmd="braille"/>
-<form c007-1-2="tb" marccat="text" marcsmd="large print"/>
-<form c007-1-2="ta" marccat="text" marcsmd="regular print"/>
-<form c007-1-2="td" marccat="text" marcsmd="text in looseleaf binder"/>
-<form c007-1-2="vc" marccat="videorecording" marcsmd="videocartridge"/>
-<form c007-1-2="vf" marccat="videorecording" marcsmd="videocassette"/>
-<form c007-1-2="vd" marccat="videorecording" marcsmd="videodisc"/>
-<form c007-1-2="vr" marccat="videorecording" marcsmd="videoreel"/>
-</set>
-let $c007-1-2:=$r/marcxml:controlfield[@tag="007"][fn:substring(text(),1,2)]
-let $marccat:=
-	$forms//form[@c007-1-2=$c007-1-2]/@marccat
-let $marcsmd:=
-	$forms//form[@c007-1-2=$c007-1-2]/@smd
-
-let $resourcetp:= 
-  if ($leader67type="BK") then "Monographic Text (Book)"
-	else if ($leader67type="SE") then "Serial"
-	else if ($leader67type="MM") then "Mixed Materials"
-	else if ($leader67type="CF") then "Computer File"
-	else if ($leader67type="MP") then "Cartographic"
-	else if ($leader67type="VM") then "Visual Materials"
-	else if ($leader67type="MU") then "Music"
-	else $leader67type
-
-		
-return 
-		element bf:MachineInfo {				
-			element bf:leader67type {$leader67type},
-			element bf:modsresourcetype {fn:concat($resourcetp,". not fully delineated yet")},
-			element bf:modscollection {$modscollection},
-			element bf:modsmanuscript {$modsmanuscript},					
-			element bf:modstypeOfResource {$modstypeOfResource},			
-			if ($genre007) then element bf:genre {$genre007} else (),
-			if ($genre008) then element bf:genre {$genre008} else (),
-			if ($genreMP) then element bf:genre {$genreMP} else (),
-			if ($genreBKSE) then element bf:genre {$genreBKSE} else (),
-			if ($genreCF) then element bf:genre {$genreCF} else (),
-			if ($genreBK) then element bf:genre {$genreBK} else (),
-			if ($genreMU) then element bf:genre {$genreMU} else (),
-			if ($genreVM) then element bf:genre {$genreVM} else (),						
-			element bf:datecreated{$datecreated008},
-			element bf:dateissued {$dateissued008},
-			element bf:dateissuedstart{$dateissued008start},
-			element bf:dateissuedend{$dateissued008end},
-			element bf:dateissuedstart-q{$dateissued008start},
-			element bf:dateissuedend-q{$dateissued008end},
-			element bf:datecopyright{$datecopyright008},
-			element bf:modeOfIssuance{$issuance},
-			element bf:frequency{$frequency},
-			element bf:language{$lang008},
-			element bf:digitalOrigin{$digorigin008},
-			element bf:form{$form008},
-			element bf:reformatqual{$reformatqual},			
-			element bf:form-category007{$marccat},
-			element bf:form-smd007{$marcsmd},
-			element bf:edited {$edited}	
-			
-		}
-		
 };
