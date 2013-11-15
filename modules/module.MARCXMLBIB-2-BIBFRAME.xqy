@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-11-13-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-11-15-T11:00";
 
 
 
@@ -170,7 +170,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="501" property="with" sfcodes="a">With Note</note>
 		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
 		<note tag ="506" property="restrictionsOnAccess">Restrictions on Access Note</note>
-		<note tag ="507" property="cartographicNote" sfcodes="a" >Scale Note for Graphic Material</note>
+		<note tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</note>
 		<note tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </note>
 		<note tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </note>
 		<note tag ="515" property="numbering">Numbering Peculiarities Note </note>
@@ -3136,9 +3136,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                        else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then fn:string($this-tag/marcxml:subfield[@code="q"])
                        else ()
 	return                       
-                element bf:class {
+                element bf:classification {
                     element bf:Classification {                        
-                        element bf:classScheme {
+                        element bf:classificationScheme {
                             if (fn:matches($this-tag/@tag,"(050|051)")) then "lcc" 
 		            		else if (fn:matches($this-tag/@tag,"080")) then "udc"
 		            		else if (fn:matches($this-tag/@tag,"082")) then "ddc"
@@ -3147,24 +3147,24 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         },
                         
                         if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="m"] ) then
-                            element bf:classSchemePart  {
+                            element bf:classificationSchemePart  {
                                 if ($this-tag/marcxml:subfield[@code="m"] ="a") then "standard" 
                                 else if ($this-tag/marcxml:subfield[@code="m"] ="b") then "optional" 
                                 else ()
                             }
                         else (),                        
             
-            	       element bf:classNumber {fn:string($cl)},
+            	       element bf:classificationNumber {fn:string($cl)},
             	       element bf:label {fn:string($cl)},
              	       if ( $assigner) then 
-                         	element bf:classAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",$assigner)}}
+                         	element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",$assigner)}}
                        else (),             			
 			            	
            	           if ( 
              		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
              		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
             	 		   ) then  
-                            element bf:classEdition {
+                            element bf:classificationEdition {
                                 if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="1") then
 								    "abridged"
                                 else if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="0") then							
@@ -3177,21 +3177,21 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
 						
 		              for $sfc in $this-tag[fn:matches($classes[@name="classCopy"]/@tag,@tag)]/marcxml:subfield[@code="c"]
                        return 
-                            element bf:classCopy {fn:string($sfc)},
+                            element bf:classificationCopy {fn:string($sfc)},
                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
-								    element bf:classNumberSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
+								    element bf:classificationNumberSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
 								else (),			
                                 
                                 if (fn:matches($this-tag/@tag,"086") and $this-tag/marcxml:subfield[@code="z"]) then
-							 		element bf:classStatus  {"canceled/invalid"} 
+							 		element bf:classificationStatus  {"canceled/invalid"} 
                                 else (),
 
                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="z"]) then
-								 	element bf:classTable  {fn:string( $this-tag/marcxml:subfield[@code="z"])} 
+								 	element bf:classificationTable  {fn:string( $this-tag/marcxml:subfield[@code="z"])} 
                                 else (),
 
                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="y"]) then
-							 		element bf:classTableSeq  {fn:string( $this-tag/marcxml:subfield[@code="y"])} 
+							 		element bf:classificationTableSeq  {fn:string( $this-tag/marcxml:subfield[@code="y"])} 
                                 else ()
                     }
             }
