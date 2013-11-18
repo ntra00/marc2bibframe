@@ -512,16 +512,23 @@ declare function marcbib2bibframe:generate-880-label
                 for $sf in $match/marcxml:subfield[@code="a"]
                 return
                     element  bf:providerPlace {
-                        attribute xml:lang {$xmllang},                         
-                        marc2bfutils:clean-string(fn:string($sf))
+                        element bf:Place {
+                            element bf:label { attribute xml:lang {$xmllang},
+                                    marc2bfutils:clean-string(fn:string($sf))
+                            }
+                        }
                     }
 	else if ($node-name="provider") then 
                 for $sf in $match/marcxml:subfield[@code="b"]
                 return
                     element bf:providerName {
-                        attribute xml:lang {$xmllang},   			
-                        marc2bfutils:clean-string(fn:string($sf))
-                }
+                      element bf:Organization {
+                            element bf:label {
+                                attribute xml:lang {$xmllang},   			
+                                marc2bfutils:clean-string(fn:string($sf))
+                            }
+                        }
+                    }
             else 
                 element { fn:concat("bf:",$node-name)} {
                     fn:string($match/marcxml:subfield[@code="a"])					
@@ -599,17 +606,12 @@ declare function marcbib2bibframe:generate-identifiers(
                                 let $iStr := marc2bfutils:clean-string(fn:replace(fn:string($this-tag[@tag="035"]/marcxml:subfield[@code="a"]), "\(OCoLC\)", ""))
                                 return 
                                 (
-                                    element bf:oclcNumber { $iStr },
-                                    element bf:relatedInstance {  
+                                    (:element bf:oclcNumber { $iStr },:)
+                                    element bf:systemNumber {  
                                         attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr, "[a-z]",""))}
                                     }
 	                            )
-(:                                element bf:oclc-number {
-	                            	attribute rdf:resource { fn:concat("http://www.worldcat.org/oclc/",	                            	
-	                            			fn:normalize-space( fn:replace($this-tag[@tag="035"]/marcxml:subfield[@code="a"], "\(OCoLC\)", "") )
-	                            			)   
-	     				}                    
-	                            }:)        	
+        	
 	                        else if (fn:contains(fn:string-join($this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"],""),"doi") ) then
 	                        	for $doi in $this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"][fn:contains(.,"doi")]
 	                            		return element bf:doi {        fn:normalize-space( fn:string($doi))                        }
@@ -1831,8 +1833,8 @@ declare function marcbib2bibframe:generate-related-work
            	    return 
 	                    if ( fn:contains(fn:string($s), "(OCoLC)" ) ) then
 	                        (
-	                           element bf:oclc-number {$iStr},
-	                           element bf:relatedInstance {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
+	                           (:element bf:oclc-number {$iStr},:)
+	                           element bf:systemNumber {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
 	                        )
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:lccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/fakelookup/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
@@ -2047,8 +2049,8 @@ declare function marcbib2bibframe:generate-work(
         
     (: Let's create an authoritativeLabel for this :)
     let $aLabel := 
-        if ($uniformTitle[bf:uniformTitle]) then
-            fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($uniformTitle/bf:uniformTitle) )
+        if ($uniformTitle[bf:workTitle]) then
+            fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($uniformTitle/bf:workTitle) )
         else if ($titles) then
             fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($titles/bf:title[1]) )
         else
@@ -2316,7 +2318,7 @@ declare function marcbib2bibframe:generate-work(
              $aLabel,
             $aLabelsWork880,
                  $dissertation,
-            if ($uniformTitle/bf:uniformTitle) then
+            if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
                 (),
@@ -3115,13 +3117,13 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         if (fn:exists($classes[@level="property"][fn:contains(@tag,$this-tag/@tag)])) then
                             fn:string( $classes[@level="property"][fn:contains(@tag,$this-tag/@tag)]/@name)
                         else
-                            "class"                        	
+                            "classification"                        	
                     return	 
                         element  {fn:concat("bf:",$property)} {          
-                     			if ($property="classLcc" ) then 
+                     			if ($property="classificationLcc" ) then 
                      				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
                      			else
-                                                 		fn:string($cl)                            
+                                             		fn:string($cl)                            
                             }
             else if (
                 ($valid and fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))
