@@ -939,7 +939,7 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdamedia"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:mediaType {attribute rdf:about {fn:concat("http://id.loc.gov/test/carriers/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
+                           element bf:mediaType {attribute rdf:resource {fn:concat("http://id.loc.gov/test/carriers/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:mediaType { 
@@ -948,7 +948,7 @@ declare function marcbib2bibframe:generate-physdesc
                                     } 
                                 }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:mediaType {attribute rdf:about {fn:concat("http://id.loc.gov/test/rdamedia/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
+                           element bf:mediaType {attribute rdf:type {fn:concat("http://id.loc.gov/test/rdamedia/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
                         } 
                      else  (),  
                for $d in $marcxml/marcxml:datafield[@tag="338"]
@@ -956,16 +956,15 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierType {attribute rdf:about {fn:concat("http://id.loc.gov/test/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
+                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/test/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
-                      element bf:carrierType { 
-                            element bf:CarrierType {
-                                    element bf:label{fn:string($d/marcxml:subfield[@code="a"])}		
-                                    } 
-                                }
+                      element bf:carrierType {                           
+                            attribute rdf:resource {fn:concat("http://id.loc.gov/test/somecarrier/",
+                          fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}
+                          }
                         else   if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:carrierType {attribute rdf:about {fn:concat("http://id.loc.gov/authorities/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
+                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/test/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
                         } 
                      else  (),  
               (:---337, 338 end ---:)
