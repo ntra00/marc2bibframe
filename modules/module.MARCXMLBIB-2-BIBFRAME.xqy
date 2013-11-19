@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-11-15-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-11-19-T11:00";
 
 
 
@@ -2113,7 +2113,7 @@ declare function marcbib2bibframe:generate-work(
                     (:??  ntra: I think audience s.b. there regardless of the subclass of work and anyway, mainType is Work
                     and
                     (
-                        $mainType eq "LanguageMaterial" or
+                        $mainType eq "Text" or
                         $mainType eq "SoftwareOrMultimedia" or
                         $mainType eq "StillImage" or
                         $mainType eq "NotatedMusic" or
@@ -2312,8 +2312,8 @@ declare function marcbib2bibframe:generate-work(
        
             for $t in fn:distinct-values($types)
             return
-                element rdf:type {
-                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
+                element rdf:workCategory {
+                    attribute rdf:resource {fn:concat("http://id.loc.gov/test/workCategories/vocab/", $t)}
                 },
              $aLabel,
             $aLabelsWork880,
@@ -2905,7 +2905,7 @@ return element bf:translationOf {
 :   It generates a bf:Work as output.
 :
 :   @param  $d        element is the marcxml:datafield  
-:   @return bf:uniformTitle
+:   @return bf:workTitle
 :)
 declare function marcbib2bibframe:get-uniformTitle(
     $d as element(marcxml:datafield)
@@ -2967,7 +2967,7 @@ declare function marcbib2bibframe:get-uniformTitle(
     
         element bf:Work {
                 element bf:label {$aLabel},        
-	  		    element bf:uniformTitle {$aLabel},              
+	  		    element bf:title {$aLabel},              
               $elementList,
               $translationOf
             }                    
@@ -3159,7 +3159,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             	       element bf:classificationNumber {fn:string($cl)},
             	       element bf:label {fn:string($cl)},
              	       if ( $assigner) then 
-                         	element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",$assigner)}}
+                         	element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",fn:encode-for-uri($assigner))}}
                        else (),             			
 			            	
            	           if ( 
