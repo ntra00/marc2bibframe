@@ -55,7 +55,7 @@ declare variable $marc2bfutils:resourceTypes := (
         <type leader6="g">movingImage</type>
         <type cf007="m">movingImage</type>
         <type cf007="v">movingImage</type>
-        <type sf336a="(three-dimensional moving image|two-dimensional moving image|cartographic moving image)">MovingImage</type>
+        <type sf336a="(three-dimensional moving image|two-dimensional moving image|cartographic moving image)">movingImage</type>
         <type sf336b="(tdm|tdi)">movingImage</type>
         <type leader6="i">audio</type>
         <type leader6="j">audio</type>
@@ -104,19 +104,26 @@ declare variable $marc2bfutils:targetAudiences := (
 		<subject tag="610">Organization</subject>		
 		<subject tag="611">Meeting</subject>
 		<!--<subject tag="630">Work</subject>-->
-		<subject tag="648">TemporalConcept</subject>
+		<subject tag="648">Temporal</subject>
 		<subject tag="650">Topic</subject>
 		<subject tag="651">Place</subject>
-		<subject tag="654">Topical</subject>
-		<subject tag="655">Genre</subject>
+		<subject tag="654">Topic</subject>
+		<subject tag="655">Topic</subject>
+		<!--<subject tag="655">Genre</subject>		
 		<subject tag="656">Occupation</subject>		
 		<subject tag="657">Function</subject>
-		<subject tag="658">Objective</subject>
-		<subject tag="662">HierarchicalPlace</subject>		
-		<!-- <subject tag="653">UncontrolledTopic</subject> -->
+		<subject tag="658">Objective</subject>-->
+		
+		<subject tag="656">Topic</subject>		
+		<subject tag="657">Topic</subject>
+		<subject tag="658">Topic</subject>
+		<subject tag="662">Place</subject>		
+		<!--<subject tag="662">HierarchicalPlace</subject>
+		 <subject tag="653">UncontrolledTopic</subject> -->
 		<subject tag="653">Topic</subject>
 		<subject tag="751">Place</subject>
-		<subject tag="752">HierarchicalPlace</subject>
+		<subject tag="752">Topic</subject>
+		<!--<subject tag="752">HierarchicalPlace</subject>-->
 	</subjectTypes>
 );
 declare variable $marc2bfutils:formsOfItems := (
@@ -135,24 +142,24 @@ declare variable $marc2bfutils:formsOfItems := (
 declare variable $marc2bfutils:classes := (
 <vocab>
     <class>ClassificationEntity</class>
-    <property name="classNumber" label="classification number" domain="Work" marc="050,051,055,060,061,070,071,080,082,083,084,086--/a" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="a"/>
-    <property name="classItem" label="classification item number" domain="Holding" marc="050|051,055,060,061,070,071,080,082,083,084,086--/b" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="b"/>
-    <property name="classCopy" label="Copy part of call number" domain="Work" marc="051,061,071--/c" tag="(051|061|071)" sfcodes="c"/>
-    <property name="classSpanEnd" label="classification span end for class number" domain="Work" marc="083--/c" tag="083" sfcodes="c"/>
-    <property name="classTableSeq" label="DDC table sequence number" domain="Work" marc="083--/y" tag="083" sfcodes="y"/>
-    <property name="classTable" label="DDC table" domain="" marc="083--/z" tag="083" sfcodes="z"/>
-    <property name="classScheme" label="type of classification" domain="Work" marc="086--/2" tag="086" sfcodes="2"/>   
-    <property name="classEdition" label="edition of class scheme" domain="Work" marc="If 080,082,083 1- then 'abridged'" tag="(080|082|083)" ind1="1"/>	
-    <property name="classEdition" label="edition of class scheme" domain="Work" marc="If 080,082,083 1- then 'full'" tag="080|082|083" ind1="0"/>
-    <property name="classAssigner" label="institution assigning classification" domain="Work" marc="if 070,071 then NAL" tag="(050|051|060|061|070|071|082|083|084)"/>
+    <property name="classificationNumber" label="classification number" domain="Work" marc="050,051,055,060,061,070,071,080,082,083,084,086--/a" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="a"/>
+    <property name="classificationItem" label="classification item number" domain="Holding" marc="050|051,055,060,061,070,071,080,082,083,084,086--/b" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="b"/>
+    <property name="classificationCopy" label="Copy part of call number" domain="Work" marc="051,061,071--/c" tag="(051|061|071)" sfcodes="c"/>
+    <property name="classificationSpanEnd" label="classification span end for class number" domain="Work" marc="083--/c" tag="083" sfcodes="c"/>
+    <property name="classificationTableSeq" label="DDC table sequence number" domain="Work" marc="083--/y" tag="083" sfcodes="y"/>
+    <property name="classificationTable" label="DDC table" domain="" marc="083--/z" tag="083" sfcodes="z"/>
+    <property name="classificationScheme" label="type of classification" domain="Work" marc="086--/2" tag="086" sfcodes="2"/>   
+    <property name="classificationEdition" label="edition of class scheme" domain="Work" marc="If 080,082,083 1- then 'abridged'" tag="(080|082|083)" ind1="1"/>	
+    <property name="classificationEdition" label="edition of class scheme" domain="Work" marc="If 080,082,083 1- then 'full'" tag="080|082|083" ind1="0"/>
+    <property name="classificationAssigner" label="institution assigning classification" domain="Work" marc="if 070,071 then NAL" tag="(050|051|060|061|070|071|082|083|084)"/>
     
-    <property name="classDesignation" label="Part of class scheme used" domain="Work" marc="if 082,083 --/m=a then'standard', m=b then 'optional'" tag="(082|083)"  sfcodes="m=a then'standard', m=b then 'optional'"/>
-    <property name="classStatus" label="status of classification" domain="Work" marc="if 086/z then status=canceled/invalid" tag="if "  sfcodes="z then status=canceled/invalid"/>
-    <property name="classLcc" label="LCC Classification" domain="Work" marc="050,051,055,060,061,070,071--/a" tag="(050|051|055|060|061|070|071)" sfcodes="a" level="property"/>
-    <property name="class" label="classification" domain="Work" marc="084,086--/a" tag="(084|086)" ind1="," ind2="0" sfcodes="a" level="property"/>
-    <property name="classDdc" label="DDC Classification" domain="Work" marc="083--/a'hyphen'c" tag="083" sfcodes="a'hyphen'c" level="property"/> 
-    <property name="classDdc" label="DDC Classification" domain="Work" marc="082--/a" tag="082" sfcodes="a" level="property"/>	
-    <property name="classUdc" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c"/>	
+    <property name="classificationDesignation" label="Part of class scheme used" domain="Work" marc="if 082,083 --/m=a then'standard', m=b then 'optional'" tag="(082|083)"  sfcodes="m=a then'standard', m=b then 'optional'"/>
+    <property name="classificationStatus" label="status of classification" domain="Work" marc="if 086/z then status=canceled/invalid" tag="if "  sfcodes="z then status=canceled/invalid"/>
+    <property name="classificationLcc" label="LCC Classification" domain="Work" marc="050,051,055,060,061,070,071--/a" tag="(050|051|055|060|061|070|071)" sfcodes="a" level="property"/>
+    <property name="classification" label="classification" domain="Work" marc="084,086--/a" tag="(084|086)" ind1="," ind2="0" sfcodes="a" level="property"/>
+    <property name="classificationDdc" label="DDC Classification" domain="Work" marc="083--/a'hyphen'c" tag="083" sfcodes="a'hyphen'c" level="property"/> 
+    <property name="classificationDdc" label="DDC Classification" domain="Work" marc="082--/a" tag="082" sfcodes="a" level="property"/>	
+    <property name="classificationUdc" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c"/>	
 </vocab>
 );
 

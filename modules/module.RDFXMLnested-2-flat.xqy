@@ -43,7 +43,7 @@ declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 declare namespace dcterms       = "http://purl.org/dc/terms/";
-
+declare namespace cnt              = "http://www.w3.org/2011/content#";
 declare variable $RDFXMLnested2flat:resourcesToIgnore := 
     <ignore>
         <class>Provider</class>

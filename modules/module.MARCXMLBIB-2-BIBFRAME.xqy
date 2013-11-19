@@ -173,7 +173,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 		<note tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</note>
 		<note tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </note>
 		<note tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </note>
-		<note tag ="515" property="numbering">Numbering Peculiarities Note </note>
+		<note tag ="515" property="note">Numbering Peculiarities Note </note>
 		<note tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</note>
 		<note tag ="538" property="systemDetails">System Details Note</note>
 		<note tag ="540" comment="(Delsey - Manifestation)" property="useAndReproduction">Terms Governing Use and Reproduction Note </note>
@@ -939,7 +939,7 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdamedia"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:mediaType {attribute rdf:about {fn:concat("http://www.loc.gov/standards/valuelist/carriers/convert-me/",fn:string($d/marcxml:subfield[@code="a"]))}		
+                           element bf:mediaType {attribute rdf:about {fn:concat("http://id.loc.gov/test/carriers/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:mediaType { 
@@ -948,7 +948,7 @@ declare function marcbib2bibframe:generate-physdesc
                                     } 
                                 }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:mediaType {attribute rdf:about {fn:concat("http://id.loc.gov/authorities/rdamedia/",fn:string($d/marcxml:subfield[@code="b"]))}		
+                           element bf:mediaType {attribute rdf:about {fn:concat("http://id.loc.gov/test/rdamedia/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
                         } 
                      else  (),  
                for $d in $marcxml/marcxml:datafield[@tag="338"]
@@ -956,7 +956,7 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierType {attribute rdf:about {fn:concat("http://www.loc.gov/standards/valuelist/marcsmd/convert-me/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
+                           element bf:carrierType {attribute rdf:about {fn:concat("http://id.loc.gov/test/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:carrierType { 
@@ -2082,7 +2082,22 @@ declare function marcbib2bibframe:generate-work(
                 }
         
     let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
-        
+    let $leader:=fn:string($marcxml/marcxml:leader)
+    let $leader7:=fn:substring($leader,8,1)
+	let $leader19:=fn:substring($leader,20,1)
+
+     let $issuance:=
+           	if (fn:matches($leader7,"(a|c|d|m)")) 		then "monographic"
+           	else if ($leader7="b") 						then "continuing"
+           	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "multipart monograph"
+           	else if ($leader7='m' and $leader19='#') 				then "single unit"
+           	else if ($leader7='i') 						           	then "integrating resource"
+           	else if ($leader7='s')           						then "serial"
+           	else ()
+     let $issuance := 
+                if ($issuance) then 
+                   element bf:modeOfIssuance {$issuance}                  
+                else ()
     (: 
         Here's a thought. If this Work *isn't* English *and* it does 
         have a uniform title (240), we should probably figure out the 
@@ -2093,7 +2108,7 @@ declare function marcbib2bibframe:generate-work(
     let $language := fn:normalize-space(fn:substring($cf008, 36, 3))
     let $language := 
         if ($language ne "" and $language ne "|||") then
-            element bf:primaryLanguage {
+            element bf:language {
                 attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/" , $language) }
             }
         else
@@ -2170,8 +2185,8 @@ declare function marcbib2bibframe:generate-work(
 				else 				"summary":)
 			return	
 			
-				element  bf:summary {				
-				        element    bf:Summary {						        
+				element  bf:hasAnnotation {				
+				        element    bf:Description {						        
 				            	element bf:label {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")}
 					}
 				}      			
@@ -2313,7 +2328,7 @@ declare function marcbib2bibframe:generate-work(
             for $t in fn:distinct-values($types)
             return
                 element rdf:workCategory {
-                    attribute rdf:resource {fn:concat("http://id.loc.gov/test/workCategories/vocab/", $t)}
+                    attribute rdf:resource {fn:concat("http://id.loc.gov/test/workCategories/", $t)}
                 },
              $aLabel,
             $aLabelsWork880,
@@ -2326,6 +2341,7 @@ declare function marcbib2bibframe:generate-work(
         
             $names,
             $aud521,
+            $issuance,             
             $language,
             $langs,
             $findaids,
@@ -3074,21 +3090,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
    let $validLCCs:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
     return
         for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|083|084|086)")]
-            (:to do: 
-                need full class:
-                any $b
-                if 082 083 has $2, or $m
-                083 has $y or z(table) or $c
-                080, 082 083 $ind=1 or 0
-                051 061 071 has $c
-                070 or 071
-                050,051 
-                060 061
-                080, 082 083 $q
-                084, 086  has $2
-                086 has $z  cancel
-                :)    
-                
+                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
                 	 	if (fn:not(fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))) then
