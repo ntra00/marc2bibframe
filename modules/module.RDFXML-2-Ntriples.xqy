@@ -122,7 +122,7 @@ declare function rdfxml2nt:parse_property(
                 fn:replace(
                     fn:replace(
                         fn:replace(
-                            $node/child::node()/text(),
+                             $node/child::node()/text(), 
                             '&quot;',
                             '\\"'
                         ),

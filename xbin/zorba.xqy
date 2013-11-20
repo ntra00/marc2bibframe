@@ -139,12 +139,12 @@ declare %an:sequential function local:resolve-labels(
         for $r in $flatrdfxml/*
         let $n := fn:local-name($r)
         let $scheme := 
-            if ( fn:matches($n, "Person|Organization|Place|Meeting|Family") ) then
-                "names"
-            else
+            if ( fn:matches($n, "Topic|TemporalConcept") ) then
                 "subjects"
+            else
+                "names"
         return
-            if ( fn:matches($n, "Person|Organization|Place|Meeting|Family") ) then
+            if ( fn:matches($n, "Person|Organization|Place|Meeting|Family|Topic|TemporalConcept") ) then
                 let $label := ($r/bf:authorizedAccessPoint, $r/bf:label)[1]
                 let $label := fn:normalize-space(xs:string($label))
                 let $req1 := local:http-get($label, $scheme)

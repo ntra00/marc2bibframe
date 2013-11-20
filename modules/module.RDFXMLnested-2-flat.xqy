@@ -1,7 +1,7 @@
 xquery version "1.0";
 
 (:
-:   Module Name: BIBFRAME RDF/XML Nested (RAW) 2 RDF/XML Nested (Condensed) 
+:   Module Name: BIBFRAME RDF/XML Nested (RAW) 2 RDF/XML Flat (Condensed) 
 :
 :   Module Version: 1.0
 :
@@ -42,10 +42,11 @@ declare namespace madsrdf       = "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
-
+declare namespace dcterms       = "http://purl.org/dc/terms/";
+declare namespace cnt              = "http://www.w3.org/2011/content#";
 declare variable $RDFXMLnested2flat:resourcesToIgnore := 
     <ignore>
-        <class>ProviderEntity</class>
+        <class>Provider</class>
         <class>Authority</class>
     </ignore>;
    
@@ -54,7 +55,17 @@ declare variable $RDFXMLnested2flat:inverses :=
         <inverse sourceResource="bf:Work" targetResource="bf:Annotation">
             <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
         </inverse>
-        <inverse sourceResource="bf:Instance" targetResource="bf:Holding">
+        <inverse sourceResource="bf:Instance" targetResource="bf:HeldMaterial">
+            <replace lookForOnSource="bf:heldMaterial" enterOnTarget="bf:holdingFor" />
+        </inverse>
+        <inverse sourceResource="bf:HeldMaterial" targetResource="bf:HeldItem">
+            <replace lookForOnSource="bf:heldItem" enterOnTarget="bf:componentOf" />
+        </inverse>
+        <inverse sourceResource="bf:Instance" targetResource="bf:HeldItem">
+            <replace lookForOnSource="bf:heldItem" enterOnTarget="bf:holdingFor" />
+        </inverse>
+        <!--old :-->
+        <inverse sourceResource="bf:Instance" targetResource="bf:Holding">        
             <replace lookForOnSource="bf:hasHolding" enterOnTarget="bf:holds" />
         </inverse>
         <inverse sourceResource="bf:Instance" targetResource="bf:Annotation">
@@ -91,9 +102,38 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
     let $resources := RDFXMLnested2flat:removeNesting($resources)
     let $resources := RDFXMLnested2flat:insertInverses($resources)
     return
-        element rdf:RDF {
-            $resources
-        }
+        (: ntra changed this to an inline element from constructed, so I control the namespaces added.
+       
+        :)
+        
+        <rdf:RDF
+            xmlns:rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            xmlns:rdfs          = "http://www.w3.org/2000/01/rdf-schema#"
+            xmlns:bf            = "http://bibframe.org/vocab/"
+            xmlns:madsrdf       = "http://www.loc.gov/mads/rdf/v1#"
+            xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"
+            xmlns:identifiers   = "http://id.loc.gov/vocabulary/identifiers/"
+            xmlns:notes         = "http://id.loc.gov/vocabulary/notes/"
+            xmlns:dcterms       = "http://purl.org/dc/terms/"
+            >
+
+        {attribute dcterms:modified {$rdfxml/dcterms:modified[1]},
+            $rdfxml/@*,
+            for $w in    $resources/self::bf:Work
+                order by $w/@rdf:about
+                    return $w,
+             
+        
+            $resources/self::bf:Instance,
+            $resources/self::bf:Authority,
+            $resources/self::bf:Annotation,
+            $resources/self::bf:HeldMaterial,
+            $resources/self::bf:HeldItem,
+            $resources/self::bf:Holding,
+            $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding|HeldMaterial|HeldItem)"))]
+            
+            }
+        </rdf:RDF>
 
 };
 
