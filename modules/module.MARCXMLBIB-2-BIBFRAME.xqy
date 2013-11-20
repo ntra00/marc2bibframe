@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-11-19-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-11-20-T14:00";
 
 
 
@@ -241,7 +241,6 @@ declare variable $marcbib2bibframe:relationships :=
     		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   
 	  	    <!--<type tag="490" ind1="0" property="inSeries">hasParts</type>-->
 	  	    <type tag="510" property="describedIn">isReferencedBy</type>
-	  	    (:??? this may not work:::)
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>
             <type tag="730" property="relatedWork">relatedItem</type>             
@@ -280,12 +279,13 @@ declare function marcbib2bibframe:marcbib2bibframe(
             let $work := marcbib2bibframe:generate-work($marcxml, $about) 
             
             return
-                element rdf:RDF {       element dcterms:modified {$marcbib2bibframe:last-edit},                
+                element rdf:RDF {  
+                (:comment { fn:concat("last edited: ",$marcbib2bibframe:last-edit)},:)                
                     $work               
                 }
         else
             element rdf:RDF {
-            	element dcterms:modified {$marcbib2bibframe:last-edit},
+            	 (:comment {element dcterms:modified {$marcbib2bibframe:last-edit}},:)
             	
                 comment {"No leader - invalid MARC/XML input"}                
             }
@@ -1130,7 +1130,7 @@ let $v-test:=
                 },
                 if (fn:string-length($i) lt 11  ) then 
                  (:element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}}:)
-                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://isbn.org/fakelookup/",fn:normalize-space($i))}}
+                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://isbn.example.org/",fn:normalize-space($i))}}
                  else ()
                 )
 	       
@@ -1252,7 +1252,8 @@ declare function marcbib2bibframe:generate-instance-from856(
             attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",$bibid)}
         } 
   
-        
+     
+
         let $category:=         
             if (      fn:contains(
             		fn:string-join($d/marcxml:subfield[@code="u"],""),"hdl.loc.gov") and(:u is repeatable:)
@@ -1317,6 +1318,7 @@ declare function marcbib2bibframe:generate-instance-from856(
 	                    		                }
 	                    		},                    		
 	                    $biblink,
+	                
 	                    $annotates
               		}
               	}
@@ -2314,6 +2316,10 @@ declare function marcbib2bibframe:generate-work(
         element bf:derivedFrom {
             attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}
         }
+        let $edited:=fn:concat(fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),1,4),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),5,2),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),7,2),"T",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),9,2),":",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),11,2))
+      let $changed:= (  element bf:changeDate {fn:concat("transform-tool:",$marcbib2bibframe:last-edit)},
+                        element bf:changeDate {fn:concat("data:",$edited)}
+                      )
     
     let $schemes := 
             element madsrdf:isMemberOfMADSScheme {
@@ -2326,7 +2332,7 @@ declare function marcbib2bibframe:generate-work(
        
             for $t in fn:distinct-values($types)
             return
-                element rdf:workCategory {
+                element bf:workCategory {
                     attribute rdf:resource {fn:concat("http://id.loc.gov/test/workCategories/", $t)}
                 },
              $aLabel,
@@ -2359,6 +2365,7 @@ declare function marcbib2bibframe:generate-work(
             $work-relateds,
       (:      $schemes,  removing madsrdf      :)    
             $biblink,
+            $changed,
             for $i in $instances 
                 return element  bf:hasInstance{$i},
              $instancesfrom856
