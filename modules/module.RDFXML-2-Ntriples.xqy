@@ -9,7 +9,7 @@ xquery version "1.0";
 :
 :   Copyright: Public Domain
 :
-:   Proprietary XQuery Extensions Used: xdmp
+:   Proprietary XQuery Extensions Used: none
 :
 :   Xquery Specification: January 2007
 :
@@ -17,6 +17,8 @@ xquery version "1.0";
 :       xdmp extension used in order to quote/escape otherwise valid
 :       XML.
 :
+:   NB: This file has been modified to remove a ML dependency at
+:   around line 126 (xdmp:quote).  Could be a problem for Literal types.  
 :)
    
 (:~
@@ -29,7 +31,6 @@ xquery version "1.0";
 :)
 module namespace    rdfxml2nt   = "info:lc/id-modules/rdfxml2nt#";
 declare namespace   rdf         = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-declare namespace   xdmp        = "http://marklogic.com/xdmp";
 
 (:~
 :   This is the main function.  Input RDF/XML, output ntiples.
@@ -121,7 +122,7 @@ declare function rdfxml2nt:parse_property(
                 fn:replace(
                     fn:replace(
                         fn:replace(
-                            xdmp:quote($node/child::node()) , 
+                            $node/child::node()/text(),
                             '&quot;',
                             '\\"'
                         ),
