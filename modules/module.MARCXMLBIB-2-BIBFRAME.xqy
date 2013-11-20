@@ -1514,7 +1514,7 @@ let $d852:=
         return 
             (
             for $s in $d/marcxml:subfield[@code="a"] return element bf:location{fn:string($s)},
-            for $s in $d/marcxml:subfield[@code="b"] return element bf:sublocation{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="b"] return element bf:subLocation{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="c"] return element bf:shelfLocation{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="e"] return element bf:address{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="f"] return element bf:codedLocation{fn:string($s)},
@@ -3188,7 +3188,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                        return 
                             element bf:classificationCopy {fn:string($sfc)},
                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
-								    element bf:classificationNumberSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
+								    element bf:classificationSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
 								else (),			
                                 
                                 if (fn:matches($this-tag/@tag,"086") and $this-tag/marcxml:subfield[@code="z"]) then
