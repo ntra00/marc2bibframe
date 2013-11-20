@@ -565,8 +565,7 @@ declare function marcbib2bibframe:generate-identifiers(
                 			(:if contains subprops, build class for $a else just prop w/$a:)
             	    	(:first, deal with the $a):) 
                    		return 
-                   		if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or 
-                   		
+                   		if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or                    		
 		                        (:($this-tag/@tag="020" and fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(")  )   or:)			
 		                        ($this-tag[@tag="037"][marcxml:subfield[@code="c"]]) 				
 					           ) then 
@@ -1842,7 +1841,7 @@ declare function marcbib2bibframe:generate-related-work
 	                    else if ($s/@code="x") then
 	                       element bf:hasInstance{ element bf:Instance{ 
 	                                   element bf:title {$title},
-	                                   element bf:issn {attribute rdf:resource {fn:concat("http://issn.org/issn/fakelookup", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
+	                                   element bf:issn {attribute rdf:resource {fn:concat("http://issn.example.org/", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
 	                                   }
 	                                   }
 		               else ()		               
