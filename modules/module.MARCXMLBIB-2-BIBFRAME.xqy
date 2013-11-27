@@ -2316,8 +2316,8 @@ declare function marcbib2bibframe:generate-work(
             attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}
         }
         let $edited:=fn:concat(fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),1,4),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),5,2),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),7,2),"T",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),9,2),":",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),11,2))
-      let $changed:= (  element bf:changeDate {fn:concat("transform-tool:",$marcbib2bibframe:last-edit)},
-                        element bf:changeDate {fn:concat("data:",$edited)}
+      let $changed:= (  element bf:generationProcess {fn:concat("DLC transform-tool:",$marcbib2bibframe:last-edit)},
+                        element bf:changeDate {$edited}
                       )
     
     let $schemes := 
@@ -2869,6 +2869,7 @@ declare function marcbib2bibframe:get-title(
         else
             $title
      let $title := fn:normalize-space($title)
+     
      let $element-name :=
             if ($d/@tag eq "246" ) then 
                 "bf:variantTitle" 
@@ -2881,12 +2882,35 @@ declare function marcbib2bibframe:get-title(
                         attribute xml:lang {fn:string($d/marcxml:subfield[@code = "y"][1])}
                     else
                         ()
+    
     return 
-        (  element {$element-name} {
-                        $lang,                        
-                        $title
-                    },
-                     marcbib2bibframe:generate-titleNonsort($d,$title, $element-name),
+        ( element bf:title { $lang,             $title         },  
+        element {$element-name} {       $lang,                     $title           },
+            if ($d/@tag="246") then                  
+               element {$element-name} {
+                    element bf:TitleEntity { 
+                          if ($d/@ind2!=" ") then element bf:titleType {
+                                 if ($d/@ind2="0") then "title portion"
+                                 else if ($d/@ind2="1") then "parallel title"
+                                 else if ($d/@ind2="2") then "distinctive title"
+                                 else if ($d/@ind2="3") then "other title"
+                                 else if ($d/@ind2="4") then "cover title"
+                                 else if ($d/@ind2="5") then "added title page title"
+                                 else if ($d/@ind2="6") then "caption title"
+                                 else if ($d/@ind2="7") then "Running title"
+                                 else if ($d/@ind2="8") then "Spine title"                                      
+                                else ()
+                                }
+                           else (),
+                          element bf:label {fn:string($d/marcxml:subfield[@code="a"])},
+                          if ($d/marcxml:subfield[@code="b"]) then element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"])} else (),
+                           if ($d/marcxml:subfield[@code="p"]) then element bf:partTitle {fn:string($d/marcxml:subfield[@code="p"])} else (),
+                            if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else ()                              
+                    }
+                 } (:end titleEntity:)
+                                                
+            else (),
+             marcbib2bibframe:generate-titleNonsort($d,$title, $element-name),
        
             if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
              element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
