@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-11-20-T14:00";
+declare variable $marcbib2bibframe:last-edit :="2013-11-27-T14:00";
 
 
 
@@ -2684,10 +2684,11 @@ declare function marcbib2bibframe:get-name(
         else
             "bf:contributor"
             
+    (: resourceRole inside the authority makes it un-re-useable; removed 2013-12-03
     let $resourceRoleTerms := 
         for $r in $d/marcxml:subfield[@code="e"]
         return element bf:resourceRole {fn:string($r)}
-
+:)
     let $bio-links:=
         if ( $d/../marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i")]) then         
         (:set up annotations for each contributor bio link:)    
@@ -2706,7 +2707,7 @@ declare function marcbib2bibframe:get-name(
                 if ($d/@tag!='534') then element bf:authorizedAccessPoint {$aLabel} else (),
                 marcbib2bibframe:generate-880-label($d,"name"),
                 $elementList,             
-                $resourceRoleTerms,
+             (:   $resourceRoleTerms,:)
                  $system-number,
                  $bio-links
                  (:nate removed this so we can re-use the agent. now we assume that creator is primary and contributors are not:)
@@ -3164,7 +3165,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                 let $assigner:=              
                        if ($this-tag/@tag="050" and $this-tag/@ind2="0") then "dlc"
                        else if (fn:matches($this-tag/@tag,"(051)")) then "dlc"
-                       else if (fn:matches($this-tag/@tag,"(060|061)")) then "dnln"
+                       else if (fn:matches($this-tag/@tag,"(060|061)")) then "dnlm"
                        else if (fn:matches($this-tag/@tag,"(070|071)")) then "dnal"
                        else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then fn:string($this-tag/marcxml:subfield[@code="q"])
                        else ()
