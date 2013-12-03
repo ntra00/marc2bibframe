@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-11-27-T14:00";
+declare variable $marcbib2bibframe:last-edit :="2013-12-02-T14:00";
 
 
 
