@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-12-02-T14:00";
+declare variable $marcbib2bibframe:last-edit :="2013-12-02-T11:00";
 
 
 
@@ -1055,11 +1055,12 @@ let $v-test:=
 		      return if  (fn:contains($vol,$v)) then element bf:subtitle {fn:concat("experimental 505a matching to isbn:",$vol)} else ()
         else ()
                 
-    let $volume-info:=
-        if ($volume ) then		
+    let $volume-info:= ()
+    (:bib id 467 has multiple matches for t 1: t 1, t 11, t12 etc:)
+        (:if ($volume ) then		
             for $vol in fn:tokenize(fn:string($d/marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$volume)][1]           
 		      return if  (fn:contains($vol,$volume)) then element bf:subtitle {fn:concat("experimental 505a matching to isbn:",$vol)} else ()
-        else ()
+        else ():)
 
     let $carrier:=
         if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then        
