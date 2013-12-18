@@ -2332,8 +2332,11 @@ declare function marcbib2bibframe:generate-work(
        
             for $t in fn:distinct-values($types)
             return
-                element bf:workCategory {
+              (:  element bf:workCategory {
                     attribute rdf:resource {fn:concat("http://id.loc.gov/test/workCategories/", $t)}
+                },:)
+                  element rdf:type {
+                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
                 },
              $aLabel,
             $aLabelsWork880,
@@ -2887,7 +2890,10 @@ declare function marcbib2bibframe:get-title(
     
     return 
         ( element bf:title { $lang,             $title         },  
-        element {$element-name} {       $lang,                     $title           },
+        if ($element-name ne 'bf:title')  then
+                element {$element-name} { $lang,      $title          }
+        else (),
+        
             if ($d/@tag="246") then                  
                element {$element-name} {
                     element bf:TitleEntity { 
