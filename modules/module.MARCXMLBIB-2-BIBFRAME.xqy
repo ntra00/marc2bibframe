@@ -385,8 +385,26 @@ declare function marcbib2bibframe:generate-instance-from260(
 let             $physBookData:=()
 let $physSerialData:=()
 let $physResourceData:=()
-            (:this is not right yet  :)
-    let $instanceType := 
+            (:this is not right yet  :)        
+    let $leader:=fn:string($d/../marcxml:leader)
+    let $leader7:=fn:substring($leader,8,1)
+	let $leader19:=fn:substring($leader,20,1)
+ let $issuance:=
+           	if (fn:matches($leader7,"(a|c|d|m)")) 		then "Monographic"
+           	else if ($leader7="b") 						then "Continuing"
+           	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "Multipart"
+           	else if ($leader7='m' and $leader19='#') 				then "SingleUnit"
+           	else if ($leader7='i') 						           	then "IntegratingResource"
+           	else if ($leader7='s')           						then "Serial"
+           	else ()
+     let $issuance := 
+                if ($issuance) then 
+                   element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$issuance)}}                  
+                else ()
+      (:instance subclasses are tactile, manuscript, modes of issuance
+      Replaces instanceType:)
+      
+    let $instanceType :=         
         if ( fn:count($physBookData) gt 0 ) then
             "PhysicalBook"
         else if ( fn:count($physMapData) gt 0 ) then
@@ -411,14 +429,14 @@ let $physResourceData:=()
   
     return 
         element bf:Instance {        
+           $issuance,
             if ($instanceType ne "") then
                 element rdf:type {
                     attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , $instanceType) }
                 }
             else
                 (),               
-            $instance-title,
-            
+            $instance-title,            
             $names,
             $edition,
             $publication,          
@@ -2680,7 +2698,7 @@ declare function marcbib2bibframe:get-name(
                 Actually, I'm going to undo this because this is a cataloging error
                 and we want those caught.  was fn:substring($relatorCode, 1, 3))
             :)
-            fn:concat("bf:" , $relatorCode)
+            fn:concat("relators:" , $relatorCode)
         else if ( fn:starts-with($tag, "1") ) then
             "bf:creator"
         else if ( fn:starts-with($tag, "7") and $d/marcxml:subfield[@code="t"] ) then
@@ -2896,7 +2914,7 @@ declare function marcbib2bibframe:get-title(
         
             if ($d/@tag="246") then                  
                element {$element-name} {
-                    element bf:TitleEntity { 
+                    element bf:Title { 
                           if ($d/@ind2!=" ") then element bf:titleType {
                                  if ($d/@ind2="0") then "title portion"
                                  else if ($d/@ind2="1") then "parallel title"
@@ -2915,7 +2933,7 @@ declare function marcbib2bibframe:get-title(
                            if ($d/marcxml:subfield[@code="p"]) then element bf:partTitle {fn:string($d/marcxml:subfield[@code="p"])} else (),
                             if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else ()                              
                     }
-                 } (:end titleEntity:)
+                 } (:end Title:)
                                                 
             else (),
              marcbib2bibframe:generate-titleNonsort($d,$title, $element-name),
