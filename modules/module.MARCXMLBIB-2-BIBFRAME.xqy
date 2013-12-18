@@ -796,12 +796,20 @@ declare function marcbib2bibframe:generate-26x-pub
                 for $pub in $d[@tag="261"]/marcxml:subfield[@code="a"][1] |
                     $d[@tag="262"]/marcxml:subfield[@code="b"][1]
 	                 return              
-	                    element bf:providerName {marc2bfutils:clean-string(fn:string($pub))}	                    	                   
+	                    element bf:providerName {
+	                    element bf:Organization {
+	                       element bf:label {marc2bfutils:clean-string(fn:string($pub))}
+	                       }
+	                    }
 	             ,
 	             for $pub in $d[@tag="261"]/marcxml:subfield[@code="f"][1] |
                     $d[@tag="262"]/marcxml:subfield[@code="a"][1]
 	                 return              
-	                    element bf:providerPlace {marc2bfutils:clean-string(fn:string($pub))}	                    
+	                    element bf:providerPlace {element bf:Place {
+	                       element bf:label {
+	                           marc2bfutils:clean-string(fn:string($pub))}
+                            }
+                        }
 	                   ,
 	            for $pub in $d[@tag="261"]/marcxml:subfield[@code="d"][1] |
                     $d[@tag="262"]/marcxml:subfield[@code="c"][1]
@@ -845,10 +853,20 @@ declare function marcbib2bibframe:generate-publication
                             We'll need to figure out where this is and 
                             isn't a problem
                         :)
-	                    element bf:providerName {marc2bfutils:clean-string(fn:string($pub))},
+	                    element bf:providerName {
+	                       element bf:Organization {
+	                           element bf:label {
+	                       marc2bfutils:clean-string(fn:string($pub))}
+	                       }
+	                    },
 	                    marcbib2bibframe:generate-880-label($d,"provider") ,
 	                    if ( $d/marcxml:subfield[@code="a"][$x]) then
-	                        (element bf:providerPlace {marc2bfutils:clean-string($d/marcxml:subfield[@code="a"][$x])},
+	                        (element bf:providerPlace {
+	                           element bf:Place {
+	                               element bf:label {
+	                                   marc2bfutils:clean-string($d/marcxml:subfield[@code="a"][$x])}
+	                           }
+                           },
 	                         marcbib2bibframe:generate-880-label($d,"place") )
 	                          
 	                    else (),
@@ -864,8 +882,12 @@ declare function marcbib2bibframe:generate-publication
 	            element bf:publication {
 	                element bf:Provider {
 	                    for $pl in $d/marcxml:subfield[@code="a"]
-	                    return (element bf:providerPlace {fn:string($pl)},
-	                    		marcbib2bibframe:generate-880-label($d,"place")  ),
+	                    return (element bf:providerPlace {
+	                                   element bf:Place {
+	                                       element bf:label {fn:string($pl)}
+	                                   }
+	                               },
+	                    		     marcbib2bibframe:generate-880-label($d,"place")  ),
 	                    for $pl in $d/marcxml:subfield[@code="c"]
 	                    	return 
 	                        if (fn:starts-with($pl,"c")) then				
@@ -881,10 +903,19 @@ declare function marcbib2bibframe:generate-publication
 	        return 
 	            element {$propname} {
 	                element bf:Provider {
-	                    element bf:providerName {marc2bfutils:clean-string(fn:string($pub))},
+	                    element bf:providerName {
+	                        element bf:Organization {
+	                           element bf:label {  
+	                               marc2bfutils:clean-string(fn:string($pub))}
+	                           }
+	                           },
 	                    marcbib2bibframe:generate-880-label($d,"provider") ,
 	                    if ( $d/marcxml:subfield[@code="d"][$x]) then
-	                        (element bf:providerPlace {fn:string($d/marcxml:subfield[@code="d"][$x])},
+	                        (element bf:providerPlace {
+	                               element bf:Place {
+	                                   element bf:label {                      fn:string($d/marcxml:subfield[@code="d"][$x])}
+	                                   }
+	                                   },
 	                        marcbib2bibframe:generate-880-label($d,"place") )
 	                    else (),
 	                    if ($d/marcxml:subfield[@code="f"][$x]) then
@@ -897,7 +928,11 @@ declare function marcbib2bibframe:generate-publication
             element bf:publication {
                 element bf:Provider {
                     for $pl in $d/marcxml:subfield[@code="d"]
-                    	return (element bf:providerPlace {fn:string($pl)},
+                    	return (element bf:providerPlace {
+                    	           element bf:Place {
+	                       element bf:label {fn:string($pl)}
+	                       }
+	                       },
                     			marcbib2bibframe:generate-880-label($d,"place") 
                     		),
                     for $pl in $d/marcxml:subfield[@code="f"]							
@@ -1702,9 +1737,16 @@ let $carrier:=
         $d/marcxml:subfield[@code="3"] 
     else ()
 let $pubPlace:= for  $pl in $d/marcxml:subfield[@code="b"]
-			return element bf:providerPlace{fn:string($pl)}
+			return element bf:providerPlace{
+			element bf:Place {
+	                       element bf:label {fn:string($pl)}
+	                       }}
 let $agent:= for  $aa in $d/marcxml:subfield[@code="c"] 
-			return element bf:providerName {fn:string($aa)}
+			return element bf:providerName {
+			         element bf:Organization {
+	                      element bf:label {fn:string($aa)}
+	                   }
+	                 }
 let $pubDate:=marc2bfutils:clean-string($d/marcxml:subfield[@code="d"])
 let $extent:= fn:string($d/marcxml:subfield[@code="e"])
 let $coverage:= fn:string($d/marcxml:subfield[@code="m"])
