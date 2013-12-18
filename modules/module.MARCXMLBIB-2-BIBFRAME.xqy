@@ -613,7 +613,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	                        (
 	                           if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
 	                      	      element bf:lccn {    
-	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
+	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/test/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
 	                            }
 			                   else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
 	                            	element bf:coden {    
@@ -631,10 +631,10 @@ declare function marcbib2bibframe:generate-identifiers(
         	
 	                        else if (fn:contains(fn:string-join($this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"],""),"doi") ) then
 	                        	for $doi in $this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"][fn:contains(.,"doi")]
-	                            		return element bf:doi {        fn:normalize-space( fn:string($doi))                        }
+	                            		return element bf:doi {  attribute rdf:resource {fn:normalize-space( fn:string($doi))                 } }
 	                        else if (fn:contains(fn:string-join($this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"],""),"hdl" ) ) then
 	                        	for $hdl in $this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"][fn:contains(.,"hdl")]
-	                            		return element bf:hdl {fn:normalize-space( fn:string($hdl))           }
+	                            		return element bf:hdl { attribute rdf:resource {fn:normalize-space( fn:string($hdl)) }}
 	                        else  
 	                            for $sub in $this-tag/marcxml:subfield[@code="a"]
 	                                   return element { fn:concat("bf:",$id/@name) } {
@@ -1347,7 +1347,10 @@ declare function marcbib2bibframe:generate-instance-from856(
                     			else "Electronic Resource"
                     		},
 	                    for $u in $d/marcxml:subfield[@code="u"]
-	                    		return element bf:identifier {fn:normalize-space(fn:string($u))},
+	                    		return element bf:identifier {
+	                    		         element bf:Identifier {element bf:label {fn:normalize-space(fn:string($u))}
+	                    		         }
+	                    		         },
 	                    element bf:instanceOf {
 	                        attribute rdf:resource {$workID}
 	                  	},
@@ -1810,7 +1813,7 @@ declare function marcbib2bibframe:generate-finding-aids
                 return
                     element bf:hasInstance {
                                 element bf:Instance {
-                                    element  {$link-property} {fn:string($u)}
+                                    element  {$link-property} {attribute rdf:resource {fn:string($u)} }
                             }
                      }
           }
@@ -2211,6 +2214,7 @@ declare function marcbib2bibframe:generate-work(
      
     (: Don't be surprised when genre turns into "form" :)
     let $genre := fn:substring($cf008, 24, 1)
+    (:$genre isn't working because $mainType=Work:)
     let $genre := 
         if ($genre ne "") then
             let $gen := fn:string($marc2bfutils:formsOfItems/type[@cf008-23 eq $genre and fn:contains(fn:string(@rType), $mainType)]) 
@@ -2220,8 +2224,7 @@ declare function marcbib2bibframe:generate-work(
                 else ()
         else
             ()
-            
-            
+                        
      let $work3xx := marcbib2bibframe:generate-physdesc($marcxml,"work")
       let $cartography:=  for $carto in $marcxml/marcxml:datafield[@tag="255"] 
       				return marcbib2bibframe:generate-cartography($carto)
