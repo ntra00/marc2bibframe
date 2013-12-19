@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-12-18-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-12-19-T15:00";
 
 
 
@@ -130,65 +130,89 @@ declare variable $marcbib2bibframe:physdesc-list:=
 declare variable $marcbib2bibframe:notes-list:= (
 <notes>
 	<work-notes>
-		<note tag ="245" property="contentType" sfcodes="k">Nature of content</note>
+		
 		<note tag ="306" property="duration" sfcodes="a">Playing time</note>		
 		<note tag ="310" property="frequency" sfcodes="a">Issue frequency</note>
-		<note tag ="336" property="contentType" sfcodes="a">Nature of content</note>
+		<note tag ="310" property="frequencyNote" sfcodes="ab">Issue frequency</note>
+		<note tag ="321" property="frequencyNote" sfcodes="ab">Issue frequency</note>
+		<note tag ="130" property="contentCategory" sfcodes="h">Nature of content</note>
+		<note tag ="240" property="contentCategory" sfcodes="h">Nature of content</note>
+		<note tag ="243" property="contentCategory" sfcodes="h">Nature of content</note>
+        <note tag ="245" property="contentCategory" sfcodes="k">Nature of content</note>
+		<note tag ="336" property="contentCategory" sfcodes="a">Nature of content</note>
+        <note tag ="513" property="contentCategory" sfcodes="a">Nature of content</note>
+        <note tag ="516" property="contentCategory" sfcodes="a">Type of Computer File or Data Note</note>
+        <note tag ="730" property="contentCategory" sfcodes="h">Nature of content</note>
+        <note tag ="700" property="contentCategory" sfcodes="h">Nature of content</note>
+        <note tag ="710" property="contentCategory" sfcodes="h">Nature of content</note>
+        <note tag ="711" property="contentCategory" sfcodes="h">Nature of content</note>
+<!--		contentCategory includes  336  /b (codes); 008/24-27BK(codes) ; 008/24-27CR(codes) --> 
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
-		<!-- <note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
+		<note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
 		<note tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
-		<note tag ="513" property="contentType" sfcodes="a">Nature of content</note>		
-		<note tag ="513" property="temporalCoverageNote" sfcodes="b">Period Covered Note</note>
-		<!--<note tag ="514" property="dataQuality">Data Quality Note</note> -->
-		<note tag ="516" property="contentType" sfcodes="a">Type of Computer File or Data Note</note>		
-		<note tag ="518" property="contentCoverage" sfcodes="a" >Date/Time and Place of an Event Note</note>
-		<!-- has its own function<note tag ="521" property="targetAudience">Target Audience Note</note>-->
+				
+		<note tag ="513" property="temporalCoverageNote" sfcodes="b">Period Covered Note</note>		
+				
 		<note tag ="522" property="geographicCoverageNote">Geographic Coverage Note</note>
-		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>		
-		<!-- <note tag ="526" property="studyProgram">Study Program Information Note</note>-->
+		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>				
 		<note tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="otherPhysicalFormat">Additional Physical Form Available Note </note>
-<!-- moved to relateds;			<note tag ="533"  comment="(develop link) (Delsey - Manifestation)" property="reproduction">Reproduction Note</note>
- 		<note tag ="534" comment="(develop link)(Delsey - Manifestation)" sfcodes="b" property="originalVersion">Original Version Note</note>-->
-		<note tag ="535" property="originalLocation">Location of Originals/Duplicates Note</note>
-		<note tag ="536" property="funding">Funding Information Note</note>		
-		<note tag ="544" sfcodes="3dea" comment="(develop link?)" property="archiveLocation">Location of Other Archival Materials Note</note>
-		<note tag ="545"  comment ="annotation to name???" property="biographicalHistoricalNote">Biographical or Historical Data</note>
-		<note tag ="547" property="formerTitleComplexity">Former Title Complexity Note</note>
-		<note tag ="552" property="entityInformation">Entity and Attribute Information Note</note>
-	<!--	<note tag ="555" comment="(link?)" property="index">Cumulative Index/Finding Aids Note </note>-->
-		<note tag ="565" property="caseFile">Case File Characteristics Note</note>
-		<note tag ="567" property="methodology">Methodology Note</note>
-		<note tag ="580" property="linkingEntryComplexity">Linking Entry Complexity Note</note>
-		<note tag ="581" property="publicationAbout" sfcodes="3a" startswith="Publications about: ">Publications About Described Materials Note</note>
+  	    <note tag ="555" comment="(link?)" property="index">Cumulative Index/Finding Aids Note </note>	
 		<note tag ="586" property="awardNote" sfcodes="3a">Awards Note</note>
-		(:<note tag ="588" comment="(actually Annotation? Admin?)" property="source" >Source of Description Note </note>:)
-	
+
+<!--
+
+<note tag ="514" property="dataQuality">Data Quality Note</note>
+<note tag ="518" property="contentCoverage" sfcodes="a" >Date/Time and Place of an Event Note</note>
+    has its own function:
+        <note tag ="521" property="targetAudience">Target Audience Note</note>
+<note tag ="526" property="studyProgram">Study Program Information Note</note>
+ 
+moved to relateds:	
+        <note tag ="533"  comment="(develop link) (Delsey - Manifestation)" property="reproduction">Reproduction Note</note>
+ 		<note tag ="534" comment="(develop link)(Delsey - Manifestation)" sfcodes="b" property="originalVersion">Original Version Note</note>
+
+<note tag ="535" property="originalLocation">Location of Originals/Duplicates Note</note>
+<note tag ="536" property="funding">Funding Information Note</note>
+<note tag ="544" sfcodes="3dea" comment="(develop link?)" property="archiveLocation">Location of Other Archival Materials Note</note>
+<note tag ="545"  comment ="annotation to name???" property="biographicalHistoricalNote">Biographical or Historical Data</note>
+<note tag ="547" property="formerTitleComplexity">Former Title Complexity Note</note>
+<note tag ="552" property="entityInformation">Entity and Attribute Information Note</note>
+<note tag ="565" property="caseFile">Case File Characteristics Note</note>
+<note tag ="567" property="methodology">Methodology Note</note>
+<note tag ="580" property="linkingEntryComplexity">Linking Entry Complexity Note</note>
+<note tag ="581" property="publicationAbout" sfcodes="3a" startswith="Publications about: ">Publications About Described Materials Note</note>
+<note tag ="588" comment="(actually Annotation? Admin?)" property="source" >Source of Description Note </note>
+-->
 	</work-notes>
 	<instance-notes>	
+	   <note tag ="258" property="philatelicDataNote" sfcodes="ab">Philatelic data note</note>
 		<note tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</note>
-		<note tag ="500" sfcodes="3a" property="note">General Note</note>
-		<note tag ="501" property="with" sfcodes="a">With Note</note>
+		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
 		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
-		<note tag ="506" property="restrictionsOnAccess">Restrictions on Access Note</note>
+		<note tag ="506" property="accessCondition">Restrictions on Access Note</note>
 		<note tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</note>
 		<note tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </note>
-		<note tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </note>
-		<note tag ="515" property="note">Numbering Peculiarities Note </note>
-		<note tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</note>
-		<note tag ="538" property="systemDetails">System Details Note</note>
-		<note tag ="540" comment="(Delsey - Manifestation)" property="useAndReproduction">Terms Governing Use and Reproduction Note </note>
+		<note tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </note>	
+		<note tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</note>		
 		<note tag ="541" sfcodes="cad" property="immediateAcquisition">Immediate Source of Acquisition Note</note>
-		<note tag ="542" property="copyrightStatus">Information Relating to Copyright Status</note>
 		<note tag ="546" property="languageNote" sfcodes="3a" >Language Note</note>
 		<note tag ="546" property="notation" sfcodes="b" >Language Notation(script)</note>
+	
+		<!--
+		<note tag ="501" property="with" sfcodes="a">With Note</note>
+		<note tag ="515" property="note">Numbering Peculiarities Note </note>
+		<note tag ="538" property="systemDetails">System Details Note</note>
+		<note tag ="540" comment="(Delsey - Manifestation)" property="useAndReproduction">Terms Governing Use and Reproduction Note </note>
+		<note tag ="542" property="copyrightStatus" >Information Relating to Copyright Status</note>
 		<note tag ="550" property="issuers">Issuing Body Note</note>
-		<note tag ="556" property="documentation">Information about Documentation Note</note>
+		<note tag ="556" property="documentation">Information about Documentation Note</note>-->
 		<note tag ="561" property="custodialHistory">Ownership and Custodial History</note>
 		<note tag ="562" property="versionIdentification">Copy and Version Identification Note</note>
 		<note tag ="563" property="binding">Binding Information</note>
 		<note tag ="583" comment="annotation later?" property="exhibitions">Action Note</note>
 		<note tag ="584" property="useFrequency">Accumulation and Frequency of Use Note</note>
-		<note tag ="585" property="exhibitions">Exhibitions Note</note>	
+		<note tag ="585" property="exhibitions">Exhibitions Note</note>
+		-->
 	</instance-notes>
 </notes>
 );
@@ -270,7 +294,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
         if ($identifier eq "") then
             ()
         else if ( fn:not( fn:starts-with($identifier, "http://") ) ) then
-            attribute rdf:about { fn:concat("http://id/test/" , $identifier) }
+            attribute rdf:about { fn:concat("http://id.loc.gov/vocabulary/test/" , $identifier) }
         else
             attribute rdf:about { $identifier }
 
@@ -620,7 +644,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	                        (
 	                           if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
 	                      	      element bf:lccn {    
-	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/test/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
+	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
 	                            }
 			                   else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
 	                            	element bf:coden {    
@@ -998,7 +1022,7 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdamedia"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:mediaType {attribute rdf:resource {fn:concat("http://id.loc.gov/test/carriers/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
+                           element bf:mediaType {attribute rdf:resource {fn:concat("http://id.loc.gov/carriers/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:mediaType { 
@@ -1007,7 +1031,7 @@ declare function marcbib2bibframe:generate-physdesc
                                     } 
                                 }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:mediaType {attribute rdf:type {fn:concat("http://id.loc.gov/test/rdamedia/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
+                           element bf:mediaType {attribute rdf:type {fn:concat("http://id.loc.gov/rdamedia/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
                         } 
                      else  (),  
                for $d in $marcxml/marcxml:datafield[@tag="338"]
@@ -1015,15 +1039,15 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/test/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
+                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:carrierType {                           
-                            attribute rdf:resource {fn:concat("http://id.loc.gov/test/somecarrier/",
+                            attribute rdf:resource {fn:concat("http://id.loc.gov/somecarrier/",
                           fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}
                           }
                         else   if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/test/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
+                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
                         } 
                      else  (),  
               (:---337, 338 end ---:)
@@ -1389,7 +1413,7 @@ declare function marcbib2bibframe:generate-instance-from856(
 };
 (:~
 :   This is the function generates dissertation on Work from 502.
-: 
+: (dissertation is no longer a subclass of Work
 :   @param  $marcxml        element is the 502 datafield  
 :   @return bf:* as element()
 :)
@@ -1398,7 +1422,8 @@ declare function marcbib2bibframe:generate-dissertation(
     ) as element ()* 
 {
 
-( element rdf:type {attribute rdf:resource{"http://bibframe.org/vocab/Dissertation"}},
+(
+(:element rdf:type {attribute rdf:resource{"http://bibframe.org/vocab/Dissertation"}},:)
     if ($d/marcxml:subfield[@code="a"] and fn:count($d/*)=1) then
         element bf:dissertationNote{fn:string($d/marcxml:subfield[@code="a"])}
     else 
@@ -1721,7 +1746,12 @@ declare function marcbib2bibframe:generate-notes(
 					return
 					   if ($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]) then
 	                			element {fn:concat("bf:",fn:string($note/@property))} {
-	                    					if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then	                    							                    						
+	                			    if (fn:string($marc-note/@tag)="310"  and $return-codes="a" ) then
+	                			        attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/frequency/",
+	                			                                fn:encode-for-uri(fn:normalize-space(fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")
+	                			                                                )))
+	                			                                                }	                			        
+	                			    else		if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then	                    							                    						
 	                    						marc2bfutils:clean-string(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")))	                    						
 	                    					else 
 	                    						fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[@code="a"]," ")))
@@ -2403,7 +2433,7 @@ declare function marcbib2bibframe:generate-work(
             for $t in fn:distinct-values($types)
             return
               (:  element bf:workCategory {
-                    attribute rdf:resource {fn:concat("http://id.loc.gov/test/workCategories/", $t)}
+                    attribute rdf:resource {fn:concat("http://id.loc.gov/vocabularyworkCategories/", $t)}
                 },:)
                   element rdf:type {
                     attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
