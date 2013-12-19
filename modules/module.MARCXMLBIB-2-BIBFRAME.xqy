@@ -3261,7 +3261,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         element  {fn:concat("bf:",$property)} {          
                      			if ($property="classificationLcc" ) then 
                      				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
-                     			else
+                     			else   if ($property="classificationNlm" ) then 
+                     				attribute rdf:resource {fn:concat( "http://nlm.example.org/classification/",fn:string($valid))}
+                     		    else 
                                              		fn:string($cl)                            
                             }
             else if (
@@ -3281,7 +3283,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     element bf:Classification {                        
                         element bf:classificationScheme {
                             if (fn:matches($this-tag/@tag,"(050|051)")) then "lcc" 
+		            		else if (fn:matches($this-tag/@tag,"080")) then "nlm"
 		            		else if (fn:matches($this-tag/@tag,"080")) then "udc"
+		            		
 		            		else if (fn:matches($this-tag/@tag,"082")) then "ddc"
 		            		else if (fn:matches($this-tag/@tag,"(084|086)")) then fn:string($this-tag/marcxml:subfield[@code="2"])
 		            		else ()
