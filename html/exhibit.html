@@ -24,12 +24,12 @@
 		$('.accordion').collapse()
 
 		$('.accordion').on('show', function() {
-			$('.icon').removeClass('icon-plus').addClass('icon-minus');
+			$('.icon').removeClass('glyphicon-plus').addClass('glyphicon-minus');
 		});
 
 		// Reverse it for hide:
 		$('.accordion').on('hide', function() {
-			$('.icon').removeClass('icon-minus').addClass('icon-plus');
+			$('.icon').removeClass('glyphicon-minus').addClass('glyphicon-plus');
 		});
 
     </script>
@@ -43,30 +43,32 @@
     <div ex:role="exhibit-collection" ex:itemTypes="Work"></div>
 
     <!-- nav bar -->
-    <div class="navbar navbar-fixed-top">
-      <div class="navbar-inner">
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container">
-          <a class="brand" href="/">BIBFRAME
-            <span class="tagline">
-              <span style="padding-left: 20px; font-size: 70%; color: grey;">New Bibliographic Framework</span>
-            </span>
-          </a>
-          <!-- top-right menu -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="glyphicon-bar"></span>
+                    <span class="glyphicon-bar"></span>
+                    <span class="glyphicon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">BIBFRAME Resources</a>
+            </div>
+            <!-- top-right menu -->
         </div>
-      </div>
-    </div>
-    
-    <div class="body container-fluid">
-      <div class="this-nav row-fluid">
-        <div class="span12" style="margin-top: 50px;">
+    </nav>
+
+    <div class="body container">
+      <div class="this-nav row">
+        <div class="col-md-12" style="margin-top: 50px;">
           <br />
         </div>
       </div>
       <h2>MARC21 Bib Records as BIBFRAME Resources</h2>
       <br />
-      <div class="row-fluid">
+      <div class="row">
 		  
-        <div class="span3">
+        <div class="col-md-3">
           <div class="well facets">
             <div ex:role="facet" ex:facetclass="TextSearch" ex:facetLabel="Search"></div>
             <br />
@@ -81,7 +83,7 @@
           </div>
         </div>
 
-        <div class="span9">
+        <div class="col-md-9">
           <div class="results" ex:role="viewPanel">
             <div ex:role="view" ex:label="What">
 				<!-- Work display lens -->
@@ -94,7 +96,7 @@
 							<td>
 								<ul ex:content=".bf-creator" class="value creator">
 									<li>
-										<i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
+										<i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
 											<span ex:if="exists(.uri)">
 												<span class="name">
 													<a ex:href-content=".uri"><span ex:content=".label"></span></a>
@@ -105,7 +107,7 @@
 													(<span ex:content=".bf-resourceRole"></span>)
 												</span>
 											</span>
-											<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
+											<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="glyphicon-star"></i>)</a></span>
 									</li>
 								</ul>
 							</td>
@@ -122,7 +124,7 @@
 							<td class="property span2">Note(s)</td>
 							<td>
 							<ul class="allNotes" ex:content=".bf-note">
-								<li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+								<li class="specificNote"><i class="glyphicon-chevron-right"></i> <span ex:content="value"></span></li>
 							</ul>
 							</td>
 						</tr>                    
@@ -131,13 +133,13 @@
 							<td>
 								<ul ex:content=".bf-subject" class="value subject">
 									<li>
-										<i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
+										<i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
 										<span ex:if="exists(.uri)">
 											<span class="name"><a ex:href-content=".uri"><span ex:content=".label"></span></a></span>
 										</span>
-										<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
+										<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="glyphicon-star"></i>)</a></span>
 										<!--
-										<span class="name" ex:content=".label"></span> <span class="authorityLink idlc" ex:if-exists=".hasAuthorityLink"><a ex:href-content=".hasAuthorityLink">(<i class="icon-star"></i>)</a></span> <span class="authorityLink idlc" ex:if-exists=".idlcFromHeuristic"><a ex:href-content=".idlcFromHeuristic">(<i class="icon-star"></i>)</a></span> <span class="authorityLink viaf" ex:if-exists=".viafFromHeuristic"><a ex:href-content=".viafFromHeuristic">(<i class="icon-ok"></i>)</a></span> 
+										<span class="name" ex:content=".label"></span> <span class="authorityLink idlc" ex:if-exists=".hasAuthorityLink"><a ex:href-content=".hasAuthorityLink">(<i class="glyphicon-star"></i>)</a></span> <span class="authorityLink idlc" ex:if-exists=".idlcFromHeuristic"><a ex:href-content=".idlcFromHeuristic">(<i class="glyphicon-star"></i>)</a></span> <span class="authorityLink viaf" ex:if-exists=".viafFromHeuristic"><a ex:href-content=".viafFromHeuristic">(<i class="glyphicon-ok"></i>)</a></span> 
 										<span ex:if-exists=".generalSubdivision"> <span class="divider">/</span> <span class="subdivision general" ex:content=".generalSubdivision"></span></span>
 										<span ex:if-exists=".geographicSubdivision"> <span class="divider">/</span> <span class="subdivision geographic" ex:content=".geographicSubdivision"></span></span>
 										<span ex:if-exists=".chronologicalSubdivision"> <span class="divider">/</span> <span class="subdivision chronological" ex:content=".chronologicalSubdivision"></span></span>
@@ -183,7 +185,7 @@
 											<td>
 												<ul ex:content=".bf-creator" class="value creator">
 													<li>
-														<i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
+														<i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
 														<span class="name" ex:content=".label"></span> 
 														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
 													</li>
@@ -207,10 +209,10 @@
 										<tr ex:if-exists=".bf-creator">
 											<td class="property span2">Creator(s)</td>
 											<td>
-												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
+												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
 												<ul ex:content=".bf-creator" class="value creator">
 													<li>
-														<i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
+														<i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
 														<span ex:if="exists(.uri)">
 															<span class="name">
 																<a ex:href-content=".uri"><span ex:content=".label"></span></a>
@@ -221,7 +223,7 @@
 																(<span ex:content=".bf-resourceRole"></span>)
 															</span>
 														</span>
-														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
+														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="glyphicon-star"></i>)</a></span>
 													</li>
 												</ul>
 											</td>
@@ -243,10 +245,10 @@
 										<tr ex:if-exists=".bf-creator">
 											<td class="property span2">Creator(s)</td>
 											<td>
-												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
+												<!-- <ul ex:content=".bf-creator" class="value creator"><li><i ex:class-subcontent="glyphglyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
 												<ul ex:content=".bf-creator" class="value creator">
 													<li>
-														<i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
+														<i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
 														<span ex:if="exists(.uri)">
 															<span class="name">
 																<a ex:href-content=".uri"><span ex:content=".label"></span></a>
@@ -257,7 +259,7 @@
 																(<span ex:content=".bf-resourceRole"></span>)
 															</span>
 														</span>
-														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
+														<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="glyphicon-star"></i>)</a></span>
 													</li>
 												</ul>
 											</td>
@@ -307,7 +309,7 @@
                       <ul ex:content="!bf-instanceOf" class="value instance">
                         <li>
                           <div class="titleInstance">
-                            <i ex:class-subcontent="icon-default icon-{{.carrierType}}"  ex:title-subcontent="{{.carrierType}}"></i>
+                            <i ex:class-subcontent="glyphicon-default glyphicon-{{.carrierType}}"  ex:title-subcontent="{{.carrierType}}"></i>
 
                             <span ex:if="exists(.uri)">
                               <span class="title"><a ex:href-content=".uri"><span ex:content=".bf-title"></span> </a></span>
@@ -318,24 +320,24 @@
                             </span>
                           </div>
                           
-                          <div class="row-fluid">
+                          <div class="row">
 
-                            <div class="span8">
+                            <div class="col-md-8">
                               
                               <table class="table table-condensed">
 								  <tr ex:if-exists=".bf-contributor">
 									<td class="property span2">Contributor</td>
 									<td>
-										<!-- <ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
+										<!-- <ul ex:content=".bf-contributor" class="value creator"><li><i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> <span class="name" ex:content=".label"></span></li></ul> -->
 										<ul ex:content=".bf-contributor" class="value creator">
 											<li>
-												<i ex:class-subcontent="icon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
+												<i ex:class-subcontent="glyphicon-{{.type}}" ex:title-subcontent="{{.type}}"></i> 
 												<span ex:if="exists(.uri)">
 													<span class="name">
 														<a ex:href-content=".uri"><span ex:content=".label"></span></a>
 													</span>
 												</span>
-												<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="icon-star"></i>)</a></span>
+												<span class="authorityLink idlc" ex:if-exists=".bf-hasAuthority"><a ex:href-content=".bf-hasAuthority">(<i class="glyphicon-star"></i>)</a></span>
 											</li>
 										</ul>
 									</td>
@@ -394,7 +396,7 @@
                                   <td class="property span2">Note(s)</td>
                                   <td>
                                     <ul class="value allNotes" ex:content=".bf-note">
-                                      <li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+                                      <li class="specificNote"><i class="glyphicon-chevron-right"></i> <span ex:content="value"></span></li>
                                     </ul>
                                   </td>
                                 </tr>
@@ -402,7 +404,7 @@
                                   <td class="property span2">Illustration Note(s)</td>
                                   <td>
                                     <ul class="value allNotes" ex:content=".bf-illustrativeContentNote">
-                                      <li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+                                      <li class="specificNote"><i class="glyphicon-chevron-right"></i> <span ex:content="value"></span></li>
                                     </ul>
                                   </td>
                                 </tr>
@@ -410,7 +412,7 @@
                                   <td class="property span2">Supplementary Content Note(s)</td>
                                   <td>
                                     <ul class="value allNotes" ex:content=".bf-supplementaryContentNote">
-                                      <li class="specificNote"><i class="icon-chevron-right"></i> <span ex:content="value"></span></li>
+                                      <li class="specificNote"><i class="glyphicon-chevron-right"></i> <span ex:content="value"></span></li>
                                     </ul>
                                   </td>
                                 </tr>
@@ -418,7 +420,7 @@
                               
                             </div>
 
-                            <div class="span4">
+                            <div class="col-md-4">
                               
                               <!-- annotation pane -->
                               
@@ -428,7 +430,7 @@
 
                                   <div class="accordion-heading">
                                     <a class="accordion-toggle" data-toggle="collapse" ex:data-parent-subcontent="#accordion-id{{.bf-id}}" ex:href-subcontent="#collapseOne-id{{.bf-id}}">
-                                      <i class="icon icon-comment"></i> Holdings
+                                      <i class="icon glyphicon-comment"></i> Holdings
                                     </a>
                                   </div>
                                   <div ex:id-subcontent="collapseOne-id{{.bf-id}}" class="accordion-body collapse">
@@ -445,7 +447,7 @@
                                 <div ex:if-exists="!pictureOf" class="accordion-group well">
                                   <div class="accordion-heading">
                                     <a class="accordion-toggle" data-toggle="collapse" ex:data-parent-subcontent="#accordion-id{{.label}}" ex:href-subcontent="#collapseTwo-id{{.label}}">
-                                      <i class="icon icon-comment"></i> Images
+                                      <i class="icon glyphicon-comment"></i> Images
                                     </a>
                                   </div>
                                   <div ex:id-subcontent="collapseTwo-id{{.label}}" class="accordion-body collapse">
@@ -462,7 +464,7 @@
                               
                             </div> <!-- span -->
 
-                          </div> <!-- row-fluid -->
+                          </div> <!-- row -->
                           
                         </li>
                       </ul>
