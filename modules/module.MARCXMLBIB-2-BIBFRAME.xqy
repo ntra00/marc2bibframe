@@ -390,13 +390,20 @@ let $physResourceData:=()
     let $leader7:=fn:substring($leader,8,1)
 	let $leader19:=fn:substring($leader,20,1)
  let $issuance:=
-           	if (fn:matches($leader7,"(a|c|d|m)")) 		then "Monographic"
-           	else if ($leader7="b") 						then "Continuing"
-           	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "Multipart"
-           	else if ($leader7='m' and $leader19='#') 				then "SingleUnit"
-           	else if ($leader7='i') 						           	then "IntegratingResource"
-           	else if ($leader7='s')           						then "Serial"
+           	if (fn:matches($leader7,"(a|c|d|m)"))	then "Monograph"
+           	else if ($leader7="m" and 
+           	    fn:matches($leader19,"(a|b|c)")) 	then "MultipartMonograph"
+            else if ($leader7='s')           		then "Serial"           	
+           	else if ($leader7='i') 				   	then "Integrating"
+           	
            	else ()
+(:           	Print
+Archival
+Collection
+Electronic
+
+:)
+           	
      let $issuance := 
                 if ($issuance) then 
                    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$issuance)}}                  
