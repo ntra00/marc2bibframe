@@ -1582,7 +1582,8 @@ let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings)
 (:	multiple $a is possible: 2017290 use $i to handle :)
 		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
        		let $element:= 
-       			if (fn:matches($class/../@tag,"(050|051|055|060|061|070|071)")) then "bf:shelfMarkLcc"
+       			if (fn:matches($class/../@tag,"(050|051|055|070|071)")) then "bf:shelfMarkLcc"
+       			else if (fn:matches($class/../@tag,"(060|061)")) then "bf:shelfMarkNlm"
        			else if (fn:matches($class/../@tag,"080") ) then "bf:shelfMarkUdc"
        			else if (fn:matches($class/../@tag,"082") ) then "bf:shelfMarkDdc"
        			else if (fn:matches($class/../@tag,"084") ) then "bf:shelfMark"
@@ -1625,8 +1626,7 @@ let $d852:=
 return 
         if (fn:not($hld) and ($shelfmark or $d852  )) then        
             element bf:heldItem{   
-                element bf:HeldItem {
-                   
+                element bf:HeldItem {                   
                    (:this is for matching later:)
                     element bf:label{fn:string($shelfmark[1])},
          	    $shelfmark,
@@ -3226,11 +3226,19 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             $marc2bfutils:classes//property[@domain="Work"]
    let $validLCCs:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
     return
-        for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|083|084|086)")]
-                            
+       ( for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(060|061)")]
+             for $cl in $this-tag/marcxml:subfield[@code="a"]
+                let $class:= fn:tokenize(fn:string($cl),' ')[1]
+                return	 
+                    element  bf:classificationNlm{                            			
+                        attribute rdf:resource {fn:concat( "http://nlm.example.org/classification/",fn:normalize-space($class))
+                        }
+                    },        		
+                  
+        for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|070|071|080|082|083|084|086)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
-                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))) then
+                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|051|055|070|071)"))) then
                 			fn:string($cl)
                 		else (:050 has non-class stuff in it: :)
                   			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
@@ -3261,8 +3269,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         element  {fn:concat("bf:",$property)} {          
                      			if ($property="classificationLcc" ) then 
                      				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
-                     			else   if ($property="classificationNlm" ) then 
-                     				attribute rdf:resource {fn:concat( "http://nlm.example.org/classification/",fn:string($valid))}
+                     		
                      		    else 
                                              		fn:string($cl)                            
                             }
@@ -3278,6 +3285,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                        else if (fn:matches($this-tag/@tag,"(070|071)")) then "dnal"
                        else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then fn:string($this-tag/marcxml:subfield[@code="q"])
                        else ()
+
 	return                       
                 element bf:classification {
                     element bf:Classification {                        
@@ -3341,4 +3349,5 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     }
             }
             else ()
+            )
 };
