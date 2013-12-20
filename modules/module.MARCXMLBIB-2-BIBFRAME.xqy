@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-12-20-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2013-12-20-T15:00";
 
 
 
@@ -159,7 +159,9 @@ declare variable $marcbib2bibframe:notes-list:= (
   	    <note tag ="555" comment="(link?)" property="index">Cumulative Index/Finding Aids Note </note>	
 		<note tag ="586" property="awardNote" sfcodes="3a">Awards Note</note>
 
-<!--
+
+	</work-notes>
+(:
 
 <note tag ="514" property="dataQuality">Data Quality Note</note>
 <note tag ="518" property="contentCoverage" sfcodes="a" >Date/Time and Place of an Event Note</note>
@@ -182,8 +184,7 @@ moved to relateds:
 <note tag ="580" property="linkingEntryComplexity">Linking Entry Complexity Note</note>
 <note tag ="581" property="publicationAbout" sfcodes="3a" startswith="Publications about: ">Publications About Described Materials Note</note>
 <note tag ="588" comment="(actually Annotation? Admin?)" property="source" >Source of Description Note </note>
--->
-	</work-notes>
+:)
 	<instance-notes>	
 	   <note tag ="258" property="philatelicDataNote" sfcodes="ab">Philatelic data note</note>
 		<note tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</note>
@@ -198,8 +199,11 @@ moved to relateds:
 		<note tag ="546" property="languageNote" sfcodes="3a" >Language Note</note>
 		<note tag ="546" property="notation" sfcodes="b" >Language Notation(script)</note>
 	
-		<!--
-		<note tag ="501" property="with" sfcodes="a">With Note</note>
+	
+	</instance-notes>
+</notes>
+	
+		(:<note tag ="501" property="with" sfcodes="a">With Note</note>
 		<note tag ="515" property="note">Numbering Peculiarities Note </note>
 		<note tag ="538" property="systemDetails">System Details Note</note>
 		<note tag ="540" comment="(Delsey - Manifestation)" property="useAndReproduction">Terms Governing Use and Reproduction Note </note>
@@ -212,9 +216,7 @@ moved to relateds:
 		<note tag ="583" comment="annotation later?" property="exhibitions">Action Note</note>
 		<note tag ="584" property="useFrequency">Accumulation and Frequency of Use Note</note>
 		<note tag ="585" property="exhibitions">Exhibitions Note</note>
-		-->
-	</instance-notes>
-</notes>
+		:)
 );
 
 (:$related fields must have $t except 510 630,730,830 , 767? 740 ($a is title),  :)
@@ -644,7 +646,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	                        (
 	                           if ( $this-tag[@tag="010"]/marcxml:subfield[@code="a"] ) then
 	                      	      element bf:lccn {    
-	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
+	                            		attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/test/identifiers/lccn/",fn:replace(fn:string($this-tag[@tag="010"]/marcxml:subfield[@code="a"])," ",""))}                                         
 	                            }
 			                   else  if ( $this-tag[@tag="030"]/marcxml:subfield[@code="a"] ) then
 	                            	element bf:coden {    
@@ -1938,7 +1940,7 @@ declare function marcbib2bibframe:generate-related-work
 	                           element bf:systemNumber {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
 	                        )
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
-	                        element bf:lccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/identifiers/lccn/fakelookup/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
+	                        element bf:lccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/test/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
 	                    else if ($s/@code="x") then
 	                       element bf:hasInstance{ element bf:Instance{ 
 	                                   element bf:title {$title},
@@ -2379,7 +2381,7 @@ declare function marcbib2bibframe:generate-work(
                         element bf:authorizedAccessPoint {
                             fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
                         },
-                        element bf:preferredTitle {$t},
+                        element bf:title {$t},
                         (:
                         element bf:hasAuthority{
                             element madsrdf:Authority { element madsrdf:authoritativeLabel{fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )},
