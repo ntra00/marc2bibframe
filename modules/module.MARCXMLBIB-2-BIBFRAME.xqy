@@ -264,13 +264,16 @@ declare variable $marcbib2bibframe:relationships :=
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
 		    <type tag="534" property="originalVersion"></type>
-    		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   
-	  	    <!--<type tag="490" ind1="0" property="inSeries">hasParts</type>-->
-	  	    <type tag="510" property="describedIn">isReferencedBy</type>
+    		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   	  	    
+	  	    
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>
             <type tag="730" property="relatedWork">relatedItem</type>             
         </work-relateds>
+        <!--
+        <type tag="490" ind1="0" property="inSeries">hasParts</type>
+        <type tag="510" property="describedIn">isReferencedBy</type>
+        -->
         <!-- Instance to Work relationships (none!) -->
 	  	<instance-relateds>
 	  	  (:<type tag="6d30"  property="subject">isSubjectOf</type>:)
@@ -1605,11 +1608,11 @@ let $d852:=
         for $d in $marcxml/marcxml:datafield[@tag="852"]
         return 
             (
-            for $s in $d/marcxml:subfield[@code="a"] return element bf:location{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="a"] return element bf:shelfMark{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="b"] return element bf:subLocation{fn:string($s)},
-            for $s in $d/marcxml:subfield[@code="c"] return element bf:shelfLocation{fn:string($s)},
+            (:for $s in $d/marcxml:subfield[@code="c"] return element bf:shelfLocation{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="e"] return element bf:address{fn:string($s)},
-            for $s in $d/marcxml:subfield[@code="f"] return element bf:codedLocation{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="f"] return element bf:codedLocation{fn:string($s)},:)
             if ($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]) then 
                     element bf:shelfMark{fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")}
             else (),
@@ -2063,7 +2066,7 @@ declare function marcbib2bibframe:related-works
 			   return marcbib2bibframe:generate-related-work($d,$type)
             
            
-            else if (fn:matches($type/@tag,"(490|510|630|730|830)")) then 
+            else if (fn:matches($type/@tag,"(490|630|730|830)")) then 
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="a"]]		
 			    return marcbib2bibframe:generate-related-work($d,$type)
             
@@ -2853,11 +2856,13 @@ declare function marcbib2bibframe:get-name-fromSOR(
         return
             element {$prop} {
                 element bf:Agent {
-                    element bf:label {$name},                  
-                    if ($role ne "") then
+                    element bf:label {$name}
+                  (:  ,                  
+                   resource role has got to be on the resource, in a note or something!  
+                  if ($role ne "") then
                         element bf:resourceRole {$role}
                     else
-                        ()
+                        ():)
                 }
             }
 
@@ -2888,7 +2893,7 @@ return if ($type= "Audience: ") then
 			if ($tag/marcxml:subfield[@code="a"]) then
 				element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])}
 			else (),	
-			element bf:audienceLevel {$type},
+			element bf:audienceType {$type},
 			if ($tag/marcxml:subfield[@code="b"]) then
 				element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}
 			else ()	
