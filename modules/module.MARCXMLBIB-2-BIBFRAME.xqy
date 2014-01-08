@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2013-12-20-T15:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-08-T15:00";
 
 
 
@@ -188,6 +188,7 @@ moved to relateds:
 	<instance-notes>	
 	   <note tag ="258" property="philatelicDataNote" sfcodes="ab">Philatelic data note</note>
 		<note tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</note>
+    <note tag ="345" property="aspectRatio" sfcodes="a">Aspect Ratio</note>
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
 		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
 		<note tag ="506" property="accessCondition">Restrictions on Access Note</note>
@@ -1498,13 +1499,14 @@ else
 :   @return bf:* as element()
 :)
 declare function marcbib2bibframe:generate-holdings-from-hld(
-    $holdings as element(hld:holdings)?
+    $holdings as element(hld:holdings)?,
+    $workId as xs:string
     
     ) as element ()* 
 {
 for $hold in $holdings/hld:holding
     let $elm :=  
-    if (  $hold/hld:volumes/hld:volume[2]) then "HeldMaterial" else "HeldItem"
+        if (  $hold/hld:volumes/hld:volume[2]) then "HeldMaterial" else "HeldItem"
     let $summary-set :=
             for $property in $hold/*
                 return                 
@@ -1526,45 +1528,56 @@ for $hold in $holdings/hld:holding
                             let $enum:=fn:normalize-space(fn:string($vol/hld:enumAndChron))
                             let $circs:= $vol/ancestor::hld:holding/hld:circulations
                             let $circ   := 
-                                for $circ in $circs/hld:circulation[fn:normalize-space(fn:string(hld:enumAndChron ))=$enum]
-                                    let $status:= if ($circ/hld:availableNow/@value="1") then "available" else  "not available" 
-                                        return (element bf:circulationStatus {$status},
-                                                if ($circ/hld:itemId) then element bf:itemId  {fn:string($circ/hld:itemId )} else ()
-                                                )
+                                for $circulation in $circs/hld:circulation[fn:normalize-space(fn:string(hld:enumAndChron ))=$enum]
+                                    let $status:= if ($circulation/hld:availableNow/@value="1") then "available" else  "not available" 
+                                        return element circ {element bf:circulationStatus {$status},
+                                                if ($circulation/hld:itemId) then element bf:itemId  {fn:string($circulation/hld:itemId )} else ()
+                                                }
+                                                
+                                              
                            return            
                               element bf:heldItem {
                                 element bf:HeldItem {
+                                    if ($circ/bf:itemId!='') then 
+                                         attribute rdf:about {fn:concat($workId,"/item",fn:string($circ/bf:itemId))}
+                                    else (),
                                     element bf:label {fn:string($vol/hld:enumAndChron)},
                                     element bf:enumerationAndChronology  {$enum },     
-                                     element bf:enumerationAndChronology {fn:string($vol/hld:enumeration)},   
-                                    $circ
+                                     element bf:enumerationAndChronology {fn:string($vol/hld:enumeration)},
+                                     $circ/*                                                                
                                   }
                                }
              else  (: no volumes,  just add circ  to the summary heldmaterial:)              
                         let $status:= if ($hold/hld:circulations/hld:circulation/hld:availableNow/@value="1") then "available" else  "not available" 
-                        return (element bf:circulationStatus {$status},                                
-                                element bf:itemId  {fn:string($hold/hld:circulations/hld:circulation/hld:itemId )}
-                                )
+                        return  element bf:heldItem {
+                                    element bf:HeldItem {
+                                        if ($hold/hld:circulations/hld:circulation/hld:itemId) then
+                                            attribute rdf:about {fn:concat($workId,"/item",fn:string($hold/hld:circulations/hld:circulation/hld:itemId))}                                        
+                                        else (),
+                                        element bf:circulationStatus {$status},                                
+                                            element bf:itemIdz  {fn:string($hold/hld:circulations/hld:circulation/hld:itemId )}
+                                        }                                
+                                    }
          
             
-     return
+     return (
       if ($elm = "HeldItem" ) then
-         element bf:heldItem {
-            element bf:HeldItem {
+         element bf:heldItem {                               
+            element bf:HeldItem {            
+            $item-set/bf:HeldItem/@rdf:about,        
              $summary-set, $item-set//bf:HeldItem/*[fn:not(fn:local-name()='label')]
             }
             }
-         
-            
+                     
       else
         element bf:heldMaterial{   
                element bf:HeldMaterial {
                      $summary-set,
-                      $item-set
-                                                 
+                      
+                          $item-set
                     }
             }
-    
+    )
         
 };
 (:~
@@ -1579,7 +1592,7 @@ declare function marcbib2bibframe:generate-holdings(
     $workID as xs:string
     ) as element ()* 
 {
-let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings)
+let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings, $workID)
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
@@ -1709,7 +1722,6 @@ else ()
 :   Returns subfield $a
 :
 ::   @param  $marcxml       element is the marcxml record
-
 :   @param  $resource      string is the "work" or "instance"
 :   @return bf:* as element()
 :)
@@ -2269,7 +2281,8 @@ declare function marcbib2bibframe:generate-work(
                         
      let $work3xx := marcbib2bibframe:generate-physdesc($marcxml,"work")
       let $cartography:=  for $carto in $marcxml/marcxml:datafield[@tag="255"] 
-      				return marcbib2bibframe:generate-cartography($carto)
+      				          return marcbib2bibframe:generate-cartography($carto)
+      				          
 (:
         # - Summary
         0 - Subject
@@ -2445,13 +2458,12 @@ declare function marcbib2bibframe:generate-work(
                 },
              $aLabel,
             $aLabelsWork880,
-                 $dissertation,
+            $dissertation,
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
                 (),
-            $titles/bf:*,
-        
+            $titles/bf:*,        
             $names,
             $aud521,
             $issuance,             
@@ -2476,22 +2488,25 @@ declare function marcbib2bibframe:generate-work(
             $changed,
             for $i in $instances 
                 return element  bf:hasInstance{$i},
-             $instancesfrom856
-            
+             $instancesfrom856            
         }
+        
 };
-
 (:~
 :   This function generates a subject.
 :   It takes a specific 6xx as input.
 :   It generates a bf:subject as output.
 : 
-:29 '600': ('subject', {'bibframeType': 'Person'}),
-:30 '610': ('subject', {'bibframeType': 'Organization'}), 
-:31 '611': ('subject', {'bibframeType': 'Meeting'}),   
-:33 '630': ('uniformTitle', {'bibframeType': 'Title'}), 
-:34 '650': ('subject', {'bibframeType': 'Topic'}), 
-:35 '651': ('subject', {'bibframeType': 'Geographic'}), 
+,
+
+-:29 '600': ('subject', {'bibframeType': 'Person'}),
+-:30 '610': ('subject', {'bibframeType': 'Organization'}),
+-:31 '611': ('subject', {'bibframeType': 'Meeting'}),
+-:33 '630': ('uniformTitle', {'bibframeType': 'Title'}),
+-:34 '650': ('subject', {'bibframeType': 'Topic'}),
+-:35 '651': ('subject', {'bibframeType': 'Geographic'}),
+
+
 
 :   @param  $d        element is the marcxml:datafield  
 :   @return bf:subject
@@ -2502,8 +2517,7 @@ declare function marcbib2bibframe:get-subject(
 {
     let $subjectType := fn:string($marc2bfutils:subject-types/subject[@tag=$d/@tag])
     let $details :=
-(:630 now handled as relatedwork:)
-(:if (fn:matches(fn:string($d/@tag),"(600|610|611|630|648|650|651|655|751)")) then:)
+
 	if (fn:matches(fn:string($d/@tag),"(600|610|611|648|650|651|655|751)")) then	
             let $last2Tag := fn:substring(fn:string($d/@tag), 2)
             (: 
@@ -3293,18 +3307,18 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                        else if (fn:matches($this-tag/@tag,"(082|083|084)")  and $this-tag/marcxml:subfield[@code="q"]) then fn:string($this-tag/marcxml:subfield[@code="q"])
                        else ()
 
-	return                       
-                element bf:classification {
-                    element bf:Classification {                        
-                        element bf:classificationScheme {
-                            if (fn:matches($this-tag/@tag,"(050|051)")) then "lcc" 
-		            		else if (fn:matches($this-tag/@tag,"080")) then "nlm"
-		            		else if (fn:matches($this-tag/@tag,"080")) then "udc"
-		            		
-		            		else if (fn:matches($this-tag/@tag,"082")) then "ddc"
-		            		else if (fn:matches($this-tag/@tag,"(084|086)")) then fn:string($this-tag/marcxml:subfield[@code="2"])
-		            		else ()
-                        },
+               return                       
+                           element bf:classification {
+                               element bf:Classification {                        
+                                   element bf:classificationScheme {
+                                       if (fn:matches($this-tag/@tag,"(050|051)")) then "lcc" 
+                                   	else if (fn:matches($this-tag/@tag,"080")) then "nlm"
+                                   	else if (fn:matches($this-tag/@tag,"080")) then "udc"
+                                   	
+                                   	else if (fn:matches($this-tag/@tag,"082")) then "ddc"
+                                   	else if (fn:matches($this-tag/@tag,"(084|086)")) then fn:string($this-tag/marcxml:subfield[@code="2"])
+                                   	else ()
+                                   },
                         
                         if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="m"] ) then
                             element bf:classificationSchemePart  {
@@ -3357,4 +3371,5 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             }
             else ()
             )
+            
 };
