@@ -300,7 +300,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
         if ($identifier eq "") then
             ()
         else if ( fn:not( fn:starts-with($identifier, "http://") ) ) then
-            attribute rdf:about { fn:concat("http://id.loc.gov/vocabulary/test/" , $identifier) }
+            attribute rdf:about { fn:concat("http://id.loc.gov/" , $identifier) }
         else
             attribute rdf:about { $identifier }
 
