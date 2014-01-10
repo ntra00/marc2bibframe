@@ -126,7 +126,14 @@ declare variable $marcbib2bibframe:physdesc-list:=
 	       </work-physdesc>
         </physdesc>
     );
-    
+declare variable $marcbib2bibframe:simple-properties:= (
+
+	<properties>
+		
+		<node domain="work" tag ="306" property="duration" sfcodes="a">Playing time</node>
+		</properties>
+	)	;
+		
 declare variable $marcbib2bibframe:notes-list:= (
 <notes>
 	<work-notes>
@@ -3093,6 +3100,34 @@ return element bf:translationOf {
                 }
        }
 };
+
+(:~
+:   This is the function generates a literal property from a marc tag
+:
+:   @param  $d        element is the MARCXML tag   
+:   @return bf:* as element()
+:)
+declare function marcbib2bibframe:generate-simple-property(
+    $d as element(marcxml:datafield),
+    $domain as xs:string,
+ 
+    $workID as xs:string
+    ) as element () 
+{
+			
+for $node in $simple-properties[domain=$domain] 
+let $return-codes:=
+ 				if ($node/@sfcodes) then fn:string($node/@sfcodes)
+ 				else "a"
+let $precede:=fn:string($node/@startwith)
+
+return     
+	           element {fn:concat("bf:",fn:string($node/@property))} {	               
+		                    fn:normalize-space(fn:concat($precede,fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")))
+		                }
+		                
+};
+
 (:~
 :   This function generates a uniformTitle.
 :   It takes a specific datafield as input.
