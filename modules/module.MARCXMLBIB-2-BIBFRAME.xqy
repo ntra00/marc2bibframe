@@ -1039,7 +1039,7 @@ declare function marcbib2bibframe:generate-physdesc
                                     } 
                                 }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:mediaType {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/test/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
+                           element bf:mediaCategory {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/test/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
                         } 
                      else  (),  
                for $d in $marcxml/marcxml:datafield[@tag="338"]
@@ -1208,6 +1208,7 @@ let $v-test:=
     let $clean-isbn:= 
         for $item in $isbn-set/bf:isbn
         	return marc2bfutils:clean-string(fn:normalize-space(fn:tokenize( fn:string($item),"\(")[1]))
+        	
 
     let $isbn := 
         for $i in $clean-isbn
@@ -1219,14 +1220,19 @@ let $v-test:=
         return (
                 element {$element-name} {
                 attribute rdf:resource {fn:concat("http://isbn.example.org/",fn:normalize-space($i))}
-                    (:fn:normalize-space($i):)
+                },                                        
                     
-                }(:,
-                if (fn:string-length($i) lt 11  ) then 
-                 (\:element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}}:\)
-                 element bf:relatedInstance {attribute rdf:resource {fn:concat("http://isbn.example.org/",fn:normalize-space($i))}}
-                 else ():)
-                )
+                if ($element-name ="bf:isbn10" and $physicalForm!="" ) then
+                    element bf:identifier {
+                        element bf:Identifier {
+                            element bf:identifierValue {fn:normalize-space($i)},
+                            element bf:identifierScheme {"isbn"},
+                            element bf:identifierQualifer {fn:normalize-space($physicalForm)}
+                        }                                    
+                    }
+                    else ()
+                    
+               )
 	       
 
  
@@ -1836,9 +1842,7 @@ return
 						if ($coverage) then element bf:coverage {$coverage}  else (),						
 						element bf:carrier {$carrier},	
 						if ($note) then  $note  else ()						
-						(: do we need this? nate removed 2013-04-17:)
-						(:$3, $c, $b, $d, $e, $f, $m, $n, $5 in that order:)						
-						(:element bf:relatedNote {fn:string-join ($d/*[fn:not(@code="a")]," - ")}:)
+						
 					}
 				}
 				else ()				 							
