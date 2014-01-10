@@ -1047,7 +1047,7 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierCatetory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
+                           element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:carrierType {                           
@@ -1253,7 +1253,7 @@ let $v-test:=
                         $t/@*,
                         xs:string($t)
                     },:)
-        		if ($physicalForm) then      element bf:physicalForm {$physicalForm} else (),
+        		(:if ($physicalForm) then      element bf:physicalForm {$physicalForm} else (),:)
         		$volume-info,
         (:not done yet: nate 2013-05-21
         element bf:test{$v-test},
@@ -1839,8 +1839,9 @@ return
 						},
 					
 						if ($extent) then element bf:extent {$extent} else (),
-						if ($coverage) then element bf:coverage {$coverage}  else (),						
-						element bf:carrier {$carrier},	
+						if ($coverage) then element bf:temporalCoverageNote {$coverage}  else (),						
+						element bf:carrierCategory {$carrier},
+						
 						if ($note) then  $note  else ()						
 						
 					}
