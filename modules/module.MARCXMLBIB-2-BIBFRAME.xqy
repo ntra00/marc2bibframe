@@ -1047,15 +1047,15 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
+                           element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
-                      element bf:carrierType {                           
-                            attribute rdf:resource {fn:concat("http://id.loc.gov/somecarrier/",
+                      element bf:carrierCategory {                           
+                            attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/somecarrier/",
                           fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}
                           }
                         else   if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
+                           element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
                         } 
                      else  (),  
               (:---337, 338 end ---:)
