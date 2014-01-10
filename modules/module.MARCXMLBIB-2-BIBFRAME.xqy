@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-08-T15:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-10-T15:00";
 
 
 
@@ -1028,16 +1028,18 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdamedia"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:mediaType {attribute rdf:resource {fn:concat("http://id.loc.gov/carriers/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
+                           element bf:mediaCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulay/test/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
-                      element bf:mediaType { 
-                            element bf:MediaType {
-                                    element bf:label{fn:string($d/marcxml:subfield[@code="a"])}		
+                      element bf:mediaCategory { 
+                            element bf:Note {
+                                    element bf:label{fn:string($d/marcxml:subfield[@code="a"])},		
+                                    element bf:noteValue{fn:string($d/marcxml:subfield[@code="a"])},
+                                    element bf:noteType{"media category"}
                                     } 
                                 }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:mediaType {attribute rdf:type {fn:concat("http://id.loc.gov/rdamedia/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
+                           element bf:mediaType {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/test/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
                         } 
                      else  (),  
                for $d in $marcxml/marcxml:datafield[@tag="338"]
@@ -1045,7 +1047,7 @@ declare function marcbib2bibframe:generate-physdesc
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierType {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
+                           element bf:carrierCatetory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:carrierType {                           
@@ -1216,12 +1218,14 @@ let $v-test:=
                 "bf:isbn10" 
         return (
                 element {$element-name} {
-                    fn:normalize-space($i)
-                },
+                attribute rdf:resource {fn:concat("http://isbn.example.org/",fn:normalize-space($i))}
+                    (:fn:normalize-space($i):)
+                    
+                }(:,
                 if (fn:string-length($i) lt 11  ) then 
-                 (:element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}}:)
+                 (\:element bf:relatedInstance {attribute rdf:resource {fn:concat("http://www.lookupbyisbn.com/Search/Book/",fn:normalize-space($i),"/1")}}:\)
                  element bf:relatedInstance {attribute rdf:resource {fn:concat("http://isbn.example.org/",fn:normalize-space($i))}}
-                 else ()
+                 else ():)
                 )
 	       
 
@@ -1555,7 +1559,7 @@ for $hold in $holdings/hld:holding
                                             attribute rdf:about {fn:concat($workId,"/item",fn:string($hold/hld:circulations/hld:circulation/hld:itemId))}                                        
                                         else (),
                                         element bf:circulationStatus {$status},                                
-                                            element bf:itemIdz  {fn:string($hold/hld:circulations/hld:circulation/hld:itemId )}
+                                            element bf:itemId  {fn:string($hold/hld:circulations/hld:circulation/hld:itemId )}
                                         }                                
                                     }
          
@@ -1819,7 +1823,7 @@ return
 				if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
 				element bf:hasInstance {
 					element bf:Instance {
-						element bf:instanceTitle {element bf:Title {element bf:titleValue{$title}}},
+						element bf:instanceTitle {element bf:Title {element bf:label{$title}}},
 						element bf:publication {
 							element bf:Provider {
 								$pubPlace,
@@ -2304,9 +2308,12 @@ declare function marcbib2bibframe:generate-work(
 				else 				"summary":)
 			return	
 			
-				element  bf:hasAnnotation {				
+				element  bf:describedIn {				
 				        element    bf:Description {						        
-				            	element bf:label {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")}
+				            	element bf:label {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")},
+				            	element bf:descriptionOf {
+                        attribute rdf:resource {$workID}
+                    }
 					}
 				}      			
 			
@@ -2641,9 +2648,7 @@ declare function marcbib2bibframe:get-subject(
             (:656 occupation itoamc in $2? :)
        else
            (
-               element bf:label {fn:string-join($d/marcxml:subfield[fn:not(@code="6")], " ")},
-               element bf:description {
-                   fn:concat(
+               element bf:label {fn:concat(fn:string-join($d/marcxml:subfield[fn:not(@code="6")], " "),                                 
                        "This is derived from a MARC ",
                        fn:string($d/@tag),
                        " field."
@@ -2891,8 +2896,15 @@ declare function marcbib2bibframe:get-521audience(
     $tag as element(marcxml:datafield)
     ) as item()*
 {
+element bf:intendedAudience {
+		  element bf:IntendedAudience {
+		      	   element bf:audience {$tag/marcxml:subfield[@code="a"]},
+			       element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}	
+	       }
+	}
+	(:
 let $type:=  if ($tag/@ind1=" ") then "Audience: " else if ($tag/@ind1=" 0") then "Reading grade level" else if  ($tag/@ind1="1") then "Interest age level" else if  ($tag/@ind1="2") then "Interest grade level" else if  ($tag/@ind1="3") then "Special audience characteristics" else if  ($tag/@ind1="4") then "Motivation/interest level" else ()
-(:if type!=audience then you need entity:)
+
 return if ($type= "Audience: ") then
 	if ( fn:not($tag/marcxml:subfield[@code="b"]) ) then
 		element bf:intendedAudience {fn:concat($type,": ",$tag/marcxml:subfield[@code="a"])}
@@ -2901,7 +2913,7 @@ return if ($type= "Audience: ") then
 		      	   element bf:audience {fn:concat($type,": ",$tag/marcxml:subfield[@code="a"])},
 			       element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}	
 	}}
-	else if ($type) then (:you need audienceType:)
+	else if ($type) then 
 	element bf:intendedAudience {
 		element bf:IntendedAudience {
 			if ($tag/marcxml:subfield[@code="a"]) then
@@ -2925,7 +2937,7 @@ return if ($type= "Audience: ") then
 	else   if ($tag/marcxml:subfield[@code="a"]) then
 	 	element bf:intendedAudience {fn:concat($type,": ",$tag/marcxml:subfield[@code="a"])}
 	 else ()
-
+:)
 };
 (:~
 :   This is the function generates a work resource.
@@ -2998,7 +3010,7 @@ declare function marcbib2bibframe:get-title(
      
      let $element-name :=
             if ($d/@tag eq "246" ) then 
-                "bf:variantTitle" 
+                "bf:titleVariation" 
             else  if ($d/@tag = "222" ) then
                 "bf:keyTitle" 
             else  if ($d/@tag ="210" ) then
