@@ -146,6 +146,9 @@ declare variable $marcbib2bibframe:notes-list:= (
         <note tag ="700" property="contentCategory" sfcodes="h">Nature of content</note>
         <note tag ="710" property="contentCategory" sfcodes="h">Nature of content</note>
         <note tag ="711" property="contentCategory" sfcodes="h">Nature of content</note>
+        <note tag ="130" property="originDate" sfcodes="f">Date of origin</note>
+        <note tag ="730" property="originDate" sfcodes="f">Date of origin</note>
+        
 <!--		contentCategory includes  336  /b (codes); 008/24-27BK(codes) ; 008/24-27CR(codes) --> 
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
 		<note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
@@ -1227,7 +1230,7 @@ let $v-test:=
                         element bf:Identifier {
                             element bf:identifierValue {fn:normalize-space($i)},
                             element bf:identifierScheme {"isbn"},
-                            element bf:identifierQualifer {fn:normalize-space($physicalForm)}
+                            element bf:identifierQualifier {fn:normalize-space($physicalForm)}
                         }                                    
                     }
                     else ()
@@ -2903,8 +2906,8 @@ declare function marcbib2bibframe:get-521audience(
 {
 element bf:intendedAudience {
 		  element bf:IntendedAudience {
-		      	   element bf:audience {$tag/marcxml:subfield[@code="a"]},
-			       element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])}	
+		      	   element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])},
+			     if ($tag/marcxml:subfield[@code="b"]) then  element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])} else ()	
 	       }
 	}
 	(:
