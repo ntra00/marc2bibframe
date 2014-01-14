@@ -118,7 +118,7 @@ declare variable $marcbib2bibframe:physdesc-list:=
         <physdesc>
             <instance-physdesc>
                 <field tag="300" codes="3" property="materialsSpecified">Materials specified</field>
-                <field tag="300" codes="a" property="extent">Physical Description</field>             
+                <field tag="300" codes="af" property="extent">Physical Description</field>             
                 <field tag="300" codes="c" property="dimensions">Physical Size</field>
         	   </instance-physdesc>
 	           <work-physdesc>	           
@@ -167,27 +167,34 @@ declare variable $marcbib2bibframe:simple-properties:= (
      <!--<node property="hdl" label="handle for a resource" domain="instance"   marc="555;856- -/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
 		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="856"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 	   -->
+	   <node domain="instance" tag="250"  property="edition">Edition</node>
+	   <node domain="instance" tag="250" sfcodes="b" property="editionResponsibility">Edition Responsibility</node>
     	 <node domain="instance" tag="300" sfcodes="3" property="materialsSpecified">Materials specified</node>
-        <node domain="instance" tag="300" sfcodes="a" property="extent">Physical Description</node>             
+        <node domain="instance" tag="300" sfcodes="af" property="extent">Physical Description</node>             
     	<node domain="work" tag="384" sfcodes="a" property="musicKey" > Key </node>		
 		<node domain="instance" tag="300" property="dimensions"  sfcodes="c">Physical Size</node>
 		<node domain="work"  tag ="306" property="duration" sfcodes="a">Playing time</node>		
 		<node domain="work"  tag ="310" property="frequency" sfcodes="a">Issue frequency</node>
 		<node domain="work"  tag ="310" property="frequencyNote" sfcodes="ab">Issue frequency</node>
 		<node domain="work"  tag ="321" property="frequencyNote" sfcodes="ab">Issue frequency</node>
-		<node domain="work"  tag ="130" property="contentCategory" sfcodes="h">Nature of content</node>
-		<node domain="work"  tag ="240" property="contentCategory" sfcodes="h">Nature of content</node>
-		<node domain="work"  tag ="243" property="contentCategory" sfcodes="h">Nature of content</node>
-        <node domain="work"  tag ="245" property="contentCategory" sfcodes="k">Nature of content</node>
-		<node domain="work"  tag ="336" property="contentCategory" sfcodes="a">Nature of content</node>
-        <node domain="work"  tag ="513" property="contentCategory" sfcodes="a">Nature of content</node>
-        <node domain="work"  tag ="516" property="contentCategory" sfcodes="a">Type of Computer File or Data Note</node>
-        <node domain="work"  tag ="730" property="contentCategory" sfcodes="h">Nature of content</node>
-        <node domain="work"  tag ="700" property="contentCategory" sfcodes="h">Nature of content</node>
-        <node domain="work"  tag ="710" property="contentCategory" sfcodes="h">Nature of content</node>
-        <node domain="work"  tag ="711" property="contentCategory" sfcodes="h">Nature of content</node>
+		<node domain="work"  tag ="130" property="contentCategory" sfcodes="h" >Nature of content</node>
+		<node domain="work"  tag ="240" property="contentCategory" sfcodes="h" >Nature of content</node>
+		<node domain="work"  tag ="243" property="contentCategory" sfcodes="h" >Nature of content</node>
+        <node domain="work"  tag ="245" property="contentCategory" sfcodes="k" >Nature of content</node>
+		<node domain="work"  tag ="336" property="contentCategory" sfcodes="a" >Nature of content</node>
+        <node domain="work"  tag ="513" property="contentCategory" sfcodes="a" >Nature of content</node>
+        <node domain="work"  tag ="516" property="contentCategory" sfcodes="a" >Type of Computer File or Data Note</node>
+        <node domain="work"  tag ="730" property="contentCategory" sfcodes="h" >Nature of content</node>
+        <node domain="work"  tag ="700" property="contentCategory" sfcodes="h" >Nature of content</node>
+        <node domain="work"  tag ="710" property="contentCategory" sfcodes="h" >Nature of content</node>
+        <node domain="work"  tag ="711" property="contentCategory" sfcodes="h" >Nature of content</node>
         <node domain="work"  tag ="130" property="originDate" sfcodes="f">Date of origin</node>
         <node domain="work"  tag ="730" property="originDate" sfcodes="f">Date of origin</node>
+        <node domain="work"  tag ="046" property="originDate" sfcodes="kl">Date of origin</node>
+        <node domain="work"  tag ="130" property="formDesignation" sfcodes="k">Form Designation</node>
+        <node domain="work"  tag ="730" property="formDesignation" sfcodes="k">Form Designation</node>
+        <node domain="work"  tag ="130" property="musicNumber" sfcodes="n">Music Number</node>
+        <node domain="work"  tag ="730" property="musicNumber" sfcodes="n">Music Number</node>
         <node domain="work"  tag ="500" sfcodes="3a" property="note">General Note</node>		
 		<node domain="work"  tag ="502" property="dissertationNote" >Dissertation Note</node>-->		
 		<node domain="work"  tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</node>			
@@ -201,7 +208,7 @@ declare variable $marcbib2bibframe:simple-properties:= (
 		<node domain="instance"  tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</node>
         <node domain="instance"  tag ="345" property="aspectRatio" sfcodes="a">Aspect Ratio</node>
 		<node domain="instance"  tag ="500" sfcodes="3a" property="note">General Note</node>		
-		<node domain="instance"  tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</node>
+		<node domain="instance"  tag ="504" property="supplementaryContentNote" startwith="References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</node>
 		<node domain="instance"  tag ="506" property="accessCondition">Restrictions on Access Note</node>
 		<node domain="instance"  tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</node>
 		<node domain="instance"  tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </node>
@@ -558,7 +565,7 @@ Electronic
   
     return 
         element bf:Instance {        
-           $issuance,
+           $issuance,           
             if ($instanceType ne "") then
                 element rdf:type {
                     attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , $instanceType) }
@@ -1101,9 +1108,10 @@ declare function marcbib2bibframe:generate-physdesc
                         fn:string($physdesc/@codes)
                     else 
                         "a"                        
-	           for $each-field in $marcxml/marcxml:datafield[@tag eq $physdesc/@tag]
+	           for $each-field in $marcxml/marcxml:datafield[@tag eq $physdesc/@tag][marcxml:subfield[fn:contains($codes,@code)]]
 
-                for $subelement in $each-field/marcxml:subfield[fn:matches($codes,@code)]
+                (:for $subelement in $each-field/marcxml:subfield[fn:matches($codes,@code)]:)                
+                      
                 
                 let $elname:=
                     if ($physdesc/@property) then 
@@ -1112,7 +1120,8 @@ declare function marcbib2bibframe:generate-physdesc
                         "propertyname"
                 return						
                     element {fn:concat("bf:", $elname)} {			                  
-                        fn:normalize-space( fn:string($subelement))                        
+                       (: fn:normalize-space( fn:string($subelement)):)     
+                        fn:string-join($each-field/marcxml:subfield[fn:contains($codes,@code)]," ")
                     },
              (:---337,338:)
              	if ($resource="instance") then 
@@ -1125,7 +1134,7 @@ declare function marcbib2bibframe:generate-physdesc
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:mediaCategory { 
-                            element bf:Note {
+                            element bf:Category {
                                     element bf:label{fn:string($d/marcxml:subfield[@code="a"])},		
                                     element bf:noteValue{fn:string($d/marcxml:subfield[@code="a"])},
                                     element bf:noteType{"media category"}
@@ -1403,7 +1412,8 @@ declare function marcbib2bibframe:generate-instance-from250(
         else ()
     (:get the physical details:)
     (: We only ask for the first 260 :)
-	let $instance :=  marcbib2bibframe:generate-instance-from260($d/../marcxml:datafield[@tag eq "260" or @tag eq "264"][1], $workID)
+	let $instance :=  (:marcbib2bibframe:generate-instance-from260($d/../marcxml:datafield[@tag eq "260" or @tag eq "264"][1], $workID):)
+	marcbib2bibframe:generate-instance-from260($d/../marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1], $workID)
         
         
     let $instanceOf :=  
@@ -1782,14 +1792,15 @@ let $isbn-sets:=
         if ( $isbn-sets//bf:set) then           
         	(:use the first 260 to set up a book instance... what else is an instance in other formats?:)
             let $instance:= 
-                for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264)")][1]
+                for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1]
           		      return marcbib2bibframe:generate-instance-from260($i, $workID)        
 
             for $set in $isbn-sets/bf:set
           	  return marcbib2bibframe:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
 	   	
-        else 	        (: $isbn-sets//bf:set is false:)		
-            for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]
+        else 	        (: $isbn-sets//bf:set is false use the first edition, etc:)		
+            (:for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]:)
+            for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1]
      	       return marcbib2bibframe:generate-instance-from260($i, $workID)   
     )
 };
@@ -2561,7 +2572,7 @@ declare function marcbib2bibframe:generate-work(
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
-       (:  element bf:test  {$simple-test},:)
+         (:element bf:test  {$simple-test},:)
             for $t in fn:distinct-values($types)
             return
               (:  element bf:workCategory {
@@ -3219,13 +3230,10 @@ declare function marcbib2bibframe:generate-simple-property(
     return 
       if ((fn:not($node/@ind2) or $node/@ind2=$d/@ind2)
         and $d/marcxml:subfield[fn:contains($return-codes,@code)]) then                   
-             
-    	    element {fn:concat("bf:",fn:string($node/@property))} {	               
-                if (fn:not($node/@uri)) then
-                    fn:normalize-space(fn:concat($precede,
-    	                   fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")
-    	                   )
-    	                )
+        let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))
+    	return element {fn:concat("bf:",fn:string($node/@property))} {	               
+            if (fn:not($node/@uri)) then
+                fn:normalize-space(fn:concat($precede,  $text)     )    	                
                 else attribute rdf:resource{fn:concat(fn:string($node/@uri),$d/marcxml:subfield[$return-codes=@code])}
     	             }
      else
