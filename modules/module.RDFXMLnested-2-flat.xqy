@@ -54,11 +54,19 @@ declare variable $RDFXMLnested2flat:inverses :=
     <inverses>
         <inverse sourceResource="bf:Work" targetResource="bf:Annotation">
             <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
-        </inverse>
-        
+        </inverse>        
         <inverse sourceResource="bf:Work" targetResource="bf:Description">
             <replace lookForOnSource="bf:describedIn" enterOnTarget="bf:descriptionOf" />
         </inverse>  
+        <inverse sourceResource="bf:Work" targetResource="bf:Description">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+         <inverse sourceResource="bf:Work" targetResource="bf:Review">
+            <replace lookForOnSource="bf:hasAnnotation" enterOnTarget="bf:annotates" />
+        </inverse>
+          <inverse sourceResource="bf:Work" targetResource="bf:Review">
+            <replace lookForOnSource="bf:reviewedIn" enterOnTarget="bf:reviews" />
+        </inverse>
         <inverse sourceResource="bf:Instance" targetResource="bf:HeldMaterial">
             <replace lookForOnSource="bf:heldMaterial" enterOnTarget="bf:holdingFor" />
         </inverse>

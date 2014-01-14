@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-10-T15:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-14-T15:00";
 
 
 
@@ -102,6 +102,7 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="stockNumber" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
 		 <property name="reportNumber" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
 		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="555;856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
+		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 		 <!--<property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
 		 <property name="orcid" label="Open Researcher and Contributor Identifier" domain="Agent"   marc="authority:0247-+2'orcid'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
 		 <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>-->
@@ -109,7 +110,7 @@ declare variable $marcbib2bibframe:identifiers :=
     </identifiers>
     );
 
-(:		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>:)
+
 		 
 		 
 declare variable $marcbib2bibframe:physdesc-list:= 
@@ -117,8 +118,7 @@ declare variable $marcbib2bibframe:physdesc-list:=
         <physdesc>
             <instance-physdesc>
                 <field tag="300" codes="3" property="materialsSpecified">Materials specified</field>
-                <field tag="300" codes="a" property="extent">Physical Description</field>
-                <field tag="300" codes="b" property="illustrationNote">Illustrative content note</field>
+                <field tag="300" codes="a" property="extent">Physical Description</field>             
                 <field tag="300" codes="c" property="dimensions">Physical Size</field>
         	   </instance-physdesc>
 	           <work-physdesc>	           
@@ -126,11 +126,91 @@ declare variable $marcbib2bibframe:physdesc-list:=
 	       </work-physdesc>
         </physdesc>
     );
+    (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $marcbib2bibframe:simple-properties:= (
-
 	<properties>
-		
-		<node domain="work" tag ="306" property="duration" sfcodes="a">Playing time</node>
+		<node property="lccn" label="Library of Congress Control Number"    marc="010--/a,z"   tag="010"   sfcodes="a,z"/>
+	    <node property="nbn" label="National Bibliography Number" domain="instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
+		 <node property="nban" label="National bibliography agency control number"   domain="instance"   marc="016--/a,z"   tag="016"   sfcodes="a,z"/>
+		 <node property="legalDeposit" label="copyright or legal deposit number"   domain="instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
+		 <!--<node property="isbn" label="International Standard Bibliographic Number"   domain="instance"   marc="020- -/a,z"   tag="020"   sfcodes="a,z"/>-->
+		 <node property="issn" label="International Standard Serial Number" domain="instance"   marc="022--/a,z,y"   tag="022"   sfcodes="a,z,y"/>
+		 <node property="issnL" label="linking International Standard Serial Number"   domain="work"   marc="022--/l,m"   tag="022"   sfcodes="l,m"/>
+		 <node property="isrc" label="International Standard Recording Code" domain="instance"   marc="0240-/a,z"   tag="024"   ind1="0"   sfcodes="a,z"/>
+		 <node property="upc" label="Universal Product Code" domain="instance" marc="0241-/a,z"   tag="024"   ind1="1"   sfcodes="a,z" uri="http://www.checkupc.com/search.php?keyword=076714006997"/>
+		 <node property="ismn" label="International Standard Music Number" domain="instance"   marc="0242-/a,z"   tag="024"   ind1="2"   sfcodes="a,z" uri="http://www.loc.gov/ismn/987-10-11110" />
+		 <node property="ean" label="International Article Identifier (EAN)" domain="instance"   marc="0243-/a,z,d(sep by -)"   tag="024"   ind1="3"   sfcodes="a,z,d(sep by -)" uri="http://www.ean-search.org/perl/ean-search.pl?q=5099750442227"/>
+		 <node property="sici" label="Serial Item and Contribution Identifier" domain="instance"   marc="0244-/a,z"   tag="024"   ind1="4"   sfcodes="a,z"/>
+		 <node property="various" label="contents of $2"   domain="instance"   marc="0247-+2'ansi'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
+		 <node property="iso"   label="International Organization for Standardization standard number"   domain="instance"   marc="0247-+2'iso'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <node property="local" label="local identifier" domain="instance"   marc="0247-+2'local'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <node property="uri" label="Uniform Resource Identifier" domain="instance"   marc="0247-+2'uri'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <node property="urn" label="Uniform Resource Number" domain="instance"   marc="0247-+2'urn'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>-->
+		 <node property="isan" label="International Standard Audiovisual Number" domain="work"   marc="0247-+2'isan'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
+		 <node property="istc" label="International Standard Text Code" domain="work"   marc="0247-+2'istc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
+		 <node property="iswc" label="International Standard Musical Work Code" domain="work"   marc="0247-+2'iswc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
+		 <node property="lcOverseasAcq"   label="Library of Congress Overseas Acquisition Program number"   domain="instance"   marc="025--/a"   tag="025"   sfcodes="a"/>
+		 <node property="fingerprint" label="fingerprint identifier" domain="instance"   marc="026--/e"   tag="026"   sfcodes="e"/>
+		 <node property="strn" label="Standard Technical Report Number" domain="instance"   marc="027--/a,z"   tag="027"   sfcodes="a,z"/>
+		 <node property="issueNumber" label="sound recording publisher issue number"   domain="instance"   marc="0280-/a"   tag="028"   ind1="0"   sfcodes="a"/>
+		 <node property="matrixNumber" label="sound recording publisher matrix master number"   domain="instance"   marc="0281-/a"   tag="028"   ind1="1"   sfcodes="a"/>
+		 <node property="musicPlate" label="music publication number assigned by publisher"   domain="instance"   marc="0282-/a"   tag="028"   ind1="2"   sfcodes="a"/>
+		 <node property="musicPublisherNumber" label="other publisher number for music"   domain="instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
+		 <node property="videorecordingNumber"   label="publisher assigned videorecording number"   domain="instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
+		 <node property="publisherNumber" label="other publisher assigned number"   domain="instance"   marc="0285-/a"   tag="028"   ind1="5"   sfcodes="a"/>
+		 <node property="coden" label="CODEN" domain="instance" marc="030--/a,z" tag="030"   sfcodes="a,z" uri="http://cassi.cas.org/coden/"/>
+		 <node property="postalRegistration" label="postal registration number" domain="instance"   marc="032--/a"   tag="032"   sfcodes="a"/>
+		 <node property="systemNumber" label="system control number" domain="instance"   marc="035--/a,z"   tag="035"   sfcodes="a,z"/>		 
+		 <node property="studyNumber"   label="original study number assigned by the producer of a computer file"   domain="instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
+		 <node property="stockNumber" label="stock number for acquisition" domain="instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
+		 <node property="reportNumber" label="technical report number" domain="instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
+     <!--<node property="hdl" label="handle for a resource" domain="instance"   marc="555;856- -/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
+		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="856"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
+	   -->
+    	 <node domain="instance" tag="300" sfcodes="3" property="materialsSpecified">Materials specified</node>
+        <node domain="instance" tag="300" sfcodes="a" property="extent">Physical Description</node>             
+    	<node domain="work" tag="384" sfcodes="a" property="musicKey" > Key </node>		
+		<node domain="instance" tag="300" property="dimensions"  sfcodes="c">Physical Size</node>
+		<node domain="work"  tag ="306" property="duration" sfcodes="a">Playing time</node>		
+		<node domain="work"  tag ="310" property="frequency" sfcodes="a">Issue frequency</node>
+		<node domain="work"  tag ="310" property="frequencyNote" sfcodes="ab">Issue frequency</node>
+		<node domain="work"  tag ="321" property="frequencyNote" sfcodes="ab">Issue frequency</node>
+		<node domain="work"  tag ="130" property="contentCategory" sfcodes="h">Nature of content</node>
+		<node domain="work"  tag ="240" property="contentCategory" sfcodes="h">Nature of content</node>
+		<node domain="work"  tag ="243" property="contentCategory" sfcodes="h">Nature of content</node>
+        <node domain="work"  tag ="245" property="contentCategory" sfcodes="k">Nature of content</node>
+		<node domain="work"  tag ="336" property="contentCategory" sfcodes="a">Nature of content</node>
+        <node domain="work"  tag ="513" property="contentCategory" sfcodes="a">Nature of content</node>
+        <node domain="work"  tag ="516" property="contentCategory" sfcodes="a">Type of Computer File or Data Note</node>
+        <node domain="work"  tag ="730" property="contentCategory" sfcodes="h">Nature of content</node>
+        <node domain="work"  tag ="700" property="contentCategory" sfcodes="h">Nature of content</node>
+        <node domain="work"  tag ="710" property="contentCategory" sfcodes="h">Nature of content</node>
+        <node domain="work"  tag ="711" property="contentCategory" sfcodes="h">Nature of content</node>
+        <node domain="work"  tag ="130" property="originDate" sfcodes="f">Date of origin</node>
+        <node domain="work"  tag ="730" property="originDate" sfcodes="f">Date of origin</node>
+        <node domain="work"  tag ="500" sfcodes="3a" property="note">General Note</node>		
+		<node domain="work"  tag ="502" property="dissertationNote" >Dissertation Note</node>-->		
+		<node domain="work"  tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</node>			
+		<node domain="work"  tag ="513" property="temporalCoverageNote" sfcodes="b">Period Covered Note</node>						
+		<node domain="work"  tag ="522" property="geographicCoverageNote">Geographic Coverage Note</node>
+		<node domain="work"  tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</node>				
+		<node domain="work"  tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="otherPhysicalFormat">Additional Physical Form Available Note </node>
+  	    <node domain="work"  tag ="555" comment="(link?)" property="index">Cumulative Index/Finding Aids Note </node>	
+		<node domain="work"  tag ="586" property="awardNote" sfcodes="3a">Awards Note</node>        
+        <node domain="instance"  tag ="258" property="philatelicDataNote" sfcodes="ab">Philatelic data note</node>
+		<node domain="instance"  tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</node>
+        <node domain="instance"  tag ="345" property="aspectRatio" sfcodes="a">Aspect Ratio</node>
+		<node domain="instance"  tag ="500" sfcodes="3a" property="note">General Note</node>		
+		<node domain="instance"  tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</node>
+		<node domain="instance"  tag ="506" property="accessCondition">Restrictions on Access Note</node>
+		<node domain="instance"  tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</node>
+		<node domain="instance"  tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </node>
+		<node domain="instance"  tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </node>	
+		<node domain="instance"  tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</node>		
+		<node domain="instance"  tag ="541" sfcodes="cad" property="immediateAcquisition">Immediate Source of Acquisition Note</node>
+		<node domain="instance"  tag ="546" property="languageNote" sfcodes="3a" >Language Note</node>
+		<node domain="instance"  tag ="546" property="notation" sfcodes="b" >Language Notation(script)</node>
+	
 		</properties>
 	)	;
 		
@@ -158,7 +238,7 @@ declare variable $marcbib2bibframe:notes-list:= (
         
 <!--		contentCategory includes  336  /b (codes); 008/24-27BK(codes) ; 008/24-27CR(codes) --> 
 		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
-		<note tag ="502" property="dissertationNote" domain="Dissertation">Dissertation Note</note>-->		
+		<note tag ="502" property="dissertationNote" domain="Work">Dissertation Note</note>-->		
 		<note tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
 				
 		<note tag ="513" property="temporalCoverageNote" sfcodes="b">Period Covered Note</note>		
@@ -383,8 +463,9 @@ declare function marcbib2bibframe:generate-instance-from260(
     let $edition-instances:= 
     for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
         return 
-            element relatedInstance {
-                element Instance {
+           (marcbib2bibframe:generate-instance-from250($e,$workID),
+           element bf:relatedInstance {
+                element bf:Instance {
                    $instance-title,
                     $derivedFrom    ,            
                     (element bf:edition {marc2bfutils:clean-string($e/marcxml:subfield[@code="a"])},        
@@ -393,6 +474,7 @@ declare function marcbib2bibframe:generate-instance-from260(
                     )
                 }
             }
+            )
                 
     let $publication:= 
             if (fn:matches($d/@tag, "(260|264)")) then marcbib2bibframe:generate-publication($d)
@@ -768,20 +850,21 @@ let $id024-028:=
                                     )
                         else ()         (:end 024:)
 
-	return  
-     	   for $bfi in ($bfIdentifiers,$id024-028)
+	return       	 
+     	  for $bfi in ($bfIdentifiers,$id024-028)
         		return 
 		            if (fn:name($bfi) eq "bf:Identifier") then
 		                element bf:identifier {$bfi}
 		            else
 		                $bfi
-};
+};		                
 (:~
 :   This is the function that handles $0 in various fields
 :   @param  $sys-num       element is the marc subfield $0
      
 :   @return  element() either bf:systemNumber or bf:hasAuthority with uri
 :)
+
 declare function marcbib2bibframe:handle-system-number( $sys-num   ) 
 {
  if (fn:starts-with(fn:normalize-space($sys-num),"(DE-588")) then
@@ -1653,9 +1736,11 @@ let $d852:=
             for $s in $d/marcxml:subfield[@code="q"] return element bf:pieceCondition{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},:)
             for $s in $d/marcxml:subfield[@code="u"] return
-                        element bf:uri { 
-                             attribute rdf:resource{fn:string($s)}
-                            },
+                let $elm:=if (fn:contains(fn:string($d/marcxml:subfield[@code="u"]) ,"doi")) then "bf:doi"
+                            else if (fn:contains(fn:string($d/marcxml:subfield[@code="u"]),"hdl")) then "bf:hdl" else "bf:uri"
+                return element {$elm} { 
+                            attribute rdf:resource{fn:string($s)}
+                        },
             for $s in $d/marcxml:subfield[@code="z"] return element  bf:copyNote{fn:string($s)}        
             )
     else 
@@ -2274,7 +2359,7 @@ declare function marcbib2bibframe:generate-work(
                     ):)
                 ) then
                     element bf:intendedAudience {
-                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/targetAudiences/" , $aud) }
+                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/test/targetAudiences/" , $aud) }
                     }
                 else ()
         else
@@ -2342,9 +2427,9 @@ declare function marcbib2bibframe:generate-work(
             else if ($d/@ind1="3") then "Description" (:Abstract:)
             else if ($d/@ind1="4") then "Description" (:Content advice:)
             else                        "Description"
-        return (:link direction should be reversed:)
+        return (:link direction is  reversed in nested2flat module, hasAnnotation should be reviewedIn, describedIn?:)
             element bf:hasAnnotation {
-                element bf:Annotation {
+                element {fn:concat("bf:", $abstract-type)} {
                     element rdf:type {
                         attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , fn:replace($abstract-type, " ", "") ) }
                     },
@@ -2465,11 +2550,18 @@ declare function marcbib2bibframe:generate-work(
             element madsrdf:isMemberOfMADSScheme {
                 attribute rdf:resource {"http://id.loc.gov/resources/works"}
             }
- 	
+ 	let $work-simples:=
+ 	  for $d in $marcxml/marcxml:datafield
+ 	      return marcbib2bibframe:generate-simple-property($d,"work")
+ 	let $instance-simples:=
+ 	  for $d in $marcxml/marcxml:datafield
+ 	       return marcbib2bibframe:generate-simple-property($d,"instance")
+ 	let $simple-test:=( if ($work-simples) then element bf:work-simples {$work-simples} else (),
+                        if ($instance-simples) then element bf:instance-simples {$instance-simples} else () )
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
-       
+       (:  element bf:test  {$simple-test},:)
             for $t in fn:distinct-values($types)
             return
               (:  element bf:workCategory {
@@ -3103,29 +3195,43 @@ return element bf:translationOf {
 
 (:~
 :   This is the function generates a literal property from a marc tag
+:       Options in this function are a prefix, (@startwith), indicator2, and concatenation of multiple @sfcodes.
+:       If @ind2 is absent on the node, there is no test, otherwise it must match the datafield @ind2
+:   <node domain="work" tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
 :
-:   @param  $d        element is the MARCXML tag   
+:   @param  $d        element is the MARCXML tag
+:   @param  $domain       element is the domain for this element to sit in. is this needed?
+:                           maybe needed for building related works??
 :   @return bf:* as element()
+: 
 :)
 declare function marcbib2bibframe:generate-simple-property(
-    $d as element(marcxml:datafield),
-    $domain as xs:string,
- 
-    $workID as xs:string
-    ) as element () 
+    $d as element(marcxml:datafield)?,
+    $domain as xs:string
+    ) as element ()*
 {
-			
-for $node in $simple-properties[domain=$domain] 
-let $return-codes:=
- 				if ($node/@sfcodes) then fn:string($node/@sfcodes)
- 				else "a"
-let $precede:=fn:string($node/@startwith)
-
-return     
-	           element {fn:concat("bf:",fn:string($node/@property))} {	               
-		                    fn:normalize-space(fn:concat($precede,fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")))
-		                }
-		                
+(			
+  for $node in $simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag]
+    
+    let $return-codes:=
+ 			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
+    let $precede:=fn:string($node/@startwith) 
+    return 
+      if ((fn:not($node/@ind2) or $node/@ind2=$d/@ind2)
+        and $d/marcxml:subfield[fn:contains($return-codes,@code)]) then                   
+             
+    	    element {fn:concat("bf:",fn:string($node/@property))} {	               
+                if (fn:not($node/@uri)) then
+                    fn:normalize-space(fn:concat($precede,
+    	                   fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")
+    	                   )
+    	                )
+                else attribute rdf:resource{fn:concat(fn:string($node/@uri),$d/marcxml:subfield[$return-codes=@code])}
+    	             }
+     else
+        ()
+        
+      )
 };
 
 (:~
@@ -3270,9 +3376,7 @@ declare function marcbib2bibframe:get-isbn($isbn as xs:string ) as element() {
                     }                     
            
         else 
-            element wrap {
-                element bf:isbn10 {"error"},
-                element bf:isbn13 {"error"}
+            element wrap {              
             }
 
 };
