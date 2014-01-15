@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-14-T15:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-15-T12:00";
 
 
 
@@ -167,6 +167,11 @@ declare variable $marcbib2bibframe:simple-properties:= (
      <!--<node property="hdl" label="handle for a resource" domain="instance"   marc="555;856- -/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
 		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="856"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 	   -->
+	   <node domain="work" tag="040"  property="descriptionConventions" sfcodes="e">Description conventions</node>
+	   <node domain="work" tag="083"  property="classificationSpanEnd" sfcodes="c">classificationSpanEnd </node>
+	   <node property="classificationSpanEnd"  domain="work" marc="083--/c" tag="083" sfcodes="c">classification span end for class number</node>
+        <node property="classificationTableSeq"  domain="work" marc="083--/y" tag="083" sfcodes="y">DDC table sequence number</node>
+        <node property="classificationTable"  domain="work" marc="083--/z" tag="083" sfcodes="z">DDC table</node>
 	   <node domain="instance" tag="250"  property="edition">Edition</node>
 	   <node domain="instance" tag="250" sfcodes="b" property="editionResponsibility">Edition Responsibility</node>
     	 <node domain="instance" tag="300" sfcodes="3" property="materialsSpecified">Materials specified</node>
@@ -467,7 +472,7 @@ declare function marcbib2bibframe:generate-instance-from260(
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|222|242|210)")]
             for $t in $titles
-            return marcbib2bibframe:get-title($t)
+            return marcbib2bibframe:get-title($t,"instance")
     
     let $names := 
         for $datafield in $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
@@ -567,16 +572,20 @@ Electronic
             ""
       let $holdings := marcbib2bibframe:generate-holdings($d/ancestor::marcxml:record, $workID)
  
-    let $instance-identifiers :=
+   (: let $instance-identifiers :=
              (                       
             marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"Instance")    
-        )
+        ):)
             
     (: all relationships at work level:)
      
-    let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
+    (:let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
-  
+  :)
+  let $instance-simples:=
+ 	  for $i in $d/../marcxml:datafield
+ 	       return marcbib2bibframe:generate-simple-property($i,"instance")
+ 	
     return 
         element bf:Instance {        
            $issuance,           
@@ -592,13 +601,14 @@ Electronic
             $publication,          
             $physResourceData,  (: ??? work on this:)         
             $physMapData,
-            $physSerialData,            
-            $instance-identifiers,               
-            $physdesc,
+            $physSerialData,
+            $instance-simples,            
+         (:   $instance-identifiers,           :)    
+          (:  $physdesc,:)
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
                 },
-            $notes,        
+           (: $notes,      :)  
             $derivedFrom,
             $holdings
         }
@@ -1095,7 +1105,7 @@ declare function marcbib2bibframe:generate-publication
 
 };
 (:~
-:   This is the function generates 3XX  data for instance or work, based on mappings in $physdesc-list
+:   This is the function generates 337,338  data for instance or work, based on mappings in $physdesc-list
 :	Returns bf: node of elname 
 :
 :   @param  $marcxml       element is the marcxml record
@@ -1116,27 +1126,7 @@ declare function marcbib2bibframe:generate-physdesc
            	$marcbib2bibframe:physdesc-list/work-physdesc
     return 
         (
-            for $physdesc in $physdescs/field
-             let $codes := 
-                    if ($physdesc/@codes) then 
-                        fn:string($physdesc/@codes)
-                    else 
-                        "a"                        
-	           for $each-field in $marcxml/marcxml:datafield[@tag eq $physdesc/@tag][marcxml:subfield[fn:contains($codes,@code)]]
-
-                (:for $subelement in $each-field/marcxml:subfield[fn:matches($codes,@code)]:)                
-                      
-                
-                let $elname:=
-                    if ($physdesc/@property) then 
-                        fn:string($physdesc/@property) 
-                    else 
-                        "propertyname"
-                return						
-                    element {fn:concat("bf:", $elname)} {			                  
-                       (: fn:normalize-space( fn:string($subelement)):)     
-                        fn:string-join($each-field/marcxml:subfield[fn:contains($codes,@code)]," ")
-                    },
+          
              (:---337,338:)
              	if ($resource="instance") then 
               ( for $d in $marcxml/marcxml:datafield[@tag="337" ]
@@ -1292,7 +1282,7 @@ let $v-test:=
     (:9781555631185 (v. 4. print):)
     let $i-title := 
         if ($d/marcxml:datafield[@tag = "245"]) then
-            marcbib2bibframe:get-title($d/marcxml:datafield[@tag = "245"])
+            marcbib2bibframe:get-title($d/marcxml:datafield[@tag = "245"], "instance")
         else
             ()
     let $extent-title :=
@@ -2289,7 +2279,7 @@ declare function marcbib2bibframe:generate-work(
         <titles>
             {
     	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(210|245|243|247)")]
-    	       return marcbib2bibframe:get-title($t)
+    	       return marcbib2bibframe:get-title($t, "work")
             }
         </titles>
         
@@ -2408,7 +2398,7 @@ declare function marcbib2bibframe:generate-work(
         else
             ()
                         
-     let $work3xx := marcbib2bibframe:generate-physdesc($marcxml,"work")
+     (:let $work3xx := marcbib2bibframe:generate-physdesc($marcxml,"work"):) (:384:)
       let $cartography:=  for $carto in $marcxml/marcxml:datafield[@tag="255"] 
       				          return marcbib2bibframe:generate-cartography($carto)
       				          
@@ -2480,16 +2470,13 @@ declare function marcbib2bibframe:generate-work(
                     }
                 }
             }
-       
- 
-  
-	let $work-identifiers := marcbib2bibframe:generate-identifiers($marcxml,"Work")
+(:	let $work-identifiers := marcbib2bibframe:generate-identifiers($marcxml,"Work"):)
 	let $work-classes := marcbib2bibframe:generate-class($marcxml,"work")
 	
  	let $subjects:= 		 
  		for $d in $marcxml/marcxml:datafield[fn:matches(fn:string-join($marc2bfutils:subject-types//@tag," "),fn:string(@tag))]		
         			return marcbib2bibframe:get-subject($d)
- 	let $work-notes := marcbib2bibframe:generate-notes($marcxml,"work")
+ 	(:let $work-notes := marcbib2bibframe:generate-notes($marcxml,"work"):)
  	let $findaids:= for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"555")]
  	                  return marcbib2bibframe:generate-finding-aids($d)
  	let $work-relateds := marcbib2bibframe:related-works($marcxml,$workID,"work")
@@ -2529,19 +2516,7 @@ declare function marcbib2bibframe:generate-work(
                         element bf:authorizedAccessPoint {
                             fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
                         },
-                        element bf:title {$t},
-                        (:
-                        element bf:hasAuthority{
-                            element madsrdf:Authority { element madsrdf:authoritativeLabel{fn:string-join( ($details/bf:creator[1]/bf:label, $t), ". " )},
-                                element madsrdf:elementList {
-                                    attribute rdf:parseType {"Collection"},
-                                    element madsrdf:MainTitleElement {
-                                        element madsrdf:elementValue {$t}
-                                    }
-                                }
-                            }
-                        },
-                        :)                       
+                        element bf:title {$t},                                   
                         $details/*                                 
                     }
 		return						
@@ -2578,15 +2553,11 @@ declare function marcbib2bibframe:generate-work(
  	let $work-simples:=
  	  for $d in $marcxml/marcxml:datafield
  	      return marcbib2bibframe:generate-simple-property($d,"work")
- 	let $instance-simples:=
- 	  for $d in $marcxml/marcxml:datafield
- 	       return marcbib2bibframe:generate-simple-property($d,"instance")
- 	let $simple-test:=( if ($work-simples) then element bf:work-simples {$work-simples} else (),
-                        if ($instance-simples) then element bf:instance-simples {$instance-simples} else () )
+ 	 
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
-         element bf:test  {$simple-test},
+         
             for $t in fn:distinct-values($types)
             return
               (:  element bf:workCategory {
@@ -2597,6 +2568,7 @@ declare function marcbib2bibframe:generate-work(
                 },
              $aLabel,
             $aLabelsWork880,
+            $work-simples,
             $dissertation,
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
@@ -2613,13 +2585,13 @@ declare function marcbib2bibframe:generate-work(
             $abstract-annotation,
             $audience,           
             $genre,
-            $work3xx, 
+       (:     $work3xx, :)
             $cartography,
             $subjects,
             $gacs,            
             $work-classes,            
-            $work-identifiers,            
-            $work-notes,
+         (:   $work-identifiers,      :)      
+            (:$work-notes,:)
             $complex-notes,
             $work-relateds,
       (:      $schemes,  removing madsrdf      :)    
@@ -2696,24 +2668,7 @@ declare function marcbib2bibframe:get-subject(
                         }
                     },
                     
-                    (:
-                    for $cl in $madsrdf/madsrdf:componentList
-                    return
-                        element bf:hasAuthority {
-                        element madsrdf:Authority {                        
-                        $madsrdf/madsrdf:authoritativeLabel,
-                                element madsrdf:componentList {
-                                    attribute rdf:parseType {"Collection"},
-                                    for $a in $cl/madsrdf:*
-                                    return
-                                        element {fn:name($a)} {
-                                            $a/rdf:type,
-                                           element madsrdf:authoritativeLabel{ fn:string($a/madsrdf:authoritativeLabel)} 
-                                        }
-                                }
-                             }
-                        },
-                    :)
+                  
                     for $sys-num in $d/marcxml:subfield[@code="0"] 
                     return marcbib2bibframe:handle-system-number($sys-num)                    
                 )
@@ -3122,16 +3077,18 @@ declare function marcbib2bibframe:get-resourceTypes(
 (:~
 :   This returns a basic title from 245. 
 :
-:   @param  $d        element is the marcxml:datafield  
+:   @param  $d        element is the marcxml:datafield
+:   @param  $domain   "work" or "instance" to name the property
+
 :   @return bf:uniformTitle
 : drop the $h from the work title????
 :)
 declare function marcbib2bibframe:get-title(
-            $d as element(marcxml:datafield)
+            $d as element(marcxml:datafield),
+            $domain as xs:string
         ) 
 {
-    (: Only $a,b presently - this will have to change :)
-    (:??? filter out nonsorting chars???:)
+    
     let $title := fn:replace(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|b|h|k|n|p|s)")] ," "),"^(.+)/$","$1")
     let $title := 
         if (fn:ends-with($title, ".")) then
@@ -3147,47 +3104,50 @@ declare function marcbib2bibframe:get-title(
                 "bf:keyTitle" 
             else  if ($d/@tag ="210" ) then
                 "bf:abbreviatedTitle"
-            else "bf:title"
+            else if ($domain="work") then
+                "bf:workTitle"
+            else
+                "bf:instanceTitle"
+                
        let $lang := if ($d/@tag = "242" and $d/marcxml:subfield[@code = "y"] ne "" ) then                            
                         attribute xml:lang {fn:string($d/marcxml:subfield[@code = "y"][1])}
                     else
                         ()
-    
-    return 
-        ( element bf:title { $lang,             $title         },  
-       (: if ($element-name ne 'bf:title')  then
-                element {$element-name} { $lang,      $title          }
-        else (),:)
-        
-        (:    if ($d/@tag="246") then   :)               
-       if   ($element-name ne 'bf:title') then
-               element {$element-name} {
-                    element bf:Title { 
-                          if ($d/@ind2!=" ") then element bf:titleType {
-                                 if ($d/@ind2="0") then "title portion"
-                                 else if ($d/@ind2="1") then "parallel title"
-                                 else if ($d/@ind2="2") then "distinctive title"
-                                 else if ($d/@ind2="3") then "other title"
-                                 else if ($d/@ind2="4") then "cover title"
-                                 else if ($d/@ind2="5") then "added title page title"
-                                 else if ($d/@ind2="6") then "caption title"
-                                 else if ($d/@ind2="7") then "Running title"
-                                 else if ($d/@ind2="8") then "Spine title"                                      
-                                else ()
-                                }
-                           else (),
-                          element bf:label {fn:string($d/marcxml:subfield[@code="a"])},
-                          if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"])} else (),
-                          if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),
-                           if ($d/marcxml:subfield[@code="p"]) then element bf:partTitle {fn:string($d/marcxml:subfield[@code="p"])} else (),
-                            if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else (),
-                             if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
-                                element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
+       let $constructedTitle:=
+       element {$element-name} {
+                element bf:Title { 
+                      if ($d/@ind2!=" " and $d/@tag = "246") then element bf:titleType {
+                             if ($d/@ind2="0") then "title portion"
+                             else if ($d/@ind2="1") then "parallel title"
+                             else if ($d/@ind2="2") then "distinctive title"
+                             else if ($d/@ind2="3") then "other title"
+                             else if ($d/@ind2="4") then "cover title"
+                             else if ($d/@ind2="5") then "added title page title"
+                             else if ($d/@ind2="6") then "caption title"
+                             else if ($d/@ind2="7") then "Running title"
+                             else if ($d/@ind2="8") then "Spine title"                                      
                             else ()
-                    }
-                 } (:end Title:)
+                            }
+                       else (),
+                      element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"])},
+                      if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"])} else (),
+                      if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),
+                      if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then element bf:partNumber {fn:string($d/marcxml:subfield[@code="n"])} else (),
+                       if ($d/marcxml:subfield[@code="p"]) then element bf:partTitle {fn:string($d/marcxml:subfield[@code="p"])} else (),
+                        if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else (),
+                         if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
+                            element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
+                        else ()
+                }
+             } (:end Title:)
+             
+    return 
+        ( element bf:title { $lang,             $title         },         
+          if ($constructedTitle/bf:Title/*[fn:not(fn:local-name()="titleValue")]) then
+            $constructedTitle
+          else (),
                                                 
-            else (),
+          
              marcbib2bibframe:generate-titleNonsort($d,$title, $element-name),
        
            (: if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
@@ -3224,7 +3184,7 @@ return element bf:translationOf {
 };
 
 (:~
-:   This is the function generates a literal property from a marc tag
+:   This is the function generates a literal property or simple uri from a marc tag
 :       Options in this function are a prefix, (@startwith), indicator2, and concatenation of multiple @sfcodes.
 :       If @ind2 is absent on the node, there is no test, otherwise it must match the datafield @ind2
 :   <node domain="work" tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
@@ -3408,6 +3368,23 @@ declare function marcbib2bibframe:get-isbn($isbn as xs:string ) as element() {
 
 };
 (:~
+:   This function validates lc class  content
+:
+:  $string    is the string content of the 050a as stripped to be compared
+:   @return xs:string content or null
+:)
+declare function marcbib2bibframe:validate-lcc(
+       $string  as xs:string    
+    ) as xs:boolean 
+{
+let $validLCCs:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
+return  
+    if ($string = $validLCCs)  then   								  
+           fn:true()
+        else (:invalid content in sfa:)
+            fn:false() 
+};
+(:~
 :   This function processes out the leader and control fields
 :
 :  $marcxml    is marcxml:record
@@ -3451,12 +3428,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                   			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
                   			let $subclassCode := fn:replace($strip, "\d", "")			
                   			return                   		            
-        			            if (
-        			            (: lc classes shouldn't  have a space after the alpha prefix, like DA1 vs "DA 1" ??? don't  enforce this???
-        			            :)
-        			                (:fn:substring(fn:substring-after(fn:string($cl), $subclassCode),1,1)!=' ' and :) 
-        			                $subclassCode = $validLCCs 
-        			                ) then   								  
+        			            
+        			            if ( marcbib2bibframe:validate-lcc($subclassCode))        			              
+        			                 then   								  
         			                fn:string($strip)
         			            else (:invalid content in sfa:)
         			                () 
@@ -3476,9 +3450,10 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         element  {fn:concat("bf:",$property)} {          
                      			if ($property="classificationLcc" ) then 
                      				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
+                     				
                      		
                      		    else 
-                                             		fn:string($cl)                            
+                                     fn:string($cl)                            
                             }
             else if (
                 ($valid and fn:matches($this-tag/@tag,"(050|051|055|060|061|070|071)"))
@@ -3535,24 +3510,24 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
 							}
                         else (),
 						
-		              for $sfc in $this-tag[fn:matches($classes[@name="classCopy"]/@tag,@tag)]/marcxml:subfield[@code="c"]
+		              (:for $sfc in $this-tag[fn:matches($classes[@name="classCopy"]/@tag,@tag)]/marcxml:subfield[@code="c"]
                        return 
-                            element bf:classificationCopy {fn:string($sfc)},
-                                if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
-								    element bf:classificationSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
-								else (),			
-                                
-                                if (fn:matches($this-tag/@tag,"086") and $this-tag/marcxml:subfield[@code="z"]) then
-							 		element bf:classificationStatus  {"canceled/invalid"} 
-                                else (),
+                            element bf:classificationCopy {fn:string($sfc)},:)
+                        if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
+						    element bf:classificationSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
+						else (),			
+                        
+                        if (fn:matches($this-tag/@tag,"086") and $this-tag/marcxml:subfield[@code="z"]) then
+					 		element bf:classificationStatus  {"canceled/invalid"} 
+                        else (),
 
-                                if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="z"]) then
-								 	element bf:classificationTable  {fn:string( $this-tag/marcxml:subfield[@code="z"])} 
-                                else (),
+                        if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="z"]) then
+						 	element bf:classificationTable  {fn:string( $this-tag/marcxml:subfield[@code="z"])} 
+                        else (),
 
-                                if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="y"]) then
-							 		element bf:classificationTableSeq  {fn:string( $this-tag/marcxml:subfield[@code="y"])} 
-                                else ()
+                        if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="y"]) then
+					 		element bf:classificationTableSeq  {fn:string( $this-tag/marcxml:subfield[@code="y"])} 
+                        else ()
                     }
             }
             else ()

@@ -143,7 +143,7 @@ declare variable $marc2bfutils:classes := (
     <class>ClassificationEntity</class>
     <property name="classificationNumber" label="classification number" domain="Work" marc="050,051,055,060,061,070,071,080,082,083,084,086--/a" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="a"/>
     <property name="classificationItem" label="classification item number" domain="Holding" marc="050|051,055,060,061,070,071,080,082,083,084,086--/b" tag="(050|051|055|060|061|070|071|080|082|083|084|086)" sfcodes="b"/>
-    <property name="classificationCopy" label="Copy part of call number" domain="Work" marc="051,061,071--/c" tag="(051|061|071)" sfcodes="c"/>
+    <!--<property name="classificationCopy" label="Copy part of call number" domain="Work" marc="051,061,071- -/c" tag="(051|061|071)" sfcodes="c"/>-->
     <property name="classificationSpanEnd" label="classification span end for class number" domain="Work" marc="083--/c" tag="083" sfcodes="c"/>
     <property name="classificationTableSeq" label="DDC table sequence number" domain="Work" marc="083--/y" tag="083" sfcodes="y"/>
     <property name="classificationTable" label="DDC table" domain="" marc="083--/z" tag="083" sfcodes="z"/>
