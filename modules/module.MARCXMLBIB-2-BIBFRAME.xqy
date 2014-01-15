@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-15-T12:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-15-T14:00";
 
 
 
@@ -112,7 +112,7 @@ declare variable $marcbib2bibframe:identifiers :=
 
 
 		 
-		 
+(:physdesc are now in the simple list; this is obsolete: 2014-01-15 :)		 
 declare variable $marcbib2bibframe:physdesc-list:= 
     (
         <physdesc>
@@ -170,13 +170,18 @@ declare variable $marcbib2bibframe:simple-properties:= (
 		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="859"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 	   -->
 	   <node domain="work" tag="040"  property="descriptionConventions" sfcodes="e">Description conventions</node>
+	   <node domain="work" tag="040"  property="descriptionLanguage" sfcodes="b" uri="http://id.loc.gov/vocabulary/languages/">Description Language </node>
+	    
+		       
 	   <node domain="work" tag="083"  property="classificationSpanEnd" sfcodes="c">classificationSpanEnd </node>
-	   <node property="classificationSpanEnd"  domain="work" marc="083--/c" tag="083" sfcodes="c">classification span end for class number</node>
-        <node property="classificationTableSeq"  domain="work" marc="083--/y" tag="083" sfcodes="y">DDC table sequence number</node>
-        <node property="classificationTable"  domain="work" marc="083--/z" tag="083" sfcodes="z">DDC table</node>
+	   <node  domain="work" property="classificationSpanEnd" marc="083--/c" tag="083" sfcodes="c">classification span end for class number</node>
+        <node  domain="work"  property="classificationTableSeq" marc="083--/y" tag="083" sfcodes="y">DDC table sequence number</node>
+        <node  domain="work"  property="classificationTable"   marc="083--/z" tag="083" sfcodes="z">DDC table</node>
+        <node domain="instance" tag="245"  property="titleStatement" sfcodes="ab">titleStatement</node>
 	   <node domain="instance" tag="250"  property="edition">Edition</node>
 	   <node domain="instance" tag="250" sfcodes="b" property="editionResponsibility">Edition Responsibility</node>
-    	 <node domain="instance" tag="300" sfcodes="3" property="materialsSpecified">Materials specified</node>
+    	<node domain="instance" tag="260"  property="providerStatement" sfcodes="abc">Provider statement</node>
+    	<node domain="instance" tag="300" sfcodes="3" property="materialsSpecified">Materials specified</node>
         <node domain="instance" tag="300" sfcodes="af" property="extent">Physical Description</node>             
     	<node domain="work" tag="384" sfcodes="a" property="musicKey" > Key </node>		
     	<node domain="work" tag="130" sfcodes="r" property="musicKey" > Key </node>
@@ -241,8 +246,9 @@ declare variable $marcbib2bibframe:simple-properties:= (
 	
 		</properties>
 	)	;
-		
+(:notes are now in the simple list; this is obsolete: 2014-01-15 :)		
 declare variable $marcbib2bibframe:notes-list:= (
+
 <notes>
 	<work-notes>
 		
@@ -279,30 +285,7 @@ declare variable $marcbib2bibframe:notes-list:= (
 
 
 	</work-notes>
-(:
 
-<note tag ="514" property="dataQuality">Data Quality Note</note>
-<note tag ="518" property="contentCoverage" sfcodes="a" >Date/Time and Place of an Event Note</note>
-    has its own function:
-        <note tag ="521" property="targetAudience">Target Audience Note</note>
-<note tag ="526" property="studyProgram">Study Program Information Note</note>
- 
-moved to relateds:	
-        <note tag ="533"  comment="(develop link) (Delsey - Manifestation)" property="reproduction">Reproduction Note</note>
- 		<note tag ="534" comment="(develop link)(Delsey - Manifestation)" sfcodes="b" property="originalVersion">Original Version Note</note>
-
-<note tag ="535" property="originalLocation">Location of Originals/Duplicates Note</note>
-<note tag ="536" property="funding">Funding Information Note</note>
-<note tag ="544" sfcodes="3dea" comment="(develop link?)" property="archiveLocation">Location of Other Archival Materials Note</note>
-<note tag ="545"  comment ="annotation to name???" property="biographicalHistoricalNote">Biographical or Historical Data</note>
-<note tag ="547" property="formerTitleComplexity">Former Title Complexity Note</note>
-<note tag ="552" property="entityInformation">Entity and Attribute Information Note</note>
-<note tag ="565" property="caseFile">Case File Characteristics Note</note>
-<note tag ="567" property="methodology">Methodology Note</note>
-<note tag ="580" property="linkingEntryComplexity">Linking Entry Complexity Note</note>
-<note tag ="581" property="publicationAbout" sfcodes="3a" startswith="Publications about: ">Publications About Described Materials Note</note>
-<note tag ="588" comment="(actually Annotation? Admin?)" property="source" >Source of Description Note </note>
-:)
 	<instance-notes>	
 	   <note tag ="258" property="philatelicDataNote" sfcodes="ab">Philatelic data note</note>
 		<note tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</note>
@@ -322,20 +305,7 @@ moved to relateds:
 	</instance-notes>
 </notes>
 	
-		(:<note tag ="501" property="with" sfcodes="a">With Note</note>
-		<note tag ="515" property="note">Numbering Peculiarities Note </note>
-		<note tag ="538" property="systemDetails">System Details Note</note>
-		<note tag ="540" comment="(Delsey - Manifestation)" property="useAndReproduction">Terms Governing Use and Reproduction Note </note>
-		<note tag ="542" property="copyrightStatus" >Information Relating to Copyright Status</note>
-		<note tag ="550" property="issuers">Issuing Body Note</note>
-		<note tag ="556" property="documentation">Information about Documentation Note</note>-->
-		<note tag ="561" property="custodialHistory">Ownership and Custodial History</note>
-		<note tag ="562" property="versionIdentification">Copy and Version Identification Note</note>
-		<note tag ="563" property="binding">Binding Information</note>
-		<note tag ="583" comment="annotation later?" property="exhibitions">Action Note</note>
-		<note tag ="584" property="useFrequency">Accumulation and Frequency of Use Note</note>
-		<note tag ="585" property="exhibitions">Exhibitions Note</note>
-		:)
+		
 );
 
 (:$related fields must have $t except 510 630,730,830 , 767? 740 ($a is title),  :)
@@ -578,11 +548,11 @@ Electronic
              (                       
             marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"Instance")    
         )    
-    (: all relationships at work level:)
-     
-    (:let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
+    
+    (:let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance"):)
+    (:337, 338::)
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
-  :)
+  
   let $i504:= 
     for $i in $d/../marcxml:datafield[@tag="504"] 
         let $b:= if ($i/marcxml:subfield[@code="b"]) then
@@ -591,8 +561,7 @@ Electronic
     return 
         element bf:supplementaryContentNote {
         fn:normalize-space(
-                fn:concat(fn:string($i/marcxml:subfield[@code="a"])," ",
-                $b)
+                fn:concat(fn:string($i/marcxml:subfield[@code="a"])," ",  $b)
                 )
         }
     
@@ -619,7 +588,7 @@ Electronic
             $instance-simples,
             $i504,             
             $instance-identifiers,               
-          (:  $physdesc,:)
+            $physdesc,
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
                 },
@@ -1626,6 +1595,7 @@ else
 :)
 declare function marcbib2bibframe:generate-holdings-from-hld(
     $holdings as element(hld:holdings)?,
+    $heldBy as xs:string,
     $workId as xs:string
     
     ) as element ()* 
@@ -1670,7 +1640,7 @@ for $hold in $holdings/hld:holding
                                     element bf:label {fn:string($vol/hld:enumAndChron)},
                                     element bf:enumerationAndChronology  {$enum },     
                                      element bf:enumerationAndChronology {fn:string($vol/hld:enumeration)},
-                                     $circ/*                                                                
+                                     $circ/*
                                   }
                                }
              else  (: no volumes,  just add circ  to the summary heldmaterial:)              
@@ -1691,16 +1661,17 @@ for $hold in $holdings/hld:holding
          element bf:heldItem {                               
             element bf:HeldItem {            
             $item-set/bf:HeldItem/@rdf:about,        
-             $summary-set, $item-set//bf:HeldItem/*[fn:not(fn:local-name()='label')]
+             $summary-set, $item-set//bf:HeldItem/*[fn:not(fn:local-name()='label')],
+             if ($heldBy!="") then element bf:heldBy {element bf:Organization {element bf:label {$heldBy}}} else ()
             }
             }
                      
       else
         element bf:heldMaterial{   
                element bf:HeldMaterial {
-                     $summary-set,
-                      
-                          $item-set
+                     $summary-set,                      
+                     $item-set,
+                     if ($heldBy!="") then element bf:heldBy {element bf:Organization {element bf:label {$heldBy}}} else ()
                     }
             }
     )
@@ -1718,16 +1689,19 @@ declare function marcbib2bibframe:generate-holdings(
     $workID as xs:string
     ) as element ()* 
 {
-let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings, $workID)
+let $heldBy:= if ($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"]) then
+                    fn:string($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"])
+                else ""
+let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml//hld:holdings,$heldBy, $workID)
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
-	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|061|070|071|080|082|084)")]
+	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|060|070|080|082|084)")]
 (:	multiple $a is possible: 2017290 use $i to handle :)
 		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
        		let $element:= 
-       			if (fn:matches($class/../@tag,"(050|051|055|070|071)")) then "bf:shelfMarkLcc"
-       			else if (fn:matches($class/../@tag,"(060|061)")) then "bf:shelfMarkNlm"
+       			if (fn:matches($class/../@tag,"(050|055|070)")) then "bf:shelfMarkLcc"
+       			else if (fn:matches($class/../@tag,"060")) then "bf:shelfMarkNlm"
        			else if (fn:matches($class/../@tag,"080") ) then "bf:shelfMarkUdc"
        			else if (fn:matches($class/../@tag,"082") ) then "bf:shelfMarkDdc"
        			else if (fn:matches($class/../@tag,"084") ) then "bf:shelfMark"
@@ -1747,7 +1721,7 @@ let $d852:=
         for $d in $marcxml/marcxml:datafield[@tag="852"]
         return 
             (
-            for $s in $d/marcxml:subfield[@code="a"] return element bf:shelfMark{fn:string($s)},
+            for $s in $d/marcxml:subfield[@code="a"] return element bf:heldBy{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="b"] return element bf:subLocation{fn:string($s)},
             (:for $s in $d/marcxml:subfield[@code="c"] return element bf:shelfLocation{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="e"] return element bf:address{fn:string($s)},
@@ -1756,8 +1730,8 @@ let $d852:=
                     element bf:shelfMark{fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")}
             else (),
            (: for $s in $d/marcxml:subfield[@code="p"] return element bf:piece{fn:string($s)},
-            for $s in $d/marcxml:subfield[@code="q"] return element bf:pieceCondition{fn:string($s)},
-            for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},:)
+            for $s in $d/marcxml:subfield[@code="q"] return element bf:pieceCondition{fn:string($s)},:)
+            for $s in $d/marcxml:subfield[@code="t"] return element  bf:copyNumber{fn:string($s)},
             for $s in $d/marcxml:subfield[@code="u"] return
                 let $elm:=if (fn:contains(fn:string($d/marcxml:subfield[@code="u"]) ,"doi")) then "bf:doi"
                             else if (fn:contains(fn:string($d/marcxml:subfield[@code="u"]),"hdl")) then "bf:hdl" else "bf:uri"
