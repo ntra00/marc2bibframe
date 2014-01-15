@@ -188,7 +188,7 @@ declare variable $marcbib2bibframe:simple-properties:= (
     	
 		<node domain="instance" tag="300" property="dimensions"  sfcodes="c">Physical Size</node>
 		<node domain="work"  tag ="306" property="duration" sfcodes="a">Playing time</node>		
-		<node domain="work"  tag ="310" property="frequency" sfcodes="a">Issue frequency</node>
+		<!--<node domain="work"  tag ="310" property="frequency" sfcodes="a">Issue frequency</node>-->
 		<node domain="work"  tag ="310" property="frequencyNote" sfcodes="ab">Issue frequency</node>
 		<node domain="work"  tag ="321" property="frequencyNote" sfcodes="ab">Issue frequency</node>
 		<node domain="work"  tag ="130" property="contentCategory" sfcodes="h" >Nature of content</node>
@@ -227,7 +227,7 @@ declare variable $marcbib2bibframe:simple-properties:= (
 		<node domain="instance"  tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</node>
         <node domain="instance"  tag ="345" property="aspectRatio" sfcodes="a">Aspect Ratio</node>
 		<node domain="instance"  tag ="500" sfcodes="3a" property="note">General Note</node>		
-		<node domain="instance"  tag ="504" property="supplementaryContentNote" startwith="References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</node>
+		<!--<node domain="instance"  tag ="504" property="supplementaryContentNote" startwith="References: " comment="525a,504- -/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</node> -->
 		<node domain="instance"  tag ="506" property="accessCondition">Restrictions on Access Note</node>
 		<node domain="instance"  tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</node>
 		<node domain="instance"  tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </node>
@@ -572,16 +572,28 @@ Electronic
             ""
       let $holdings := marcbib2bibframe:generate-holdings($d/ancestor::marcxml:record, $workID)
  
-   (: let $instance-identifiers :=
+    let $instance-identifiers :=
              (                       
             marcbib2bibframe:generate-identifiers($d/ancestor::marcxml:record,"Instance")    
-        ):)
-            
+        )    
     (: all relationships at work level:)
      
     (:let $notes := marcbib2bibframe:generate-notes($d/ancestor::marcxml:record,"instance")
     let $physdesc := marcbib2bibframe:generate-physdesc($d/ancestor::marcxml:record,"instance")
   :)
+  let $i504:= 
+    for $i in $d/../marcxml:datafield[@tag="504"] 
+        let $b:= if ($i/marcxml:subfield[@code="b"]) then
+            fn:concat("References: ", fn:string($i/marcxml:subfield[@code="b"]))
+        else ()
+    return 
+        element bf:supplementaryContentNote {
+        fn:normalize-space(
+                fn:concat(fn:string($i/marcxml:subfield[@code="a"])," ",
+                $b)
+                )
+        }
+    
   let $instance-simples:=
  	  for $i in $d/../marcxml:datafield
  	       return marcbib2bibframe:generate-simple-property($i,"instance")
@@ -602,8 +614,9 @@ Electronic
             $physResourceData,  (: ??? work on this:)         
             $physMapData,
             $physSerialData,
-            $instance-simples,            
-         (:   $instance-identifiers,           :)    
+            $instance-simples,
+            $i504,             
+            $instance-identifiers,               
           (:  $physdesc,:)
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
@@ -756,12 +769,7 @@ declare function marcbib2bibframe:generate-identifiers(
 		
 		                            for $sub in $this-tag/marcxml:subfield[@code="q" ]
 		                            	return element bf:identifierQualifier {fn:string($sub)},
-	                            (: 
-	                                kefo - 1 march
-	                                ALERT - I had to insert [1] to get this to work in a crunch.
-	                                BUT this needs to be modified.
-	                                ntra:?? 020$a is Not repeatable should not need [1]!!
-	                            :)
+	                          
 		                            element bf:identifierValue { 
 		                                if ($this-tag[@tag="020"]/marcxml:subfield[@code="a"]) then
 		                                    fn:substring-before($this-tag[@tag="020"]/marcxml:subfield[@code="a"],"(" )					
@@ -2470,17 +2478,19 @@ declare function marcbib2bibframe:generate-work(
                     }
                 }
             }
-(:	let $work-identifiers := marcbib2bibframe:generate-identifiers($marcxml,"Work"):)
+	let $work-identifiers := marcbib2bibframe:generate-identifiers($marcxml,"Work")
 	let $work-classes := marcbib2bibframe:generate-class($marcxml,"work")
 	
  	let $subjects:= 		 
  		for $d in $marcxml/marcxml:datafield[fn:matches(fn:string-join($marc2bfutils:subject-types//@tag," "),fn:string(@tag))]		
         			return marcbib2bibframe:get-subject($d)
  	(:let $work-notes := marcbib2bibframe:generate-notes($marcxml,"work"):)
+ 	
  	let $findaids:= for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"555")]
  	                  return marcbib2bibframe:generate-finding-aids($d)
  	let $work-relateds := marcbib2bibframe:related-works($marcxml,$workID,"work")
  	(:audio ex:12241297:)
+ 	
  	let $complex-notes:= 
  		for $marc-note in $marcxml/marcxml:datafield[@tag eq "505"][@ind2="0"]
  			let $sub-codes:= fn:distinct-values($marc-note/marcxml:subfield[@code!="t"]/@code)
@@ -2590,7 +2600,7 @@ declare function marcbib2bibframe:generate-work(
             $subjects,
             $gacs,            
             $work-classes,            
-         (:   $work-identifiers,      :)      
+            $work-identifiers,            
             (:$work-notes,:)
             $complex-notes,
             $work-relateds,
@@ -3207,8 +3217,8 @@ declare function marcbib2bibframe:generate-simple-property(
  			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
     let $precede:=fn:string($node/@startwith) 
     return 
-      if ((fn:not($node/@ind2) or $node/@ind2=$d/@ind2)
-        and $d/marcxml:subfield[fn:contains($return-codes,@code)]) then                   
+      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] and 
+                        ( fn:not($node/@ind2) or $node/@ind2=$d/@ind2)) then                   
         let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))
     	return element {fn:concat("bf:",fn:string($node/@property))} {	               
             if (fn:not($node/@uri)) then
@@ -3408,7 +3418,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             $marc2bfutils:classes//property[@domain="Instance"]
         else 
             $marc2bfutils:classes//property[@domain="Work"]
-   let $validLCCs:=("DAW","DJK","KBM","KBP","KBR","KBU","KDC","KDE","KDG","KDK","KDZ","KEA","KEB","KEM","KEN","KEO","KEP","KEQ","KES","KEY","KEZ","KFA","KFC","KFD","KFF","KFG","KFH","KFI","KFK","KFL","KFM","KFN","KFO","KFP","KFR","KFS","KFT","KFU","KFV","KFW","KFX","KFZ","KGA","KGB","KGC","KGD","KGE","KGF","KGG","KGH","KGJ","KGK","KGL","KGM","KGN","KGP","KGQ","KGR","KGS","KGT","KGU","KGV","KGW","KGX","KGY","KGZ","KHA","KHC","KHD","KHF","KHH","KHK","KHL","KHM","KHN","KHP","KHQ","KHS","KHU","KHW","KJA","KJC","KJE","KJG","KJH","KJJ","KJK","KJM","KJN","KJP","KJR","KJS","KJT","KJV","KJW","KKA","KKB","KKC","KKE","KKF","KKG","KKH","KKI","KKJ","KKK","KKL","KKM","KKN","KKP","KKQ","KKR","KKS","KKT","KKV","KKW","KKX","KKY","KKZ","KLA","KLB","KLD","KLE","KLF","KLH","KLM","KLN","KLP","KLQ","KLR","KLS","KLT","KLV","KLW","KMC","KME","KMF","KMG","KMH","KMJ","KMK","KML","KMM","KMN","KMP","KMQ","KMS","KMT","KMU","KMV","KMX","KMY","KNC","KNE","KNF","KNG","KNH","KNK","KNL","KNM","KNN","KNP","KNQ","KNR","KNS","KNT","KNU","KNV","KNW","KNX","KNY","KPA","KPC","KPE","KPF","KPG","KPH","KPJ","KPK","KPL","KPM","KPP","KPS","KPT","KPV","KPW","KQC","KQE","KQG","KQH","KQJ","KQK","KQM","KQP","KQT","KQV","KQW","KQX","KRB","KRC","KRE","KRG","KRK","KRL","KRM","KRN","KRP","KRR","KRS","KRU","KRV","KRW","KRX","KRY","KSA","KSC","KSE","KSG","KSH","KSK","KSL","KSN","KSP","KSR","KSS","KST","KSU","KSV","KSW","KSX","KSY","KSZ","KTA","KTC","KTD","KTE","KTF","KTG","KTH","KTJ","KTK","KTL","KTN","KTQ","KTR","KTT","KTU","KTV","KTW","KTX","KTY","KTZ","KUA","KUB","KUC","KUD","KUE","KUF","KUG","KUH","KUN","KUQ","KVB","KVC","KVE","KVH","KVL","KVM","KVN","KVP","KVQ","KVR","KVS","KVU","KVW","KWA","KWC","KWE","KWG","KWH","KWL","KWP","KWQ","KWR","KWT","KWW","KWX","KZA","KZD","AC","AE","AG","AI","AM","AN","AP","AS","AY","AZ","BC","BD","BF","BH","BJ","BL","BM","BP","BQ","BR","BS","BT","BV","BX","CB","CC", "CD","CE","CJ","CN","CR","CS","CT","DA","DB","DC","DD","DE","DF","DG","DH","DJ","DK","DL","DP","DQ","DR","DS","DT","DU","DX","GA","GB","GC","GE","GF","GN","GR","GT","GV","HA","HB","HC","HD","HE","HF","HG","HJ","HM","HN","HQ","HS","HT","HV","HX","JA","JC","JF","JJ","JK","JL","JN","JQ","JS","JV","JX","JZ","KB","KD","KE","KF","KG","KH","KJ","KK","KL","KM","KN","KP","KQ","KR","KS","KT","KU","KV","KW","KZ","LA","LB","LC","LD","LE",  "LF","LG","LH","LJ","LT","ML","MT","NA","NB","NC","ND","NE","NK","NX","PA","PB","PC","PD","PE","PF","PG","PH","PJ","PK","PL","PM","PN","PQ","PR","PS","PT","PZ","QA","QB","QC","QD","QE","QH","QK","QL","QM","QP","QR","RA","RB","RC","RD","RE","RF","RG",   "RJ","RK","RL","RM","RS","RT","RV","RX","RZ","SB","SD","SF","SH","SK","TA","TC","TD","TE","TF","TG","TH","TJ","TK","TL","TN","TP","TR","TS","TT","TX","UA","UB","UC","UD","UE","UF","UG","UH","VA","VB","VC","VD","VE","VF","VG","VK","VM","ZA","A","B","C","D","E","F","G","H","J","K","L","M","N","P","Q","R","S","T","U","V","Z")
+   
     return
        ( for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(060|061)")]
              for $cl in $this-tag/marcxml:subfield[@code="a"]
@@ -3418,7 +3428,19 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         attribute rdf:resource {fn:concat( "http://nlm.example.org/classification/",fn:normalize-space($class))
                         }
                     },        		
-                  
+             for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"086")][marcxml:subfield[@code="z"]]
+             return
+                   element bf:classification {
+                               element bf:Classification {                        
+                                 	if ( $this-tag/marcxml:subfield[@code="2"] ) then
+                                 	       element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
+                                 	  else (),
+                                 	  element bf:classificationNumber {  $this-tag/marcxml:subfield[@code="z"]},
+					 		        element bf:classificationStatus  {"canceled/invalid"}
+					 		}
+					}
+                 ,
+                     
         for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|070|071|080|082|083|084|086)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
@@ -3469,26 +3491,22 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                        else ()
 
                return                       
-                           element bf:classification {
-                               element bf:Classification {                        
-                                   element bf:classificationScheme {
-                                       if (fn:matches($this-tag/@tag,"(050|051)")) then "lcc" 
-                                   	else if (fn:matches($this-tag/@tag,"080")) then "nlm"
-                                   	else if (fn:matches($this-tag/@tag,"080")) then "udc"
-                                   	
-                                   	else if (fn:matches($this-tag/@tag,"082")) then "ddc"
-                                   	else if (fn:matches($this-tag/@tag,"(084|086)")) then fn:string($this-tag/marcxml:subfield[@code="2"])
-                                   	else ()
-                                   },
-                        
+                       element bf:classification {
+                           element bf:Classification {                        
+                                if (fn:matches($this-tag/@tag,"(050|051)"))     then element bf:classificationScheme {"lcc"} 
+                                   else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"nlm"}
+                                   else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"udc"}                                   
+                                   else if (fn:matches($this-tag/@tag,"082"))      then element bf:classificationScheme {"ddc"}
+                                   else if (fn:matches($this-tag/@tag,"(084|086)") and $this-tag/marcxml:subfield[@code="2"] ) then element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
+                                   else ()
+                               ,                        
                         if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="m"] ) then
                             element bf:classificationDesignation  {
                                 if ($this-tag/marcxml:subfield[@code="m"] ="a") then "standard" 
                                 else if ($this-tag/marcxml:subfield[@code="m"] ="b") then "optional" 
                                 else ()
                             }
-                        else (),                        
-            
+                        else (),                                    
             	       element bf:classificationNumber {fn:string($cl)},
             	       element bf:label {fn:string($cl)},
              	       if ( $assigner) then 
@@ -3510,17 +3528,11 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
 							}
                         else (),
 						
-		              (:for $sfc in $this-tag[fn:matches($classes[@name="classCopy"]/@tag,@tag)]/marcxml:subfield[@code="c"]
-                       return 
-                            element bf:classificationCopy {fn:string($sfc)},:)
                         if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
 						    element bf:classificationSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
 						else (),			
                         
-                        if (fn:matches($this-tag/@tag,"086") and $this-tag/marcxml:subfield[@code="z"]) then
-					 		element bf:classificationStatus  {"canceled/invalid"} 
-                        else (),
-
+            
                         if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="z"]) then
 						 	element bf:classificationTable  {fn:string( $this-tag/marcxml:subfield[@code="z"])} 
                         else (),
@@ -3530,7 +3542,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         else ()
                     }
             }
-            else ()
+     else ()
+                        
             )
+            
             
 };
