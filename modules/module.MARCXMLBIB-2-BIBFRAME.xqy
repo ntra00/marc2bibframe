@@ -172,6 +172,15 @@ declare variable $marcbib2bibframe:simple-properties:= (
     	 <node domain="instance" tag="300" sfcodes="3" property="materialsSpecified">Materials specified</node>
         <node domain="instance" tag="300" sfcodes="af" property="extent">Physical Description</node>             
     	<node domain="work" tag="384" sfcodes="a" property="musicKey" > Key </node>		
+    	<node domain="work" tag="130" sfcodes="r" property="musicKey" > Key </node>
+    	<node domain="work" tag="240" sfcodes="r" property="musicKey" > Key </node>
+    	
+    	<node domain="work" tag="382" sfcodes="adp" property="musicMediumNote" > Music medium note </node>		
+    	<node domain="work" tag="130" sfcodes="m" property="musicMediumNote" > Music medium note </node>
+    	<node domain="work" tag="730" sfcodes="m" property="musicMediumNote" > Music medium note </node>
+    	<node domain="work" tag="240" sfcodes="m" property="musicMediumNote" > Music medium note </node>
+    	<node domain="work" tag="243" sfcodes="m" property="musicMediumNote" > Music medium note </node>
+    	
 		<node domain="instance" tag="300" property="dimensions"  sfcodes="c">Physical Size</node>
 		<node domain="work"  tag ="306" property="duration" sfcodes="a">Playing time</node>		
 		<node domain="work"  tag ="310" property="frequency" sfcodes="a">Issue frequency</node>
@@ -195,6 +204,11 @@ declare variable $marcbib2bibframe:simple-properties:= (
         <node domain="work"  tag ="730" property="formDesignation" sfcodes="k">Form Designation</node>
         <node domain="work"  tag ="130" property="musicNumber" sfcodes="n">Music Number</node>
         <node domain="work"  tag ="730" property="musicNumber" sfcodes="n">Music Number</node>
+        <node domain="work"  tag ="130" property="musicVersion" sfcodes="o">Music Version</node>
+        <node domain="work"  tag ="240" property="musicVersion" sfcodes="o">Music Version</node>
+        <node domain="work"  tag ="130" property="legalDate" sfcodes="d">Legal Date</node>
+        <node domain="work"  tag ="730" property="legalDate" sfcodes="d">Legal Date</node>
+        
         <node domain="work"  tag ="500" sfcodes="3a" property="note">General Note</node>		
 		<node domain="work"  tag ="502" property="dissertationNote" >Dissertation Note</node>-->		
 		<node domain="work"  tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</node>			
@@ -2572,7 +2586,7 @@ declare function marcbib2bibframe:generate-work(
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
-         (:element bf:test  {$simple-test},:)
+         element bf:test  {$simple-test},
             for $t in fn:distinct-values($types)
             return
               (:  element bf:workCategory {
@@ -3141,11 +3155,12 @@ declare function marcbib2bibframe:get-title(
     
     return 
         ( element bf:title { $lang,             $title         },  
-        if ($element-name ne 'bf:title')  then
+       (: if ($element-name ne 'bf:title')  then
                 element {$element-name} { $lang,      $title          }
-        else (),
+        else (),:)
         
-            if ($d/@tag="246") then                  
+        (:    if ($d/@tag="246") then   :)               
+       if   ($element-name ne 'bf:title') then
                element {$element-name} {
                     element bf:Title { 
                           if ($d/@ind2!=" ") then element bf:titleType {
@@ -3162,18 +3177,22 @@ declare function marcbib2bibframe:get-title(
                                 }
                            else (),
                           element bf:label {fn:string($d/marcxml:subfield[@code="a"])},
-                          if ($d/marcxml:subfield[@code="b"]) then element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"])} else (),
+                          if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"])} else (),
+                          if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),
                            if ($d/marcxml:subfield[@code="p"]) then element bf:partTitle {fn:string($d/marcxml:subfield[@code="p"])} else (),
-                            if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else ()                              
+                            if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else (),
+                             if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
+                                element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
+                            else ()
                     }
                  } (:end Title:)
                                                 
             else (),
              marcbib2bibframe:generate-titleNonsort($d,$title, $element-name),
        
-            if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
+           (: if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
              element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
-            else (),
+            else (),:)
             marcbib2bibframe:generate-880-label($d,"title")
         )
 };
@@ -3488,7 +3507,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                                    },
                         
                         if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="m"] ) then
-                            element bf:classificationSchemePart  {
+                            element bf:classificationDesignation  {
                                 if ($this-tag/marcxml:subfield[@code="m"] ="a") then "standard" 
                                 else if ($this-tag/marcxml:subfield[@code="m"] ="b") then "optional" 
                                 else ()
