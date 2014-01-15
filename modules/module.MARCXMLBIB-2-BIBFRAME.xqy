@@ -165,7 +165,9 @@ declare variable $marcbib2bibframe:simple-properties:= (
 		 <node property="stockNumber" label="stock number for acquisition" domain="instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
 		 <node property="reportNumber" label="technical report number" domain="instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
      <!--<node property="hdl" label="handle for a resource" domain="instance"   marc="555;856- -/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
+     <node property="hdl" label="handle for a resource" domain="instance"   marc="555;856- -/u('hdl' in URI)"   tag="859"   sfcodes="u('hdl' in URI)"/>
 		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="856"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
+		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="859"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 	   -->
 	   <node domain="work" tag="040"  property="descriptionConventions" sfcodes="e">Description conventions</node>
 	   <node domain="work" tag="083"  property="classificationSpanEnd" sfcodes="c">classificationSpanEnd </node>
@@ -756,8 +758,7 @@ declare function marcbib2bibframe:generate-identifiers(
                 			(:if contains subprops, build class for $a else just prop w/$a:)
             	    	(:first, deal with the $a):) 
                    		return 
-                   		if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or                    		
-		                        (:($this-tag/@tag="020" and fn:contains(fn:string($this-tag/marcxml:subfield[@code="a"]),"(")  )   or:)			
+                   		if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or                    				                        		
 		                        ($this-tag[@tag="037"][marcxml:subfield[@code="c"]]) 				
 					           ) then 
 		                        element bf:Identifier{
@@ -3435,7 +3436,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                                  	if ( $this-tag/marcxml:subfield[@code="2"] ) then
                                  	       element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
                                  	  else (),
-                                 	  element bf:classificationNumber {  $this-tag/marcxml:subfield[@code="z"]},
+                                 	  element bf:classificationNumber {  fn:string($this-tag/marcxml:subfield[@code="z"])},
 					 		        element bf:classificationStatus  {"canceled/invalid"}
 					 		}
 					}
