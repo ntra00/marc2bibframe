@@ -2579,7 +2579,7 @@ declare function marcbib2bibframe:generate-work(
                 },
              $aLabel,
             $aLabelsWork880,
-            $work-simples,
+          
             $dissertation,
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
@@ -2587,7 +2587,8 @@ declare function marcbib2bibframe:generate-work(
                 (),
             $titles/bf:*,        
             $names,
-            $aud521,
+            $work-simples,
+              $aud521,
             $issuance,             
             $language,
             $langs,
@@ -3212,7 +3213,7 @@ declare function marcbib2bibframe:generate-simple-property(
     ) as element ()*
 {
 (			
-  for $node in $simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag]
+  for $node in  $marcbib2bibframe:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag]
     
     let $return-codes:=
  			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
