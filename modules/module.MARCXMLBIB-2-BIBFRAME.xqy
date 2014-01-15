@@ -2659,7 +2659,7 @@ declare function marcbib2bibframe:get-subject(
                             attribute tag { fn:concat("1" , $last2Tag) },
                             attribute ind1 { " " },
                             attribute ind2 { "0" },
-                            $d/*[@code ne "2"][@code ne "0"]
+                            $d/*[@code ne "2"][@code ne "0"][@code ne "8"]
                         }
                     }
                 </marcxml:record>
