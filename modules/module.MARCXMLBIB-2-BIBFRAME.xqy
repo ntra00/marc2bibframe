@@ -1610,7 +1610,7 @@ declare function marcbib2bibframe:generate-holdings-from-hld(
 {
 let $holdings:=$marcxml//hld:holdings
 let $heldBy:= if ($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"]) then
-                    fn:string($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"])
+                    fn:string($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"][1])
                 else ""
 for $hold in $holdings/hld:holding
     let $elm :=  
