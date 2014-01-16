@@ -3134,7 +3134,10 @@ declare function marcbib2bibframe:get-title(
                             }
                        else (),
                       element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"])},
-                      if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"])} else (),
+                      if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then
+                        (:gwu has multiple $bs in something:)                        
+                                element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"][1])} 
+                     else (),
                       if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),
                       if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then element bf:partNumber {fn:string($d/marcxml:subfield[@code="n"])} else (),
                        if ($d/marcxml:subfield[@code="p"]) then element bf:partTitle {fn:string($d/marcxml:subfield[@code="p"])} else (),
