@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-16-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-16-T14:00";
 
 
 
@@ -847,8 +847,9 @@ let $id024-028:=
                                         fn:concat("bf:",fn:string($this-id/@name))					
                                 return
                                     (if ( $this-tag/marcxml:subfield[fn:matches(@code,"a")]) then
-                                        element {$property} {		                                                                                        	
-                                           			fn:normalize-space(fn:string($this-tag/marcxml:subfield[@code="a"]))
+                                        element {$property} {
+                                            for $s in $this-tag/marcxml:subfield[fn:matches(@code,"a")]
+                                           			return fn:normalize-space(fn:string($s))
                                                                                       
                                         }
                                         else ()
@@ -3133,14 +3134,21 @@ declare function marcbib2bibframe:get-title(
                             else ()
                             }
                        else (),
-                      element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"])},
+                      element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"][1])},
                       if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then
-                        (:gwu has multiple $bs in something:)                        
-                                element bf:subtitle {fn:string($d/marcxml:subfield[@code="b"][1])} 
+                        (:gwu has multiple $bs in something:)
+                        for $s in $d/marcxml:subfield[@code="b"]                        
+                            return        element bf:subtitle {fn:string($s)} 
                      else (),
                       if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),
-                      if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then element bf:partNumber {fn:string($d/marcxml:subfield[@code="n"])} else (),
-                       if ($d/marcxml:subfield[@code="p"]) then element bf:partTitle {fn:string($d/marcxml:subfield[@code="p"])} else (),
+                      if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then
+                        for $s in $d/marcxml:subfield[@code="n"]
+                                return element bf:partNumber {fn:string($s)} 
+                       else (),
+                       if ($d/marcxml:subfield[@code="p"]) then 
+                        for $s in $d/marcxml:subfield[@code="p"]
+                        return element bf:partTitle {fn:string($s)}
+                        else (),
                         if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else (),
                          if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
                             element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
