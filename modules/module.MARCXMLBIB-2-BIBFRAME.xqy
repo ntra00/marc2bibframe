@@ -1610,7 +1610,7 @@ declare function marcbib2bibframe:generate-holdings-from-hld(
 {
 let $holdings:=$marcxml//hld:holdings
 let $heldBy:= if ($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"]) then
-                    fn:string($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"][1])
+                    fn:string($marcxml/marcxml:datafield[@tag="852"][1]/marcxml:subfield[@code="a"])
                 else ""
 for $hold in $holdings/hld:holding
     let $elm :=  
@@ -1702,7 +1702,7 @@ declare function marcbib2bibframe:generate-holdings(
     ) as element ()* 
 {
 
-let $hld:= marcbib2bibframe:generate-holdings-from-hld($marcxml, $workID)
+let $hld:= if ($marcxml//hld:holdings) then marcbib2bibframe:generate-holdings-from-hld($marcxml, $workID) else ()
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
