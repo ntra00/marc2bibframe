@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-16-T14:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-17-T11:00";
 
 
 
@@ -64,7 +64,7 @@ declare variable $marcbib2bibframe:identifiers :=
     <identifiers>
        
    <vocab-identifiers>     
-   	<property name="lccn" label="Library of Congress Control Number" domain="Instance"   marc="010--/a,z"   tag="010"   sfcodes="a,z"/>
+<!--   	<property name="lccn" label="Library of Congress Control Number" domain="Instance"   marc="010- - /a,z"   tag="010"   sfcodes="a,z"/>-->
 	 <property name="nbn" label="National Bibliography Number" domain="Instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
 		 <property name="nban" label="National bibliography agency control number"   domain="Instance"   marc="016--/a,z"   tag="016"   sfcodes="a,z"/>
 		 <property name="legalDeposit" label="copyright or legal deposit number"   domain="Instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
@@ -74,17 +74,11 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="isrc" label="International Standard Recording Code" domain="Instance"   marc="0240-/a,z"   tag="024"   ind1="0"   sfcodes="a,z"/>
 		 <property name="upc" label="Universal Product Code" domain="Instance" marc="0241-/a,z"   tag="024"   ind1="1"   sfcodes="a,z" uri="http://www.checkupc.com/search.php?keyword=076714006997"/>
 		 <property name="ismn" label="International Standard Music Number" domain="Instance"   marc="0242-/a,z"   tag="024"   ind1="2"   sfcodes="a,z" uri="http://www.loc.gov/ismn/987-10-11110" />
-		 <property name="ean" label="International Article Identifier (EAN)" domain="Instance"   marc="0243-/a,z,d(sep by -)"   tag="024"   ind1="3"   sfcodes="a,z,d(sep by -)" uri="http://www.ean-search.org/perl/ean-search.pl?q=5099750442227"/>
+		 <property name="ean" label="International Article Identifier (EAN)" domain="Instance"   marc="0243-/a,z,d"   tag="024"   ind1="3"   sfcodes="a,z,d(sep by -)" uri="http://www.ean-search.org/perl/ean-search.pl?q=5099750442227"/>
 		 <property name="sici" label="Serial Item and Contribution Identifier" domain="Instance"   marc="0244-/a,z"   tag="024"   ind1="4"   sfcodes="a,z"/>
 		 <property name="$2" label="contents of $2"   domain="Instance"   marc="0247-+2'ansi'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <!--<property name="ansi" label="American National Standard Institute Number"   domain="Instance"   marc="0247-+2'ansi'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <property name="iso"   label="International Organization for Standardization standard number"   domain="Instance"   marc="0247-+2'iso'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <property name="local" label="local identifier" domain="Instance"   marc="0247-+2'local'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <property name="uri" label="Uniform Resource Identifier" domain="Instance"   marc="0247-+2'uri'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <property name="urn" label="Uniform Resource Number" domain="Instance"   marc="0247-+2'urn'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>-->
-		 <property name="isan" label="International Standard Audiovisual Number" domain="Work"   marc="0247-+2'isan'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
-		 <property name="istc" label="International Standard Text Code" domain="Work"   marc="0247-+2'istc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <property name="iswc" label="International Standard Musical Work Code" domain="Work"   marc="0247-+2'iswc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
+		 
+		 		 
 		 <property name="lcOverseasAcq"   label="Library of Congress Overseas Acquisition Program number"   domain="Instance"   marc="025--/a"   tag="025"   sfcodes="a"/>
 		 <property name="fingerprint" label="fingerprint identifier" domain="Instance"   marc="026--/e"   tag="026"   sfcodes="e"/>
 		 <property name="strn" label="Standard Technical Report Number" domain="Instance"   marc="027--/a,z"   tag="027"   sfcodes="a,z"/>
@@ -100,12 +94,14 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <!--<property name="oclcNumber" domain="Instance"   marc="035 - - /a,z prefix 'OCOLC'"   tag="035"   sfcodes="a,z"/> -->
 		 <property name="studyNumber"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
 		 <property name="stockNumber" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
-		 <property name="reportNumber" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
+		 <property name="reportNumber" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>
+<property domain="Work"  tag ="502" name="dissertationIdentifier" sfcodes="o" >Dissertation identifier</property>		 
 		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="555;856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
 		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 		 <!--<property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
 		 <property name="orcid" label="Open Researcher and Contributor Identifier" domain="Agent"   marc="authority:0247-+2'orcid'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
 		 <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>-->
+		 
              </vocab-identifiers>
     </identifiers>
     );
@@ -129,128 +125,106 @@ declare variable $marcbib2bibframe:physdesc-list:=
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $marcbib2bibframe:simple-properties:= (
 	<properties>
-		<node property="lccn" label="Library of Congress Control Number"    marc="010--/a,z"   tag="010"   sfcodes="a,z"/>
-	    <node property="nbn" label="National Bibliography Number" domain="instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
-		 <node property="nban" label="National bibliography agency control number"   domain="instance"   marc="016--/a,z"   tag="016"   sfcodes="a,z"/>
-		 <node property="legalDeposit" label="copyright or legal deposit number"   domain="instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
-		 <!--<node property="isbn" label="International Standard Bibliographic Number"   domain="instance"   marc="020- -/a,z"   tag="020"   sfcodes="a,z"/>-->
-		 <node property="issn" label="International Standard Serial Number" domain="instance"   marc="022--/a,z,y"   tag="022"   sfcodes="a,z,y"/>
-		 <node property="issnL" label="linking International Standard Serial Number"   domain="work"   marc="022--/l,m"   tag="022"   sfcodes="l,m"/>
-		 <node property="isrc" label="International Standard Recording Code" domain="instance"   marc="0240-/a,z"   tag="024"   ind1="0"   sfcodes="a,z"/>
-		 <node property="upc" label="Universal Product Code" domain="instance" marc="0241-/a,z"   tag="024"   ind1="1"   sfcodes="a,z" uri="http://www.checkupc.com/search.php?keyword=076714006997"/>
-		 <node property="ismn" label="International Standard Music Number" domain="instance"   marc="0242-/a,z"   tag="024"   ind1="2"   sfcodes="a,z" uri="http://www.loc.gov/ismn/987-10-11110" />
-		 <node property="ean" label="International Article Identifier (EAN)" domain="instance"   marc="0243-/a,z,d(sep by -)"   tag="024"   ind1="3"   sfcodes="a,z,d(sep by -)" uri="http://www.ean-search.org/perl/ean-search.pl?q=5099750442227"/>
-		 <node property="sici" label="Serial Item and Contribution Identifier" domain="instance"   marc="0244-/a,z"   tag="024"   ind1="4"   sfcodes="a,z"/>
-		 <node property="$2" label="contents of $2"   domain="instance"   marc="0247-+2'ansi'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
-		 <node property="iso"   label="International Organization for Standardization standard number"   domain="instance"   marc="0247-+2'iso'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <node property="local" label="local identifier" domain="instance"   marc="0247-+2'local'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <node property="uri" label="Uniform Resource Identifier" domain="instance"   marc="0247-+2'uri'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <node property="urn" label="Uniform Resource Number" domain="instance"   marc="0247-+2'urn'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>-->
-		 <node property="isan" label="International Standard Audiovisual Number" domain="work"   marc="0247-+2'isan'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
-		 <node property="istc" label="International Standard Text Code" domain="work"   marc="0247-+2'istc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 <node property="iswc" label="International Standard Musical Work Code" domain="work"   marc="0247-+2'iswc'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>		 
-		 <node property="lcOverseasAcq"   label="Library of Congress Overseas Acquisition Program number"   domain="instance"   marc="025--/a"   tag="025"   sfcodes="a"/>
-		 <node property="fingerprint" label="fingerprint identifier" domain="instance"   marc="026--/e"   tag="026"   sfcodes="e"/>
-		 <node property="strn" label="Standard Technical Report Number" domain="instance"   marc="027--/a,z"   tag="027"   sfcodes="a,z"/>
-		 <node property="issueNumber" label="sound recording publisher issue number"   domain="instance"   marc="0280-/a"   tag="028"   ind1="0"   sfcodes="a"/>
-		 <node property="matrixNumber" label="sound recording publisher matrix master number"   domain="instance"   marc="0281-/a"   tag="028"   ind1="1"   sfcodes="a"/>
-		 <node property="musicPlate" label="music publication number assigned by publisher"   domain="instance"   marc="0282-/a"   tag="028"   ind1="2"   sfcodes="a"/>
-		 <node property="musicPublisherNumber" label="other publisher number for music"   domain="instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
-		 <node property="videorecordingNumber"   label="publisher assigned videorecording number"   domain="instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
-		 <node property="publisherNumber" label="other publisher assigned number"   domain="instance"   marc="0285-/a"   tag="028"   ind1="5"   sfcodes="a"/>
-		 <node property="coden" label="CODEN" domain="instance" marc="030--/a,z" tag="030"   sfcodes="a,z" uri="http://cassi.cas.org/coden/"/>
-		 <node property="postalRegistration" label="postal registration number" domain="instance"   marc="032--/a"   tag="032"   sfcodes="a"/>
-		 <node property="systemNumber" label="system control number" domain="instance"   marc="035--/a,z"   tag="035"   sfcodes="a,z"/>		 
-		 <node property="studyNumber"   label="original study number assigned by the producer of a computer file"   domain="instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
-		 <node property="stockNumber" label="stock number for acquisition" domain="instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
-		 <node property="reportNumber" label="technical report number" domain="instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>		 
-     <!--<node property="hdl" label="handle for a resource" domain="instance"   marc="555;856- -/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
-     <node property="hdl" label="handle for a resource" domain="instance"   marc="555;856- -/u('hdl' in URI)"   tag="859"   sfcodes="u('hdl' in URI)"/>
-		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="856"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
-		 <node property="doi" label="Digital Object Identifier" domain="instance"   marc="856- -/u('doi' in URI)"  tag="859"  sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
-	   -->
-	   <node domain="work" tag="040"  property="descriptionSource" sfcodes="a" uri="http://id.loc.gov/vocabulary/organizations/">Description source</node> 
-	   <node domain="work" tag="040"  property="descriptionSource" sfcodes="c" uri="http://id.loc.gov/vocabulary/organizations/">Description source</node>
-	   <node domain="work" tag="040"  property="descriptionSource" sfcodes="d" uri="http://id.loc.gov/vocabulary/organizations/">Description source</node>
-	   <node domain="work" tag="040"  property="descriptionConventions" sfcodes="e">Description conventions</node>
-	   <node domain="work" tag="040"  property="descriptionLanguage" sfcodes="b" uri="http://id.loc.gov/vocabulary/languages/">Description Language </node>
-	    
-		       
-	   <node domain="work" tag="083"  property="classificationSpanEnd" sfcodes="c">classificationSpanEnd </node>
-	   <node  domain="work" property="classificationSpanEnd" marc="083--/c" tag="083" sfcodes="c">classification span end for class number</node>
-        <node  domain="work"  property="classificationTableSeq" marc="083--/y" tag="083" sfcodes="y">DDC table sequence number</node>
-        <node  domain="work"  property="classificationTable"   marc="083--/z" tag="083" sfcodes="z">DDC table</node>
-        <node domain="instance" tag="245"  property="titleStatement" sfcodes="ab">titleStatement</node>
-	   <node domain="instance" tag="250"  property="edition">Edition</node>
-	   <node domain="instance" tag="250" sfcodes="b" property="editionResponsibility">Edition Responsibility</node>
-    	<node domain="instance" tag="260"  property="providerStatement" sfcodes="abc">Provider statement</node>
-    	<!--<node domain="instance" tag="300" sfcodes="3" property="materialsSpecified">Materials specified</node>-->
-        <node domain="instance" tag="300" sfcodes="af" property="extent">Physical Description</node>             
-    	<node domain="work" tag="384" sfcodes="a" property="musicKey" > Key </node>		
-    	<node domain="work" tag="130" sfcodes="r" property="musicKey" > Key </node>
-    	<node domain="work" tag="240" sfcodes="r" property="musicKey" > Key </node>
-    	
-    	<node domain="work" tag="382" sfcodes="adp" property="musicMediumNote" > Music medium note </node>		
-    	<node domain="work" tag="130" sfcodes="m" property="musicMediumNote" > Music medium note </node>
-    	<node domain="work" tag="730" sfcodes="m" property="musicMediumNote" > Music medium note </node>
-    	<node domain="work" tag="240" sfcodes="m" property="musicMediumNote" > Music medium note </node>
-    	<node domain="work" tag="243" sfcodes="m" property="musicMediumNote" > Music medium note </node>
-    	
-		<node domain="instance" tag="300" property="dimensions"  sfcodes="c">Physical Size</node>
-		<node domain="work"  tag ="306" property="duration" sfcodes="a">Playing time</node>		
-		<!--<node domain="work"  tag ="310" property="frequency" sfcodes="a">Issue frequency</node>-->
-		<node domain="work"  tag ="310" property="frequencyNote" sfcodes="ab">Issue frequency</node>
-		<node domain="work"  tag ="321" property="frequencyNote" sfcodes="ab">Issue frequency</node>
-		<node domain="work"  tag ="130" property="contentCategory" sfcodes="h" >Nature of content</node>
-		<node domain="work"  tag ="240" property="contentCategory" sfcodes="h" >Nature of content</node>
-		<node domain="work"  tag ="243" property="contentCategory" sfcodes="h" >Nature of content</node>
-        <node domain="work"  tag ="245" property="contentCategory" sfcodes="k" >Nature of content</node>
-		<node domain="work"  tag ="336" property="contentCategory" sfcodes="a" >Nature of content</node>
-        <node domain="work"  tag ="513" property="contentCategory" sfcodes="a" >Nature of content</node>
-        <node domain="work"  tag ="516" property="contentCategory" sfcodes="a" >Type of Computer File or Data Note</node>
-        <node domain="work"  tag ="730" property="contentCategory" sfcodes="h" >Nature of content</node>
-        <node domain="work"  tag ="700" property="contentCategory" sfcodes="h" >Nature of content</node>
-        <node domain="work"  tag ="710" property="contentCategory" sfcodes="h" >Nature of content</node>
-        <node domain="work"  tag ="711" property="contentCategory" sfcodes="h" >Nature of content</node>
-        <node domain="work"  tag ="130" property="originDate" sfcodes="f">Date of origin</node>
-        <node domain="work"  tag ="730" property="originDate" sfcodes="f">Date of origin</node>
-        <node domain="work"  tag ="046" property="originDate" sfcodes="kl">Date of origin</node>
-        <node domain="work"  tag ="130" property="formDesignation" sfcodes="k">Form Designation</node>
-        <node domain="work"  tag ="730" property="formDesignation" sfcodes="k">Form Designation</node>
-        <node domain="work"  tag ="130" property="musicNumber" sfcodes="n">Music Number</node>
-        <node domain="work"  tag ="730" property="musicNumber" sfcodes="n">Music Number</node>
-        <node domain="work"  tag ="130" property="musicVersion" sfcodes="o">Music Version</node>
-        <node domain="work"  tag ="240" property="musicVersion" sfcodes="o">Music Version</node>
-        <node domain="work"  tag ="130" property="legalDate" sfcodes="d">Legal Date</node>
-        <node domain="work"  tag ="730" property="legalDate" sfcodes="d">Legal Date</node>
-        
-        <node domain="work"  tag ="500" sfcodes="3a" property="note">General Note</node>		
-		<node domain="work"  tag ="502" property="dissertationNote" >Dissertation Note</node>-->		
-		<node domain="work"  tag ="505" property="contentsNote" ind2=" " sfcodes="agrtu" >Formatted Contents Note</node>		
-		<node domain="work"  tag ="520" property="contentsNote" ind2=" " sfcodes="a" >Contents Note</node>
-		<node domain="work"  tag ="513" property="temporalCoverageNote" sfcodes="b">Period Covered Note</node>
-		<node domain="event" tag ="518" property="eventDate" sfcodes="d">Event Date</node>
-		<node domain="work"  tag ="033" property="eventDate" sfcodes="a">Event Date</node>
-		<node domain="work"  tag ="522" property="geographicCoverageNote">Geographic Coverage Note</node>
-		<node domain="work"  tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</node>				
-		<node domain="work"  tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="otherPhysicalFormat">Additional Physical Form Available Note </node>
-  	    <node domain="work"  tag ="555" comment="(link?)" property="index">Cumulative Index/Finding Aids Note </node>	
-		<node domain="work"  tag ="586" property="awardNote" sfcodes="3a">Awards Note</node>        
-        <node domain="instance"  tag ="258" property="philatelicDataNote" sfcodes="ab">Philatelic data note</node>
-		<node domain="instance"  tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</node>
-        <node domain="instance"  tag ="345" property="aspectRatio" sfcodes="a">Aspect Ratio</node>
-		<node domain="instance"  tag ="500" sfcodes="3a" property="note">General Note</node>		
-		<!--<node domain="instance"  tag ="504" property="supplementaryContentNote" startwith="References: " comment="525a,504- -/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</node> -->
-		<node domain="instance"  tag ="506" property="accessCondition">Restrictions on Access Note</node>
-		<node domain="instance"  tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</node>
-		<node domain="instance"  tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </node>
-		<node domain="instance"  tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </node>	
-		<node domain="instance"  tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</node>		
-		<node domain="instance"  tag ="541" sfcodes="cad" property="immediateAcquisition">Immediate Source of Acquisition Note</node>
-		<node domain="instance"  tag ="546" property="languageNote" sfcodes="3a" >Language Note</node>
-		<node domain="instance"  tag ="546" property="notation" sfcodes="b" >Language Notation(script)</node>
-	
-		</properties>
+       	 <node domain="instance"   property="lccn"	   			  	      tag="010" sfcodes="a,z"		uri="http://id.loc.gov/authorities/test/identifiers/lccn/"				>Library of Congress Control Number</node>
+         <node domain="instance" 	property="nbn" 				    	      tag="015" sfcodes="a,z"		          >National Bibliography Number</node>
+         <node domain="instance" 	property="nban" 			          	tag="016" sfcodes="a,z"	           	>National bibliography agency control number</node>
+         <node domain="instance" 	property="legalDeposit" 		      tag="017" sfcodes="a,z"		          >copyright or legal deposit number</node>
+         <node domain="instance" 	property="issn" 			    	      tag="022" sfcodes="a,z,y"		        >International Standard Serial Number</node>
+         <node domain="work" 		  property="issnL"			           	tag="022" sfcodes="l,m"		          >linking International Standard Serial Number</node>
+         <node domain="instance" 	property="isrc" 			   					tag="024" sfcodes="a,z"   ind1="0"	>International Standard Recording Code</node>
+         <node domain="instance" 	property="upc" 				   					tag="024" sfcodes="a,z"   ind1="1"	>Universal Product Code</node>
+         <node domain="instance" 	property="ismn"					 					tag="024" sfcodes="a,z"    ind1="2" >International Standard Music Number</node>
+         <node domain="instance" 	property="ean"					 					tag="024" sfcodes="a,z,d" ind1="3" comment="(sep by -)"	>International Article Identifier (EAN)</node>
+         <node domain="instance" 	property="sici"				   					tag="024" sfcodes="a,z"   ind1="4">Serial Item and Contribution Identifier</node>
+         <node domain="instance" 	property="$2"					   					tag="024" sfcodes="a,z"   ind1="7">contents of $2</node> 
+         <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		          >Library of Congress Overseas Acquisition Program number</node>
+         <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		          >fingerprint identifier</node>
+         <node domain="instance"	  property="strn"					        	tag="027" sfcodes="a,z"		        >Standard Technical Report Number</node>
+         <node domain="instance"		property="issueNumber"						tag="028" sfcodes="a" ind1="0"		>sound recording publisher issue number</node>
+         <node domain="instance"		property="matrixNumber"						tag="028" sfcodes="a" ind1="1"		>sound recording publisher matrix master number</node>
+         <node domain="instance"		property="musicPlate"					  	tag="028" sfcodes="a" ind1="2"		>music publication number assigned by publisher</node>
+         <node domain="instance"		property="musicPublisherNumber"		tag="028" sfcodes="a" ind1="3"	  >other publisher number for music</node>
+         <node domain="instance"		property="videorecordingNumber"		tag="028" sfcodes="a" ind1="4"	 	>publisher assigned videorecording number</node>
+         <node domain="instance"		property="publisherNumber"				tag="028" sfcodes="a" ind1="5"		>other publisher assigned number</node>
+         <node domain="instance"		property="coden"					      	tag="030" sfcodes="a,z"	          >CODEN</node>
+         <node domain="instance"		property="postalRegistration"			tag="032" sfcodes="a"		          >postal registration number</node>
+         <node domain="instance"		property="systemNumber"						tag="035" sfcodes="a,z"         	>system control number</node>
+         <node domain="instance"		property="studyNumber"						tag="036" sfcodes="a"		          >original study number assigned by the producer of a computer file</node>
+         <node domain="instance"		property="stockNumber"						tag="037" sfcodes="a"		          >stock number for acquisition</node>
+         <node domain="instance"		property="reportNumber"						tag="088" sfcodes="a,z"       	  >technical report number</node>
+         <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="a"             >Description source</node>
+         <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="c"             >Description source</node>
+         <node domain="work"		    property="descriptionSource"		  tag="040" sfcodes="d"             >Description source</node>
+         <node domain="work"		    property="descriptionConventions" tag="040" sfcodes="e"             >Description conventions</node>
+         <node domain="work"       property="descriptionLanguage"		tag="040" sfcodes="b"           >Description Language </node>
+         <node domain="work"				property="classificationSpanEnd"	tag="083" sfcodes="c"           >classificationSpanEnd </node>
+         <node domain="work"				property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
+         <node domain="work"				property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
+         <node domain="work"				property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
+         <node domain="instance"		property="titleStatement"					tag="245" sfcodes="ab"          >titleStatement</node>
+         <node domain="instance"		property="edition"					      tag="250"                       >Edition</node>
+         <node domain="instance"		property="editionResponsibility"	tag="250" sfcodes="b"           >Edition Responsibility</node>
+         <node domain="instance"		property="providerStatement"			tag="260" sfcodes="abc"			    >Provider statement</node>
+         <node domain="instance"		property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
+         <node domain="work"				property="musicKey"					      tag="384" sfcodes="a"		    		> Key </node>
+         <node domain="work"				property="musicKey"					      tag="130" sfcodes="r"				    > Key </node>
+         <node domain="work"				property="musicKey"					      tag="240" sfcodes="r"			 	    > Key </node>
+         <node domain="work"				property="musicMediumNote"				tag="382" sfcodes="adp"		    	> Music medium note </node>
+         <node domain="work"				property="musicMediumNote"				tag="130" sfcodes="m"				    > Music medium note </node>
+         <node domain="work"				property="musicMediumNote"				tag="730" sfcodes="m"			     	> Music medium note </node>
+         <node domain="work"				property="musicMediumNote"				tag="240" sfcodes="m"			     	> Music medium note </node>
+         <node domain="work"				property="musicMediumNote"				tag="243" sfcodes="m"	     			> Music medium note </node>
+         <node domain="instance"		property="dimensions"					    tag="300" sfcodes="c"			     	>Physical Size</node>
+         <node domain="work"				property="duration"					      tag="306" sfcodes="a"			     	>Playing time</node>
+         <node domain="work"				property="frequencyNote"					tag="310" sfcodes="ab"					>Issue frequency</node>
+         <node domain="work"				property="frequencyNote"					tag="321" sfcodes="ab"					>Issue frequency</node>
+         <node domain="work"				property="contentCategory"				tag="130" sfcodes="h"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="240" sfcodes="h"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="243" sfcodes="h"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="245" sfcodes="k"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="336" sfcodes="a"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="513" sfcodes="a"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="516" sfcodes="a"						>Type of Computer File or Data Note</node>
+         <node domain="work"				property="contentCategory"				tag="730" sfcodes="h"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="700" sfcodes="h"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="710" sfcodes="h"						>Nature of content</node>
+         <node domain="work"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>
+         <node domain="work"				property="originDate"					    tag="130" sfcodes="f"						>Date of origin</node>
+         <node domain="work"				property="originDate"					    tag="730" sfcodes="f"						>Date of origin</node>
+         <node domain="work"				property="originDate"					    tag="046" sfcodes="kl"					>Date of origin</node>
+         <node domain="work"				property="formDesignation"				tag="130" sfcodes="k"						>Form Designation</node>
+         <node domain="work"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
+         <node domain="work"				property="musicNumber"       			tag="130" sfcodes="n"						>Music Number</node>
+         <node domain="work"				property="musicNumber"					  tag="730" sfcodes="n"						>Music Number</node>
+         <node domain="work"				property="musicVersion"					  tag="130" sfcodes="o"						>Music Version</node>
+         <node domain="work"				property="musicVersion"					  tag="240" sfcodes="o"						>Music Version</node>
+         <node domain="work"				property="legalDate"					    tag="130" sfcodes="d"						>Legal Date</node>
+         <node domain="work"				property="legalDate"					    tag="730" sfcodes="d"						>Legal Date</node>
+         <node domain="work"				property="note"					          tag="500" sfcodes="3a"					>General Note</node>
+         <node domain="work"				property="dissertationNote"				tag="502"				                >Dissertation Note</node>
+         <node domain="work"				property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
+         <node domain="work"				property="contentsNote"					  tag="520" sfcodes="a" ind2=" "	>Contents Note</node>
+         <node domain="work"				property="temporalCoverageNote"		tag="513" sfcodes="b"						>Period Covered Note</node>
+         <node domain="event"			property="eventDate"					    tag="518" sfcodes="d"						>Event Date</node>
+         <node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>
+         <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
+         <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
+         <node domain="work"				property="otherPhysicalFormat"		tag="530"                 			>Additional Physical Form Available Note </node>
+         <node domain="work"				property="index"					        tag="555"	                      >Cumulative Index/Finding Aids Note </node>
+         <node domain="work"		    property="awardNote"			    		tag="586" sfcodes="3a"					>Awards Note</node>
+         <node domain="instance"		property="philatelicDataNote"			tag="258" sfcodes="ab"					>Philatelic data note</node>
+         <node domain="instance"		property="illustrationNote"				tag="300" sfcodes="b"			      >Illustrative content note</node>
+         <node domain="instance"		property="aspectRatio"				    tag="345" sfcodes="a"			      >Aspect Ratio</node>
+         <node domain="instance"		property="note"					          tag="500" sfcodes="3a"	      	>General Note</node>
+         <node domain="instance"		property="accessCondition"				tag="506"				                >Restrictions on Access Note</node>
+         <node domain="instance"		property="graphicScaleNote"				tag="507" sfcodes="a"						>Scale Note for Graphic Material</node>
+         <node domain="instance"		property="creditsNote"					  tag="508" startwith="Credits: " >Creation/Production Credits Note </node>
+         <node domain="instance"		property="performerNote"					tag="511" startwith="Cast: " 		>Participant or Performer Note </node>
+         <node domain="instance"		property="preferredCitation"			tag="524"				                >Preferred Citation of Described Materials Note</node>
+         <node domain="instance"		property="immediateAcquisition"		tag="541" sfcodes="cad"					>Immediate Source of Acquisition Note</node>
+         <node domain="instance"		property="languageNote"					  tag="546" sfcodes="3a"					>Language Note</node>
+         <node domain="instance"		property="notation"					      tag="546" sfcodes="b"				    >Language Notation(script)</node>
+  </properties>
 	)	;
 (:notes are now in the simple list; this is obsolete: 2014-01-15 :)		
 declare variable $marcbib2bibframe:notes-list:= (
@@ -774,12 +748,7 @@ declare function marcbib2bibframe:generate-identifiers(
 	                            )
         	               else if ($this-tag[fn:matches(@tag,"(856|859)")]) then
         	                   marcbib2bibframe:handle-856u($this-tag)
-	                        (:else if (fn:contains(fn:string-join($this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"],""),"doi") ) then
-	                        	for $doi in $this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"][fn:contains(.,"doi")]
-	                            		return element bf:doi {  attribute rdf:resource {fn:normalize-space( fn:string($doi))                 } }
-	                        else if (fn:contains(fn:string-join($this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"],""),"hdl" ) ) then
-	                        	for $hdl in $this-tag[fn:matches(@tag,"(856|859)")]/marcxml:subfield[@code="u"][fn:contains(.,"hdl")]
-	                            		return element bf:hdl { attribute rdf:resource {fn:normalize-space( fn:string($hdl)) }}:)
+	                        
 	                        else  
 	                            for $sub in $this-tag/marcxml:subfield[@code="a"]
 	                                   return element { fn:concat("bf:",$id/@name) } {
@@ -800,7 +769,7 @@ declare function marcbib2bibframe:generate-identifiers(
                
                (:----------------------------------------   024 and 028 , where ind1 counts----------------------------------------:)
 let $id024-028:=
-          for $this-tag at $x in $marcxml/marcxml:datafield[fn:matches(@tag,"(024|028)")]
+          for $this-tag at $x in $marcxml/marcxml:datafield[fn:matches(@tag,"(024|028)")][marcxml:subfield[@code="a"]]
                     return
                     	let $this-id:= $identifiers[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1] (: i1=7 has several ?:)   	       	  
                     	return
@@ -838,16 +807,16 @@ let $id024-028:=
 				  }
 	                                }	
                             else (:not c,q,b:)
-                                let $property:= (:024 had a z only; no $a: bibid;17332794:)
-                                    if ($this-tag/@ind1="7") then
-                                       (:"bf:identifier":)
+                                let $property-name:= (:024 had a z only; no $a: bibid;17332794:)
+                                    if ($this-tag/@ind1="7" and fn:matches(fn:string($this-tag/marcxml:subfield[@code="2"]),"(ansi|doi|iso|istc|iswc|local)")) then
+                                       (:"bf:identifier":)  
                                        fn:concat("bf:", $scheme)
                                        (:fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"]):)								
                                     else
                                         fn:concat("bf:",fn:string($this-id/@name))					
                                 return
                                     (if ( $this-tag/marcxml:subfield[fn:matches(@code,"a")]) then
-                                        element {$property} {
+                                        element {$property-name} {
                                             for $s in $this-tag/marcxml:subfield[fn:matches(@code,"a")]
                                            			return fn:normalize-space(fn:string($s))
                                                                                       
@@ -898,7 +867,6 @@ declare function marcbib2bibframe:handle-system-number( $sys-num   )
 :)
 declare function marcbib2bibframe:handle-cancels($this-tag, $sf) 
 {
-
    
     if ($this-tag[@tag="022"] and $sf[@code="y"]) then
         (
@@ -1551,7 +1519,11 @@ declare function marcbib2bibframe:generate-dissertation(
 			element bf:dissertationYear{marc2bfutils:clean-string($d/marcxml:subfield[@code="d"])}
 		else (),
 		if ($d/marcxml:subfield[@code="o"]) then
-			element bf:dissertationIdentifier{fn:string($d/marcxml:subfield[@code="o"])}
+			element bf:dissertationIdentifier  { element bf:Identifier {
+			     element bf:identfierValue{fn:string($d/marcxml:subfield[@code="o"])}			   
+			     }
+			     }
+			     
 		else ()
 
    )
@@ -2415,20 +2387,7 @@ declare function marcbib2bibframe:generate-work(
     let $abstract:= (:contentsNote:)
         for $d in  $marcxml/marcxml:datafield[@tag="520"][fn:not(marcxml:subfield[@code="c"]) and fn:not(marcxml:subfield[@code="u"])]
             return marcbib2bibframe:generate-simple-property($d,"work")
-	(:let $abstract:= 
-		for $d in  $marcxml/marcxml:datafield[@tag="520"][fn:not(marcxml:subfield[@code="c"]) and fn:not(marcxml:subfield[@code="u"])] 
 	
-			return	
-			
-				element  bf:hasAnnotation {				
-				        element    bf:Summary {						        
-				            	element bf:label {fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ]," ")},
-				            	element bf:descriptionOf {
-                        attribute rdf:resource {$workID}
-                    }
-					}
-				}      			
-			:)
     let $abstract-annotation:= 
         for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] 
         let $abstract-type:=
@@ -3216,21 +3175,27 @@ declare function marcbib2bibframe:generate-simple-property(
     ) as element ()*
 {
 (			
-  for $node in  $marcbib2bibframe:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag]
-    
+  for $node in  $marcbib2bibframe:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1]    [ fn:not(@ind2) or @ind2=$d/@ind2]
     let $return-codes:=
  			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
     let $precede:=fn:string($node/@startwith) 
     return 
-      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] and 
-                        ( fn:not($node/@ind2) or $node/@ind2=$d/@ind2)) then                   
+      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)]                         
+                        ) then
+          let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))
+          (:if return condes contains a comma, do for each subfield???, else string-join?:)
         for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
           let $text:=marc2bfutils:clean-string(fn:string-join($s," "))
-
           
+           let $cancels:=marcbib2bibframe:handle-cancels($d,$s)  
           return 
-                if ( fn:not($node/@property="$2")) then
-                
+                if ($cancels) then
+                    element bf:identifier {element bf:Identifier {
+                            $cancels,
+                            element bf:identifierScheme {$d/marcxml:subfield[@code="2"]}
+                        }
+                    }
+                else if ( fn:not($node/@property="$2")) then                
                     element {fn:concat("bf:",fn:string($node/@property))} {	               
                         if (fn:not($node/@uri)) then
                              fn:normalize-space(fn:concat($precede,  $text)     )    	                
@@ -3243,7 +3208,7 @@ declare function marcbib2bibframe:generate-simple-property(
                     element bf:identifier {element bf:Identifier {
                         element bf:identifierScheme {  fn:string($d/marcxml:subfield[@code="2"])},
                         element bf:identifierValue {  fn:normalize-space($s)}
-                        
+                        ,$cancels                        
                         }
                     }                 
      else
