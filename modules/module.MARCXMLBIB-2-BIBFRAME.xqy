@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-17-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-17-T13:00";
 
 
 
@@ -2003,9 +2003,9 @@ declare function marcbib2bibframe:generate-related-work
             $d/@ind2="2" and
             $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1]
            ) then
-            marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])               
+             marcbib2bibframe:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])               
         else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|490|800|810|811|510|630|730|740|830)")) ) then
-            marcbib2bibframe:get-name($d)
+                marcbib2bibframe:get-name($d)
         else ()
         
         
@@ -2178,7 +2178,7 @@ declare function marcbib2bibframe:related-works
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="f"]](:	series:)
 			  	return marcbib2bibframe:generate-related-work($d,$type)
             
-            else 	
+            else 
                 for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t"]]		
 			   	return marcbib2bibframe:generate-related-work($d,$type)
 				
@@ -3200,7 +3200,7 @@ declare function marcbib2bibframe:generate-simple-property(
                         if (fn:not($node/@uri)) then
                              fn:normalize-space(fn:concat($precede,  $text)     )    	                
                         else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then
-                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:lower-case(fn:normalize-space($s)))}
+                                attribute rdf:resource{fn:encode-for-uri(fn:concat(fn:string($node/@uri),fn:lower-case(fn:normalize-space($s))))}
                             else
                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)}
             	             }
