@@ -3200,8 +3200,12 @@ declare function marcbib2bibframe:generate-simple-property(
                         if (fn:not($node/@uri)) then
                              fn:normalize-space(fn:concat($precede,  $text)     )    	                
                         else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then
-                                attribute rdf:resource{fn:encode-for-uri(fn:concat(fn:string($node/@uri),fn:lower-case(fn:normalize-space($s))))}
-                            else
+                                attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:lower-case(fn:normalize-space($s)))}
+                        else if (fn:contains(fn:string($node/@property),"lccn")) then
+                                attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s," ",""))
+                                }
+                        
+                        else
                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)}
             	             }
                 else (:currently only $2 on identifiers:) 
