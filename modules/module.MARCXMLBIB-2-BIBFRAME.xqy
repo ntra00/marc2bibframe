@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-17-T13:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-17-T17:00";
 
 
 
@@ -139,11 +139,11 @@ declare variable $marcbib2bibframe:simple-properties:= (
          <node domain="instance" 	property="$2"					   					tag="024" sfcodes="a,z"   ind1="7">contents of $2</node> 
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		          >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		          >fingerprint identifier</node>
-         <node domain="instance"	  property="strn"					        	tag="027" sfcodes="a,z"		        >Standard Technical Report Number</node>
-         <node domain="instance"		property="issueNumber"						tag="028" sfcodes="a" ind1="0"		>sound recording publisher issue number</node>
-         <node domain="instance"		property="matrixNumber"						tag="028" sfcodes="a" ind1="1"		>sound recording publisher matrix master number</node>
-         <node domain="instance"		property="musicPlate"					  	tag="028" sfcodes="a" ind1="2"		>music publication number assigned by publisher</node>
-         <node domain="instance"		property="musicPublisherNumber"		tag="028" sfcodes="a" ind1="3"	  >other publisher number for music</node>
+         <node domain="instance"	property="strn"					        	tag="027" sfcodes="a,z"		        >Standard Technical Report Number</node>
+         <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		>sound recording publisher issue number</node>
+         <node domain="instance"	property="matrixNumber"						tag="028" sfcodes="a" ind1="1"		>sound recording publisher matrix master number</node>
+         <node domain="instance"	property="musicPlate"					  	tag="028" sfcodes="a" ind1="2"		>music publication number assigned by publisher</node>
+         <node domain="instance"	property="musicPublisherNumber"		tag="028" sfcodes="a" ind1="3"	  >other publisher number for music</node>
          <node domain="instance"		property="videorecordingNumber"		tag="028" sfcodes="a" ind1="4"	 	>publisher assigned videorecording number</node>
          <node domain="instance"		property="publisherNumber"				tag="028" sfcodes="a" ind1="5"		>other publisher assigned number</node>
          <node domain="instance"		property="coden"					      	tag="030" sfcodes="a,z"	          >CODEN</node>
@@ -155,13 +155,26 @@ declare variable $marcbib2bibframe:simple-properties:= (
          <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="a"             >Description source</node>
          <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="c"             >Description source</node>
          <node domain="work"		    property="descriptionSource"		  tag="040" sfcodes="d"             >Description source</node>
-         <node domain="work"		    property="descriptionConventions" tag="040" sfcodes="e"             >Description conventions</node>
+         <node domain="work"	   property="descriptionConventions"   tag="040" sfcodes="e"             >Description conventions</node>
          <node domain="work"       property="descriptionLanguage"		tag="040" sfcodes="b"           >Description Language </node>
-         <node domain="work"				property="classificationSpanEnd"	tag="083" sfcodes="c"           >classificationSpanEnd </node>
-         <node domain="work"				property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
-         <node domain="work"				property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
-         <node domain="work"				property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
-         <node domain="instance"		property="titleStatement"					tag="245" sfcodes="ab"          >titleStatement</node>
+         <node domain="work"	   property="classificationSpanEnd"	      tag="083" sfcodes="c"           >classificationSpanEnd </node>
+         <node domain="work"		property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
+         <node domain="work"		property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
+         <node domain="work"		property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
+         <node domain="title"		property="titleQualifier"					tag="210" sfcodes="b"          >titleStatement</node>
+         <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
+         <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
+         <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
+         <node domain="title"		property="partTitle"					tag="245" sfcodes="p"          >part title</node>
+         <node domain="title"		property="partTitle"					tag="246" sfcodes="p"          >part title</node>
+         <node domain="title"		property="partTitle"					tag="247" sfcodes="p"          >part title</node>
+         <node domain="title"		property="partTitle"					tag="242" sfcodes="p"          >part title</node>
+         <node domain="title"		property="partTitle"					tag="130" sfcodes="p"          >part title</node>
+         <node domain="title"		property="partTitle"					tag="730" sfcodes="p"          >part title</node>
+          <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
+         <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
+
+         <node domain="instance"		property="titleStatement"			tag="245" sfcodes="ab"          >titleStatement</node>
          <node domain="instance"		property="edition"					      tag="250"                       >Edition</node>
          <node domain="instance"		property="editionResponsibility"	tag="250" sfcodes="b"           >Edition Responsibility</node>
          <node domain="instance"		property="providerStatement"			tag="260" sfcodes="abc"			    >Provider statement</node>
@@ -3095,23 +3108,24 @@ declare function marcbib2bibframe:get-title(
                        else (),
                       element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"][1])},
                       if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then
-                        (:gwu has multiple $bs in something:)
+                      
                         for $s in $d/marcxml:subfield[@code="b"]                        
                             return        element bf:subtitle {fn:string($s)} 
                      else (),
-                      if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),
-                      if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then
+                     marcbib2bibframe:generate-simple-property($d,"title")
+                     (:if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),:)
+                    (:  if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then
                         for $s in $d/marcxml:subfield[@code="n"]
                                 return element bf:partNumber {fn:string($s)} 
-                       else (),
-                       if ($d/marcxml:subfield[@code="p"]) then 
+                       else (),:)
+                      (: if ($d/marcxml:subfield[@code="p"]) then 
                         for $s in $d/marcxml:subfield[@code="p"]
                         return element bf:partTitle {fn:string($s)}
-                        else (),
-                        if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else (),
+                        else (),:)
+                      (:  if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else (),
                          if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
                             element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
-                        else ()
+                        else ():)
                 }
              } (:end Title:)
              
