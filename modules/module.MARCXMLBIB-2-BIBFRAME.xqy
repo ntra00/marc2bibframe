@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-17-T17:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-23-T11:00";
 
 
 
@@ -155,30 +155,41 @@ declare variable $marcbib2bibframe:simple-properties:= (
          <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="a"             >Description source</node>
          <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="c"             >Description source</node>
          <node domain="work"		    property="descriptionSource"		  tag="040" sfcodes="d"             >Description source</node>
-         <node domain="work"	   property="descriptionConventions"   tag="040" sfcodes="e"             >Description conventions</node>
-         <node domain="work"       property="descriptionLanguage"		tag="040" sfcodes="b"           >Description Language </node>
+         <node domain="work"	        property="descriptionConventions"   tag="040" sfcodes="e"             >Description conventions</node>
+         <node domain="work"            property="descriptionLanguage"		tag="040" sfcodes="b"           >Description Language </node>
          <node domain="work"	   property="classificationSpanEnd"	      tag="083" sfcodes="c"           >classificationSpanEnd </node>
          <node domain="work"		property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
          <node domain="work"		property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
          <node domain="work"		property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
-         <node domain="title"		property="titleQualifier"					tag="210" sfcodes="b"          >titleStatement</node>
+         
+         <node domain="title"		property="titleQualifier"					tag="210" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
+         <node domain="title"		property="titleValue"					tag="245" sfcodes="a"          > title itself</node>
+         
+         <node domain="title"		property="titleValue"					tag="246" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="titleValue"					tag="247" sfcodes="a"          >title itself</node>
+         
+         <node domain="title"		property="subtitle"					    tag="245" sfcodes="b"          > subtitle </node>
+         <node domain="title"		property="subtitle"				        tag="246" sfcodes="b"          >subtitle</node>
+         <node domain="title"		property="subtitle"					    tag="247" sfcodes="b"          >subtitle</node>
+         
          <node domain="title"		property="partTitle"					tag="245" sfcodes="p"          >part title</node>
          <node domain="title"		property="partTitle"					tag="246" sfcodes="p"          >part title</node>
          <node domain="title"		property="partTitle"					tag="247" sfcodes="p"          >part title</node>
          <node domain="title"		property="partTitle"					tag="242" sfcodes="p"          >part title</node>
          <node domain="title"		property="partTitle"					tag="130" sfcodes="p"          >part title</node>
          <node domain="title"		property="partTitle"					tag="730" sfcodes="p"          >part title</node>
-          <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
+         <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
-
-         <node domain="instance"		property="titleStatement"			tag="245" sfcodes="ab"          >titleStatement</node>
-         <node domain="instance"		property="edition"					      tag="250"                       >Edition</node>
-         <node domain="instance"		property="editionResponsibility"	tag="250" sfcodes="b"           >Edition Responsibility</node>
-         <node domain="instance"		property="providerStatement"			tag="260" sfcodes="abc"			    >Provider statement</node>
-         <node domain="instance"		property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
+         <node domain="title"		property="titleVariation"			     tag="246" sfcodes="abnp"      >title variation</node>
+         <node domain="title"		property="titleVariation"			     tag="247" sfcodes="abnp"      >title variation</node>
+         <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >titleStatement</node>
+         <node domain="instance"	property="edition"					      tag="250"                    >Edition</node>
+         <node domain="instance"	property="editionResponsibility"	      tag="250" sfcodes="b"        >Edition Responsibility</node>
+         <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
+         <node domain="instance"	property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
          <node domain="work"				property="musicKey"					      tag="384" sfcodes="a"		    		> Key </node>
          <node domain="work"				property="musicKey"					      tag="130" sfcodes="r"				    > Key </node>
          <node domain="work"				property="musicKey"					      tag="240" sfcodes="r"			 	    > Key </node>
@@ -565,12 +576,12 @@ Electronic
     return 
         element bf:Instance {        
            $issuance,           
-            if ($instanceType ne "") then
+            (:if ($instanceType ne "") then
                 element rdf:type {
                     attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , $instanceType) }
                 }
             else
-                (),               
+                (),      :)         
             $instance-title,            
             $names,
             $edition,
@@ -826,7 +837,9 @@ let $id024-028:=
                                        fn:concat("bf:", $scheme)
                                        (:fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"]):)								
                                     else
-                                        fn:concat("bf:",fn:string($this-id/@name))					
+(:                                        fn:concat("bf:",fn:string($this-id/@name)):)
+                                        "bf:identifier"
+                                        
                                 return
                                     (if ( $this-tag/marcxml:subfield[fn:matches(@code,"a")]) then
                                         element {$property-name} {
@@ -3197,11 +3210,11 @@ declare function marcbib2bibframe:generate-simple-property(
       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)]                         
                         ) then
           let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))
-          (:if return condes contains a comma, do for each subfield???, else string-join?:)
+          (:if return codes contains a comma, do for each subfield???, else string-join?:)
         for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
           let $text:=marc2bfutils:clean-string(fn:string-join($s," "))
           
-           let $cancels:=marcbib2bibframe:handle-cancels($d,$s)  
+          let $cancels:=marcbib2bibframe:handle-cancels($d,$s)  
           return 
                 if ($cancels) then
                     element bf:identifier {element bf:Identifier {
