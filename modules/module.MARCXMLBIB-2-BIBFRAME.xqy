@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-23-T11:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-23-T17:00";
 
 
 
@@ -1504,7 +1504,10 @@ declare function marcbib2bibframe:generate-instance-from856(
                     else (),
 	                    	                    
 	                    for $u in $d/marcxml:subfield[@code="u"]
-	                    	return element bf:annotationBody { 
+	                      let $property-name:= if ($type="table of contents") then "bf:tableOfContents"
+                                        else if ($type="publisher summary") then "bf:review"
+                                       else "bf:annotationBody"
+	                    	return element {$property-name} { 
 	                    	                  attribute rdf:resource {                  	
 	                    		                 fn:normalize-space(fn:string($u))
 	                    		                }
@@ -3219,7 +3222,7 @@ declare function marcbib2bibframe:generate-simple-property(
                 if ($cancels) then
                     element bf:identifier {element bf:Identifier {
                             $cancels,
-                            element bf:identifierScheme {$d/marcxml:subfield[@code="2"]}
+                            element bf:identifierScheme {fn:string($d/marcxml:subfield[@code="2"])}
                         }
                     }
                 else if ( fn:not($node/@property="$2")) then                
