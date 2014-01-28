@@ -54,7 +54,7 @@ declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
  declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-23-T17:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-27-T14ntra:00";
 
 
 
@@ -95,7 +95,7 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="studyNumber"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
 		 <property name="stockNumber" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
 		 <property name="reportNumber" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>
-<property domain="Work"  tag ="502" name="dissertationIdentifier" sfcodes="o" >Dissertation identifier</property>		 
+        <property domain="Work"  tag ="502" name="dissertationIdentifier" sfcodes="o" >Dissertation identifier</property>		 
 		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="555;856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
 		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 		 <!--<property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
@@ -125,12 +125,12 @@ declare variable $marcbib2bibframe:physdesc-list:=
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $marcbib2bibframe:simple-properties:= (
 	<properties>
-       	 <node domain="instance"   property="lccn"	   			  	      tag="010" sfcodes="a,z"		uri="http://id.loc.gov/authorities/test/identifiers/lccn/"				>Library of Congress Control Number</node>
+       	 <node domain="instance"    property="lccn"	   			  	      tag="010" sfcodes="a,z"		uri="http://id.loc.gov/authorities/test/identifiers/lccn/"				>Library of Congress Control Number</node>
          <node domain="instance" 	property="nbn" 				    	      tag="015" sfcodes="a,z"		          >National Bibliography Number</node>
          <node domain="instance" 	property="nban" 			          	tag="016" sfcodes="a,z"	           	>National bibliography agency control number</node>
          <node domain="instance" 	property="legalDeposit" 		      tag="017" sfcodes="a,z"		          >copyright or legal deposit number</node>
-         <node domain="instance" 	property="issn" 			    	      tag="022" sfcodes="a,z,y"		        >International Standard Serial Number</node>
-         <node domain="work" 		  property="issnL"			           	tag="022" sfcodes="l,m"		          >linking International Standard Serial Number</node>
+         <node domain="instance" 	property="issn" 			    	      tag="022" sfcodes="a,z,y"		uri="http://issn.example.org/"	        >International Standard Serial Number</node>
+         <node domain="work" 		property="issnL"			           	tag="022" sfcodes="l,m"		   uri="http://issn.example.org/"  >linking International Standard Serial Number</node>
          <node domain="instance" 	property="isrc" 			   					tag="024" sfcodes="a,z"   ind1="0"	>International Standard Recording Code</node>
          <node domain="instance" 	property="upc" 				   					tag="024" sfcodes="a,z"   ind1="1"	>Universal Product Code</node>
          <node domain="instance" 	property="ismn"					 					tag="024" sfcodes="a,z"    ind1="2" >International Standard Music Number</node>
@@ -170,7 +170,7 @@ declare variable $marcbib2bibframe:simple-properties:= (
          
          <node domain="title"		property="titleValue"					tag="246" sfcodes="a"          >title itself</node>
          <node domain="title"		property="titleValue"					tag="247" sfcodes="a"          >title itself</node>
-         
+         <node domain="title"		property="titleValue"					tag="210" sfcodes="a"          >title itself</node>
          <node domain="title"		property="subtitle"					    tag="245" sfcodes="b"          > subtitle </node>
          <node domain="title"		property="subtitle"				        tag="246" sfcodes="b"          >subtitle</node>
          <node domain="title"		property="subtitle"					    tag="247" sfcodes="b"          >subtitle</node>
@@ -185,7 +185,10 @@ declare variable $marcbib2bibframe:simple-properties:= (
          <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleVariation"			     tag="246" sfcodes="abnp"      >title variation</node>
          <node domain="title"		property="titleVariation"			     tag="247" sfcodes="abnp"      >title variation</node>
-         <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >titleStatement</node>
+         <node domain="title"		property="titleSource"			     tag="210" sfcodes="2"      >title source</node>
+         <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
+         <node domain="instance"	property="responsibilityStatement"		    	tag="245" sfcodes="c"         >responsibility Statement</node>
+         <node domain="work"	    property="treatySignator"		    	tag="710" sfcodes="g"         >treaty Signator</node>
          <node domain="instance"	property="edition"					      tag="250"                    >Edition</node>
          <node domain="instance"	property="editionResponsibility"	      tag="250" sfcodes="b"        >Edition Responsibility</node>
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
@@ -1120,8 +1123,8 @@ declare function marcbib2bibframe:generate-physdesc
                       element bf:mediaCategory { 
                             element bf:Category {
                                     element bf:label{fn:string($d/marcxml:subfield[@code="a"])},		
-                                    element bf:noteValue{fn:string($d/marcxml:subfield[@code="a"])},
-                                    element bf:noteType{"media category"}
+                                    element bf:categoryValue{fn:string($d/marcxml:subfield[@code="a"])},
+                                    element bf:categoryType{"media category"}
                                     } 
                                 }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
@@ -1369,31 +1372,28 @@ declare function marcbib2bibframe:generate-instance-from250(
     $workID as xs:string
     ) as element ()*
 {
-
-   
-    
-    let $pubnum := 
+(:    let $pubnum := 
             if ($d/marcxml:subfield[@code="a"]) then
                 element bf:publisherNumber
          			{
                     	marc2bfutils:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="a"])))              
                 	}
-        	else ()
-    let $pubsource := 
+        	else ():)
+   (: let $pubsource := 
         if ($d/marcxml:subfield[@code="b"]) then
                 element bf:publisherNumberSource
              		{
                         marc2bfutils:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="b"])))              
                     }
                 else ()
-		
-     let $pubqual :=
+		:)
+    (: let $pubqual :=
         if ($d/marcxml:subfield[@code="q"]) then
             element bf:publisherNumberQualifier
      			{
                 	marc2bfutils:clean-string(fn:normalize-space(fn:string($d/marcxml:subfield[@code="q"])))              
             	}
-        else ()
+        else ():)
     (:get the physical details:)
     (: We only ask for the first 260 :)
 	let $instance :=  (:marcbib2bibframe:generate-instance-from260($d/../marcxml:datafield[@tag eq "260" or @tag eq "264"][1], $workID):)
@@ -1413,8 +1413,9 @@ declare function marcbib2bibframe:generate-instance-from250(
                     $instance/*
                 )
             else 
-                $instanceOf),                         
-            $pubnum,$pubsource	
+                $instanceOf)
+                (:,                         
+            $pubnum,$pubsource:)	
 		}
      
 };
@@ -1549,7 +1550,7 @@ declare function marcbib2bibframe:generate-dissertation(
 		else (),
 		if ($d/marcxml:subfield[@code="o"]) then
 			element bf:dissertationIdentifier  { element bf:Identifier {
-			     element bf:identfierValue{fn:string($d/marcxml:subfield[@code="o"])}			   
+			     element bf:identifierValue{fn:string($d/marcxml:subfield[@code="o"])}			   
 			     }
 			     }
 			     
@@ -1710,7 +1711,7 @@ let $hld:= if ($marcxml//hld:holdings) then marcbib2bibframe:generate-holdings-f
  let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
 	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|060|070|080|082|084)")]
 (:	multiple $a is possible: 2017290 use $i to handle :)
-		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"][fn:matches(.,"^[a-zA-Z]{1,3}[1-9].*$")]
+		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"]
        		let $element:= 
        			if (fn:matches($class/../@tag,"(050|055|070)")) then "bf:shelfMarkLcc"
        			else if (fn:matches($class/../@tag,"060")) then "bf:shelfMarkNlm"
@@ -1830,12 +1831,12 @@ declare function marcbib2bibframe:generate-titleNonsort(
 {
 if (fn:matches($d/@tag,"(222|242|243|245|440)" ) and fn:number($d/@ind2) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
-                element {$property} {attribute xml:lang {"en-US-bf"},
-                        fn:substring($title, fn:number($d/@ind2)+1)
+                element bf:title {attribute xml:lang {"en-US-bf"},
+                       fn:substring($title, fn:number($d/@ind2)+1)
                              }
 else if (fn:matches($d/@tag,"(130|630)" ) and fn:number($d/@ind1) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
-                element {$property} {attribute xml:lang {"en-US-bf"},
+                element bf:title {attribute xml:lang {"en-US-bf"},
                         fn:substring($title, fn:number($d/@ind1)+1)
                              }
 
@@ -2793,7 +2794,7 @@ for $tag in $d/marcxml:datafield[@tag="041"]
 	                   for $i in 0 to (fn:string-length($sf) idiv 3)-1
 		                  let $pos := $i * 3 + 1		
 		                      return 
-		                          element bf:languageOfPart{
+		                          element bf:languageOfPartUri{
 		                            attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/" , fn:substring($sf, $pos, 3))}
     		                      }                  
                 }	
@@ -3122,12 +3123,12 @@ declare function marcbib2bibframe:get-title(
                             else ()
                             }
                        else (),
-                      element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"][1])},
-                      if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then
+                      (:element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"][1])},:)
+                    (:  if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then
                       
                         for $s in $d/marcxml:subfield[@code="b"]                        
                             return        element bf:subtitle {fn:string($s)} 
-                     else (),
+                     else (),:)
                      marcbib2bibframe:generate-simple-property($d,"title")
                      (:if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),:)
                     (:  if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then
@@ -3491,12 +3492,14 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     return	 
                         element  {fn:concat("bf:",$property)} {          
                      			if ($property="classificationLcc" ) then 
-                     				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}
-                     				
-                     		
-                     		    else 
-                                     fn:string($cl)                            
-                            }
+                     				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}                    				                     		
+                     		    else	if ($property="classificationDdc" ) then 
+                     		             attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])),"/about")}
+                     		    else element bf:Classification {
+                                        element bf:classificationNumber {fn:string($cl)},
+                                        element bf:classificationScheme {fn:string($classes[@level="property"][fn:contains(@tag,$this-tag/@tag)]/@name)}                                        
+                                        }
+                                 }
             else if ($valid   ) then
                 let $assigner:=              
                        if ($this-tag/@tag="050" and $this-tag/@ind2="0") then "dlc"                       
