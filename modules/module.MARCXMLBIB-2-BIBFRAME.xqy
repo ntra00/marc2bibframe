@@ -95,7 +95,7 @@ declare variable $marcbib2bibframe:identifiers :=
 		 <property name="studyNumber"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
 		 <property name="stockNumber" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
 		 <property name="reportNumber" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>
-        <property domain="Work"  tag ="502" name="dissertationIdentifier" sfcodes="o" >Dissertation identifier</property>		 
+         <!--<property domain="Work"  tag ="502" name="dissertationIdentifier" sfcodes="o" >Dissertation identifier</property>-->		 
 		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="555;856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
 		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
 		 <!--<property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
@@ -222,13 +222,16 @@ declare variable $marcbib2bibframe:simple-properties:= (
          <node domain="work"				property="formDesignation"				tag="130" sfcodes="k"						>Form Designation</node>
          <node domain="work"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
          <node domain="work"				property="musicNumber"       			tag="130" sfcodes="n"						>Music Number</node>
-         <node domain="work"				property="musicNumber"					  tag="730" sfcodes="n"						>Music Number</node>
-         <node domain="work"				property="musicVersion"					  tag="130" sfcodes="o"						>Music Version</node>
-         <node domain="work"				property="musicVersion"					  tag="240" sfcodes="o"						>Music Version</node>
-         <node domain="work"				property="legalDate"					    tag="130" sfcodes="d"						>Legal Date</node>
-         <node domain="work"				property="legalDate"					    tag="730" sfcodes="d"						>Legal Date</node>
-         <node domain="work"				property="note"					          tag="500" sfcodes="3a"					>General Note</node>
-         <node domain="work"				property="dissertationNote"				tag="502"				                >Dissertation Note</node>
+         <node domain="work"				property="musicNumber"					tag="730" sfcodes="n"						>Music Number</node>
+         <node domain="work"				property="musicVersion"					tag="130" sfcodes="o"						>Music Version</node>
+         <node domain="work"				property="musicVersion"					tag="240" sfcodes="o"						>Music Version</node>
+         <node domain="work"				property="legalDate"					tag="130" sfcodes="d"						>Legal Date</node>
+         <node domain="work"				property="legalDate"					tag="730" sfcodes="d"						>Legal Date</node>
+         <node domain="work"				property="note"					        tag="500" sfcodes="3a"					>General Note</node>
+         <node domain="work"				property="dissertationNote"				tag="502" sfcodes="a"		                >Dissertation Note</node>
+         <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
+         <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>
+         
          <node domain="work"				property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
          <node domain="work"				property="contentsNote"					  tag="520" sfcodes="a" ind2=" "	>Contents Note</node>
          <node domain="work"				property="temporalCoverageNote"		tag="513" sfcodes="b"						>Period Covered Note</node>
@@ -883,10 +886,16 @@ let $id024-028:=
 declare function marcbib2bibframe:handle-system-number( $sys-num   ) 
 {
  if (fn:starts-with(fn:normalize-space($sys-num),"(DE-588")) then
-                                    let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
-                                    return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
-                                else
-                                    element bf:systemNumber {fn:string($sys-num)}
+         let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
+         return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
+  else   if ( fn:contains(fn:string($sys-num), "(OCoLC)" ) ) then
+	      let $iStr :=  marc2bfutils:clean-string(fn:replace($sys-num, "\(OCoLC\)", ""))                
+	      return       element bf:systemNumber {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"^ocm","")) }}
+else 	                      
+       element bf:systemNumber { element bf:Identifier { 
+                element bf:identifierValue {fn:string($sys-num)}
+            }
+       }
 };
 (:~
 :   This is the function generates full Identifier classes from m,y,z cancel/invalid identifiers and qualifiers
@@ -1530,25 +1539,17 @@ declare function marcbib2bibframe:generate-dissertation(
     ) as element ()* 
 {
 
-(
-(:element rdf:type {attribute rdf:resource{"http://bibframe.org/vocab/Dissertation"}},:)
-    if ($d/marcxml:subfield[@code="a"] and fn:count($d/*)=1) then
-        element bf:dissertationNote{fn:string($d/marcxml:subfield[@code="a"])}
-    else 
-	
-		if ($d/marcxml:subfield[@code="a"]) then
-			element bf:dissertationNote{fn:string($d/marcxml:subfield[@code="a"])}
-		else (),
-		if ($d/marcxml:subfield[@code="b"]) then
-			element bf:dissertationDegree{fn:string($d/marcxml:subfield[@code="b"])}
-		else (),
-		if ($d/marcxml:subfield[@code="c"]) then
-			element bf:dissertationInstitution{marc2bfutils:clean-string($d/marcxml:subfield[@code="c"])}
-		else (),
-		if ($d/marcxml:subfield[@code="d"]) then
-			element bf:dissertationYear{marc2bfutils:clean-string($d/marcxml:subfield[@code="d"])}
-		else (),
-		if ($d/marcxml:subfield[@code="o"]) then
+((: simple properties already generated
+ marcbib2bibframe:generate-simple-property($d,"work"),:)
+
+    if ($d/marcxml:subfield[@code="c"] ) then
+        element bf:dissertationInstitution {element bf:Organization {
+                element bf:label {fn:string($d/marcxml:subfield[@code="c"])}}
+                }
+                
+    else (), 
+
+	if ($d/marcxml:subfield[@code="o"]) then
 			element bf:dissertationIdentifier  { element bf:Identifier {
 			     element bf:identifierValue{fn:string($d/marcxml:subfield[@code="o"])}			   
 			     }
@@ -2355,7 +2356,7 @@ declare function marcbib2bibframe:generate-work(
             ()
    let $langs := marcbib2bibframe:get-languages ($marcxml)
    let $dissertation:= 
-   	for $diss in $marcxml/marcxml:datafield[@tag="502"]
+   	    for $diss in $marcxml/marcxml:datafield[@tag="502"]
       		return marcbib2bibframe:generate-dissertation($diss)
     let $audience := fn:substring($cf008, 23, 1)
     let $audience := 
@@ -2449,9 +2450,8 @@ declare function marcbib2bibframe:generate-work(
                     for $sf in $d/marcxml:subfield[@code="u"]
                         return element bf:annotationBody { attribute rdf:resource {fn:string($sf)} },
                         
-                    element cnt:chars { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },
-                    (:element bf:annotationBody { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },
-                        :)
+                    (:element cnt:chars { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },:)
+                    
                     let $property-name:= if  ($abstract-type="Summary") then "bf:summaryOf" 
                     else   if  ($abstract-type="Review") then "bf:reviewOf"
                     else "bf:annotates"
