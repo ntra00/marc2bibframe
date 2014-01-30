@@ -2059,6 +2059,242 @@ declare variable $marc2bfutils:carriers := (
 		</term>
 	</terms>
 	);
+declare variable $marc2bfutils:content-types := (
+	<terms>
+		<term code="crd">
+			<aL>cartographic dataset</aL>
+			<scopeNote>MARC Leader/06: e or f</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cri">
+			<aL>cartographic image</aL>
+			<scopeNote>MARC Leader/06: e or f</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="crm">
+			<aL>cartographic moving image</aL>
+			<scopeNote>MARC Leader/06: e or f</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="crt">
+			<aL>cartographic tactile image</aL>
+			<scopeNote>MARC Leader/06: e or f</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="crn">
+			<aL>cartographic tactile three-dimensional form</aL>
+			<scopeNote>MARC Leader/06: e or f</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="crf">
+			<aL>cartographic three-dimensional form</aL>
+			<scopeNote>MARC Leader/06: e or f</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cod">
+			<aL>computer dataset</aL>
+			<scopeNote>MARC Leader/06: m</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cop">
+			<aL>computer program</aL>
+			<scopeNote>MARC Leader/06: m</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="ntv">
+			<aL>notated movement</aL>
+			<scopeNote>MARC Leader/06: a or t</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="ntm">
+			<aL>notated music</aL>
+			<scopeNote>MARC Leader/06: c or d</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="prm">
+			<aL>performed music</aL>
+			<scopeNote>MARC Leader/06: j</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="snd">
+			<aL>sounds</aL>
+			<scopeNote>MARC Leader/06: i</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="spw">
+			<aL>spoken word</aL>
+			<scopeNote>MARC Leader/06: i</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="sti">
+			<aL>still image</aL>
+			<scopeNote>MARC Leader/06: k</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tci">
+			<aL>tactile image</aL>
+			<scopeNote>MARC Leader/06: k</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tcm">
+			<aL>tactile notated music</aL>
+			<scopeNote>MARC Leader/06: c or d</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tcn">
+			<aL>tactile notated movement</aL>
+			<scopeNote>MARC Leader/06: a or t</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tct">
+			<aL>tactile text</aL>
+			<scopeNote>MARC Leader/06: a or t</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tcf">
+			<aL>tactile three-dimensional form</aL>
+			<scopeNote>MARC Leader/06: r</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="txt">
+			<aL>text</aL>
+			<scopeNote>MARC Leader/06: a or t</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tdf">
+			<aL>three-dimensional form</aL>
+			<scopeNote>MARC Leader/06: r</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tdm">
+			<aL>three-dimensional moving image</aL>
+			<scopeNote>MARC Leader/06: g</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="tdi">
+			<aL>two-dimensional moving image</aL>
+			<scopeNote>MARC Leader/06: g</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="xxx">
+			<aL>other</aL>
+			<scopeNote>MARC Leader/06: o or p</scopeNote>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="zzz">
+			<aL>unspecified</aL>
+			<memberOf>RDAContentTypes</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+	</terms>);
+declare variable $marc2bfutils:media-types := ( 
+    <terms>
+        <!-- RDA media types -->
+        <!-- http://www.loc.gov/standards/valuelist/rdamedia.html  -->
+        <term code="s">
+            <aL>audio</aL>
+            <vL>sound recording</vL>
+            <scopeNote>MARC 007/00: s</scopeNote>
+            <scopeNote>MARC 337/$b: s</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="c">
+            <aL>computer</aL>
+            <vL>electronic resource</vL>
+            <scopeNote>MARC 007/00: c</scopeNote>
+            <scopeNote>MARC 337/$b: c</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="h">
+            <aL>microform</aL>
+            <scopeNote>MARC 007/00: h</scopeNote>
+            <scopeNote>MARC 337/$b: h</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="p">
+            <aL>microscopic</aL>
+            <scopeNote>MARC 007/00: [n/a]</scopeNote>
+            <scopeNote>MARC 337/$b: p</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="g">
+            <aL>projected</aL>
+            <vL>projected graphic</vL>
+            <vL>motion picture</vL>
+            <scopeNote>MARC 007/00: g</scopeNote>
+            <scopeNote>MARC 007/00: m</scopeNote>
+            <scopeNote>MARC 337/$b: g</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="e">
+            <aL>stereographic</aL>
+            <scopeNote>MARC 007/00: [n/a]</scopeNote>
+            <scopeNote>MARC 337/$b: e</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="n">
+            <aL>unmediated</aL>
+            <vL>text</vL>
+            <vL>non-projected graphic</vL>
+            <scopeNote>MARC 007/00: t</scopeNote>
+            <scopeNote>MARC 007/00: k</scopeNote>
+            <scopeNote>MARC 337/$b: n</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="v">
+            <aL>video</aL>
+            <vL>videorecording</vL>
+            <scopeNote>MARC 007/00: v</scopeNote>
+            <scopeNote>MARC 337/$b: v</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="x">
+            <aL>other</aL>
+            <scopeNote>MARC 337/$b: x</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        <term code="z">
+            <aL>unspecified</aL>
+            <scopeNote>MARC 007/00: z</scopeNote>
+            <scopeNote>MARC 337/$b: z</scopeNote>
+            <memberOf>RDAMediaTypes</memberOf>
+            <subClassOf></subClassOf>
+        </term>
+        
+    </terms>);
 
 (:~
 :   This function takes a string and 
@@ -2541,4 +2777,10 @@ return
 };
 declare function marc2bfutils:generate-carrier-code($carrier-text as xs:string) as xs:string {
  fn:string( $marc2bfutils:carriers/term[aL=$carrier-text]/@code)			
+};
+declare function marc2bfutils:generate-content-code($content-text as xs:string) as xs:string {
+ fn:string( $marc2bfutils:content-types/term[aL=$content-text]/@code)			
+};
+declare function marc2bfutils:generate-mediatype-code($media-text as xs:string) as xs:string {
+ fn:string( $marc2bfutils:media-types/term[aL=$media-text]/@code)			
 };
