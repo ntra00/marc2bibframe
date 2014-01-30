@@ -40,10 +40,8 @@ declare namespace rdfs          = "http://www.w3.org/2000/01/rdf-schema#";
 declare namespace bf            = "http://bibframe.org/vocab/";
 declare namespace madsrdf       = "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
-declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
-declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 declare namespace dcterms       = "http://purl.org/dc/terms/";
-declare namespace cnt              = "http://www.w3.org/2011/content#";
+
 declare variable $RDFXMLnested2flat:resourcesToIgnore := 
     <ignore>
         <class>Provider</class>
@@ -151,7 +149,10 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             $resources/self::bf:HeldMaterial,
             $resources/self::bf:HeldItem,
             $resources/self::bf:Holding,
-            $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding|HeldMaterial|HeldItem)"))]
+            $resources/self::bf:Summary,
+            $resources/self::bf:Review,
+            $resources/self::bf:TableOfContents,
+            $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding|HeldMaterial|HeldItem|Summary|Review|TableOfContents)"))]
             
             }
         </rdf:RDF>

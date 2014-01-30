@@ -1660,6 +1660,406 @@ declare variable $marc2bfutils:lang-xwalk:=
    </language>
 </xml-langs>
 );
+declare variable $marc2bfutils:carriers := (
+	<terms>
+		<!-- Audio Carriers -->
+		<term code="sg">
+			<aL>audio cartridge</aL>
+			<scopeNote>MARC 007/01: g (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="se">
+			<aL>audio cylinder</aL>
+			<scopeNote>MARC 007/01: e (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="sd">
+			<aL>audio disc</aL>
+			<scopeNote>MARC 007/01: d (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="si">
+			<aL>sound track reel</aL>
+			<scopeNote>MARC 007/01: i (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="sq">
+			<aL>audio roll</aL>
+			<scopeNote>MARC 007/01: q (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="ss">
+			<aL>audiocassette</aL>
+			<scopeNote>MARC 007/01: s (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="st">
+			<aL>audiotape reel</aL>
+			<scopeNote>MARC 007/01: t (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="sz">
+			<aL>other (Audio Carrier)</aL>
+			<scopeNote>MARC 007/01: z (Sound recording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>AudioCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Computer carriers -->
+		<term code="ck">
+			<aL>computer card</aL>
+			<scopeNote>MARC 007/01: k (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cb">
+			<aL>computer chip cartridge</aL>
+			<scopeNote>MARC 007/01: b (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cd">
+			<aL>computer disc</aL>
+			<scopeNote>MARC 007/01: d (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="ce">
+			<aL>computer disc cartridge</aL>
+			<scopeNote>MARC 007/01: e (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="ca">
+			<aL>computer tape cartridge</aL>
+			<scopeNote>MARC 007/01: a (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cf">
+			<aL>computer tape cassette</aL>
+			<scopeNote>MARC 007/01: f (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="ch">
+			<aL>computer tape reel</aL>
+			<scopeNote>MARC 007/01: h (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cr">
+			<aL>online resource</aL>
+			<scopeNote>MARC 007/01: r (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="cz">
+			<aL>other (Computer Carrier)</aL>
+			<scopeNote>MARC 007/01: z (Electronic resource)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ComputerCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Microform carriers -->
+		<term code="ha">
+			<aL>aperture card</aL>
+			<scopeNote>MARC 007/01: a (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="he">
+			<aL>microfiche</aL>
+			<scopeNote>MARC 007/01: e (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hf">
+			<aL>microfiche cassette</aL>
+			<scopeNote>MARC 007/01: f (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf></memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hb">
+			<aL>microfilm cartridge</aL>
+			<scopeNote>MARC 007/01: b (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hc">
+			<aL>microfilm cassette</aL>
+			<scopeNote>MARC 007/01: c (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hd">
+			<aL>microfilm reel</aL>
+			<scopeNote>MARC 007/01: d (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hj">
+			<aL>microfilm roll</aL>
+			<scopeNote>MARC 007/01: j (Microfilm)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hh">
+			<aL>microfilm slip</aL>
+			<scopeNote>MARC 007/01: h (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hg">
+			<aL>microopaque</aL>
+			<scopeNote>MARC 007/01: g (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="hz">
+			<aL>other (Microform Carrier)</aL>
+			<scopeNote>MARC 007/01: z (Microform)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroformCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Microscopic carriers -->
+		<term code="pp">
+			<aL>microscope slide</aL>
+			<scopeNote>MARC 008/33: p (Visual Materials)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroscopicCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="pz">
+			<aL>other (Microscopic Carrier)</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>MicroscopicCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Projected image carriers -->
+		<term code="mc">
+			<aL>film cartridge</aL>
+			<scopeNote>MARC 007/01: c (Motion picture)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="mf">
+			<aL>film cassette</aL>
+			<scopeNote>MARC 007/01: f (Motion picture)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="mr">
+			<aL>film reel</aL>
+			<scopeNote>MARC 007/01: r (Motion picture)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="mo">
+			<aL>film roll</aL>
+			<scopeNote>MARC 007/01: o (Motion picture)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="gd">
+			<aL>filmslip</aL>
+			<scopeNote>MARC 007/01: d (Projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="gf">
+			<aL>filmstrip</aL>
+			<scopeNote>MARC 007/01: f (Projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="gc">
+			<aL>filmstrip cartridge</aL>
+			<scopeNote>MARC 007/01: c (Projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="gt">
+			<aL>overhead transparency</aL>
+			<scopeNote>MARC 007/01: t (Projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="gs">
+			<aL>slide</aL>
+			<scopeNote>MARC 007/01: s (Projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="mz">
+			<aL>other (Projected-image Carrier)</aL>
+			<scopeNote>MARC 007/01: z (Motion picture)</scopeNote>
+			<scopeNote>MARC 007/01: z (Projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>ProjectedImageCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Stereographic carriers -->
+		<term code="eh">
+			<aL>stereograph card</aL>
+			<scopeNote>MARC 007/01: h (Non-projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>StereographicCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="es">
+			<aL>stereograph disc</aL>
+			<scopeNote>MARC 007/01: s (Projected graphic)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>StereographicCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="ez">
+			<aL>other (Stereographic Carrier)</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>StereographicCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Unmediated carriers -->
+		<term code="no">
+			<aL>card</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnmediatedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="nn">
+			<aL>flipchart</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnmediatedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="na">
+			<aL>roll</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnmediatedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="nb">
+			<aL>sheet</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnmediatedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="nc">
+			<aL>volume</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnmediatedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="nr">
+			<aL>object</aL>
+			<scopeNote>MARC Bibliographic Leader/06: r</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnmediatedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="nz">
+			<aL>other (Unmediated carrier)</aL>
+			<scopeNote>MARC 007/01: no code</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnmediatedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Video carriers -->
+		<term code="vc">
+			<aL>video cartridge</aL>
+			<scopeNote>MARC 007/01: c (Videorecording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>VideoCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="vf">
+			<aL>videocassette</aL>
+			<scopeNote>MARC 007/01: f (Videorecording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>VideoCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="vd">
+			<aL>videodisc</aL>
+			<scopeNote>MARC 007/01: d (Videorecording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>VideoCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="vr">
+			<aL>videotape reel</aL>
+			<scopeNote>MARC 007/01: r (Videorecording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>VideoCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<term code="vz">
+			<aL>other (Video Carrier)</aL>
+			<scopeNote>MARC 007/01: z (Videorecording)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>VideoCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+		<!-- Unspecified carriers -->
+		<term code="zu">
+			<aL>unspecified</aL>
+			<scopeNote>MARC 007/01: u (Unspecified)</scopeNote>
+			<memberOf>RDACarriers</memberOf>
+			<memberOf>UnspecifiedCarriers</memberOf>
+			<subClassOf></subClassOf>
+		</term>
+	</terms>
+	);
+
 (:~
 :   This function takes a string and 
 :   attempts to clean it up 
@@ -2135,8 +2535,10 @@ return
 			element bf:reformatqual{$reformatqual},			
 			element bf:form-category007{$marccat},
 			element bf:form-smd007{$marcsmd},
-			element bf:edited {$edited}	
-			
+			element bf:edited {$edited}				
 		}
 		
+};
+declare function marc2bfutils:generate-carrier-code($carrier-text as xs:string) as xs:string {
+ fn:string( $marc2bfutils:carriers/term[aL=$carrier-text]/@code)			
 };

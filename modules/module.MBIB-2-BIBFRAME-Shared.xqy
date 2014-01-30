@@ -186,7 +186,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		          >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		          >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a,z"		        >Standard Technical Report Number</node>
-       <!--  <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		>sound recording publisher issue number</node>-->
+   <!--  <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		>sound recording publisher issue number</node>-->
          <node domain="instance"	property="matrixNumber"						tag="028" sfcodes="a" ind1="1"		>sound recording publisher matrix master number</node>
          <node domain="instance"	property="musicPlate"					  	tag="028" sfcodes="a" ind1="2"		>music publication number assigned by publisher</node>
          <node domain="instance"	property="musicPublisherNumber"		tag="028" sfcodes="a" ind1="3"	  >other publisher number for music</node>
@@ -197,18 +197,18 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="systemNumber"						tag="035" sfcodes="a,z"         	>system control number</node>
          <node domain="instance"		property="studyNumber"						tag="036" sfcodes="a"		          >original study number assigned by the producer of a computer file</node>
          <node domain="instance"		property="stockNumber"						tag="037" sfcodes="a"		          >stock number for acquisition</node>
-         <node domain="instance"		property="reportNumber"						tag="088" sfcodes="a,z"       	  >technical report number</node>
-         <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="a"             >Description source</node>
-         <node domain="work"		    property="descriptionSource"			tag="040" sfcodes="c"             >Description source</node>
-         <node domain="work"		    property="descriptionSource"		  tag="040" sfcodes="d"             >Description source</node>
-         <node domain="work"	        property="descriptionConventions"   tag="040" sfcodes="e"             >Description conventions</node>
-         <node domain="work"            property="descriptionLanguage"		tag="040" sfcodes="b"           >Description Language </node>
-         <node domain="work"	   property="classificationSpanEnd"	      tag="083" sfcodes="c"           >classificationSpanEnd </node>
+         <node domain="instance"	property="reportNumber"						tag="088" sfcodes="a,z"       	  >technical report number</node>
+         <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/"           >Description source</node>
+         <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="c"  uri="http://id.loc.gov/vocabulary/organizations/"           >Description source</node>
+         <node domain="annotation"	property="descriptionSource"		  tag="040" sfcodes="d"    uri="http://id.loc.gov/vocabulary/organizations/"          >Description source</node>
+         <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"      uri="http://id.loc.gov/vocabulary/descriptiveconventions/"           >Description conventions</node>
+         <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"      uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
+         <node domain="work"	    property="classificationSpanEnd"	tag="083" sfcodes="c"           >classificationSpanEnd </node>
          <node domain="work"		property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
          <node domain="work"		property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
          <node domain="work"		property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
          
-         <node domain="title"		property="titleQualifier"					tag="210" sfcodes="b"          >title qualifier</node>
+         <node domain="title"		property="titleQualifier"			tag="210" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
@@ -239,6 +239,10 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"	property="editionResponsibility"	      tag="250" sfcodes="b"        >Edition Responsibility</node>
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
+         
+         <node domain="instance"	property="mediaCategory "					        tag="337" sfcodes="b"	uri="http://id.loc.gov/vocabulary/mediaCategory/"		    >Media Category</node>
+         <node domain="instance"	property="carrierCategory"					        tag="338" sfcodes="b"	uri="http://id.loc.gov/vocabulary/carriers/"		    >Physical Description</node>
+         <node domain="instance"	property="carrierCategory"					        tag="338" sfcodes="a"	uri="http://id.loc.gov/vocabulary/carriers/"		    >Physical Description</node>
          <node domain="work"				property="musicKey"					      tag="384" sfcodes="a"		    		> Key </node>
          <node domain="work"				property="musicKey"					      tag="130" sfcodes="r"				    > Key </node>
          <node domain="work"				property="musicKey"					      tag="240" sfcodes="r"			 	    > Key </node>
@@ -262,9 +266,9 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="contentCategory"				tag="700" sfcodes="h"						>Nature of content</node>
          <node domain="work"				property="contentCategory"				tag="710" sfcodes="h"						>Nature of content</node>
          <node domain="work"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>
-         <node domain="work"				property="originDate"					    tag="130" sfcodes="f"						>Date of origin</node>
-         <node domain="work"				property="originDate"					    tag="730" sfcodes="f"						>Date of origin</node>
-         <node domain="work"				property="originDate"					    tag="046" sfcodes="kl"					>Date of origin</node>
+         <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Date of origin</node>
+         <node domain="work"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
+         <node domain="work"				property="originDate"					tag="046" sfcodes="kl"					>Date of origin</node>
          <node domain="work"				property="formDesignation"				tag="130" sfcodes="k"						>Form Designation</node>
          <node domain="work"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
          <node domain="work"				property="musicNumber"       			tag="130" sfcodes="n"						>Music Number</node>
@@ -373,25 +377,36 @@ declare variable $mbshared:relationships :=
 :   @param  $marcxml       element is the MARCXML record   
 :   @return bf:*           annotation element
 :)
-declare function mbshared:generate-admin-data(
-    $marcxml as element(marcxml:record)
-   
+declare function mbshared:generate-admin-metadata(
+    $marcxml as element(marcxml:record)   
     ) as element (bf:annotation) 
 {
-
+    let $biblink:=fn:concat(
+                    "http://id.loc.gov/resources/bibs/",
+                    fn:string($marcxml/marcxml:controlfield[@tag eq "001"])                   
+                 )
     let $derivedFrom := 
         element bf:derivedFrom {
             attribute rdf:resource {
-                fn:concat(
-                    "http://id.loc.gov/resources/bibs/",
-                    fn:string($marcxml/marcxml:controlfield[@tag eq "001"])
-                 )
+                fn:concat($biblink,    ".marcxml.xml")                 
             }
         }
+      let $edited:=fn:concat(fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),1,4),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),5,2),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),7,2),"T",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),9,2),":",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),11,2))
+      let $changed:= (  element bf:generationProcess {fn:concat("DLC transform-tool:",$mbshared:last-edit)},
+                        element bf:changeDate {$edited}
+                      )
+      let $cataloging-meta:=
+            for $d in $marcxml/marcxml:datafield[@tag="040"]
+                return mbshared:generate-simple-property($d,"annotation")
+    let $annotates:= element bf:annotates {attribute rdf:resource {$biblink}}
         return
             element bf:annotation {
                 element bf:Annotation {
-                element bf:derivedFrom {$derivedFrom}
+               $derivedFrom,
+               $cataloging-meta,
+               $changed, 
+               $edited,
+               $annotates
                 }
             }
 };
@@ -407,18 +422,10 @@ declare function mbshared:generate-instance-from260(
     $workID as xs:string
     ) as element () 
 {
-
-    let $derivedFrom := 
+     let $biblink:= 
         element bf:derivedFrom {
-            attribute rdf:resource {
-                fn:concat(
-                    "http://id.loc.gov/resources/bibs/",
-                    fn:string($d/../marcxml:controlfield[@tag eq "001"])
-                 )
-            }
+            attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($d/../marcxml:controlfield[@tag eq "001"]))}
         }
-        
-    
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|222|242|210)")]
             for $t in $titles
@@ -443,7 +450,7 @@ declare function mbshared:generate-instance-from260(
            element bf:relatedInstance {
                 element bf:Instance {
                    $instance-title,
-                    $derivedFrom    ,            
+                    $biblink    ,            
                     (element bf:edition {marc2bfutils:clean-string($e/marcxml:subfield[@code="a"])},        
                         if ($e/marcxml:subfield[@code="b"]) then element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
                         else ()
@@ -549,13 +556,7 @@ Electronic
  	
     return 
         element bf:Instance {        
-           $issuance,           
-            (:if ($instanceType ne "") then
-                element rdf:type {
-                    attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , $instanceType) }
-                }
-            else
-                (),      :)         
+           $issuance,                            
             $instance-title,            
             $names,
             $edition,
@@ -569,9 +570,8 @@ Electronic
             $physdesc,
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
-                },
-           (: $notes,      :)  
-            $derivedFrom,
+                }, 
+            $biblink,
             $holdings
         }
 };
@@ -1094,7 +1094,7 @@ declare function mbshared:generate-physdesc
                 
                 return
                     if (   $src="rdamedia"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:mediaCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulay/test/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
+                           element bf:mediaCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
                                 }
                      else if         ($d/marcxml:subfield[@code="a"]) then
                       element bf:mediaCategory { 
@@ -1105,7 +1105,7 @@ declare function mbshared:generate-physdesc
                                     } 
                                 }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:mediaCategory {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/test/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
+                           element bf:mediaCategory {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
                         } 
                      else  (),  
                for $d in $marcxml/marcxml:datafield[@tag="338"]
@@ -1411,12 +1411,7 @@ declare function mbshared:generate-instance-from856(
     $workID as xs:string
     ) as element ()* 
 {
-    let $bibid:=$d/../marcxml:controlfield[@tag="001"]
-    let $biblink:= 
-        element bf:derivedFrom {
-            attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",$bibid)}
-        } 
- 
+    (:let $bibid:=$d/../marcxml:controlfield[@tag="001"]:)
         let $category:=         
             if (      fn:contains(
             		fn:string-join($d/marcxml:subfield[@code="u"],""),"hdl.") and(:u is repeatable:)
@@ -1459,8 +1454,7 @@ declare function mbshared:generate-instance-from856(
                		        mbshared:handle-856u($d)           		        ,
 	                    element bf:instanceOf {
 	                        attribute rdf:resource {$workID}
-	                  	},
-                    		$biblink,
+	                  	},                    		
                     		$annotates
                 	}
                 }
@@ -1489,8 +1483,7 @@ declare function mbshared:generate-instance-from856(
 	                    	                  attribute rdf:resource {                  	
 	                    		                 fn:normalize-space(fn:string($u))
 	                    		                }
-	                    		},                    		
-	                    $biblink,	                
+	                    		},                    			                        
 	                    $annotates
               		}
               	}
@@ -2502,19 +2495,15 @@ declare function mbshared:generate-work(
         element bf:derivedFrom {
             attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}
         }
-        let $edited:=fn:concat(fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),1,4),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),5,2),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),7,2),"T",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),9,2),":",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),11,2))
-      let $changed:= (  element bf:generationProcess {fn:concat("DLC transform-tool:",$mbshared:last-edit)},
-                        element bf:changeDate {$edited}
-                      )
     
-    let $schemes := 
+    (:let $schemes := 
             element madsrdf:isMemberOfMADSScheme {
                 attribute rdf:resource {"http://id.loc.gov/resources/works"}
-            }
+            }:)
  	let $work-simples:=
  	  for $d in $marcxml/marcxml:datafield
  	      return mbshared:generate-simple-property($d,"work")
- 	 
+ 	let $admin:=mbshared:generate-admin-metadata($marcxml) 
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
@@ -2547,18 +2536,19 @@ declare function mbshared:generate-work(
             $abstract-annotation,
             $audience,           
             $genre,
-       (:     $work3xx, :)
+       
             $cartography,
             $subjects,
             $gacs,            
             $work-classes,            
             $work-identifiers,            
-            (:$work-notes,:)
+            
             $complex-notes,
             $work-relateds,
       (:      $schemes,  removing madsrdf      :)    
             $biblink,
-            $changed,
+            $admin,
+           
             for $i in $instances 
                 return element  bf:hasInstance{$i},
              $instancesfrom856            
@@ -2589,6 +2579,7 @@ declare function mbshared:get-subject(
     ) as element()
 {
     let $subjectType := fn:string($marc2bfutils:subject-types/subject[@tag=$d/@tag])
+    let $subjectType:= if ($d[@tag="600"][marcxml:subfield[@code="t"]]) then "Work" else $subjectType
     let $details :=
 
 	if (fn:matches(fn:string($d/@tag),"(600|610|611|648|650|651|655|751)")) then	
@@ -3091,26 +3082,9 @@ declare function mbshared:get-title(
                             else ()
                             }
                        else (),
-                      (:element bf:titleValue {fn:string($d/marcxml:subfield[@code="a"][1])},:)
-                    (:  if ($d/marcxml:subfield[@code="b"] and fn:not(fn:matches($d/@tag,"(210|222)") )) then
-                      
-                        for $s in $d/marcxml:subfield[@code="b"]                        
-                            return        element bf:subtitle {fn:string($s)} 
-                     else (),:)
+                     
                      mbshared:generate-simple-property($d,"title")
-                     (:if ($d/marcxml:subfield[@code="b"] and fn:matches($d/@tag,"(210|222)") ) then element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="b"])} else (),:)
-                    (:  if ($d/marcxml:subfield[@code="n"] and fn:matches($d/@tag,"(245|246|247)") ) then
-                        for $s in $d/marcxml:subfield[@code="n"]
-                                return element bf:partNumber {fn:string($s)} 
-                       else (),:)
-                      (: if ($d/marcxml:subfield[@code="p"]) then 
-                        for $s in $d/marcxml:subfield[@code="p"]
-                        return element bf:partTitle {fn:string($s)}
-                        else (),:)
-                      (:  if ($d/marcxml:subfield[@code="f"]) then element bf:titleVariationDate {fn:string($d/marcxml:subfield[@code="f"])} else (),
-                         if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
-                            element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
-                        else ():)
+                   
                 }
              } (:end Title:)
              
@@ -3123,9 +3097,6 @@ declare function mbshared:get-title(
           
              mbshared:generate-titleNonsort($d,$title, $element-name),
        
-           (: if ($d/@tag="210" and $d/marcxml:subfield[@code="2"] ) then 
-             element bf:titleSource{fn:string($d/marcxml:subfield[@code="2"])} 
-            else (),:)
             mbshared:generate-880-label($d,"title")
         )
 };
@@ -3174,39 +3145,41 @@ declare function mbshared:generate-simple-property(
     ) as element ()*
 {
 (			
-  for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1]    [ fn:not(@ind2) or @ind2=$d/@ind2]
+  for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1][ fn:not(@ind2) or @ind2=$d/@ind2]
     let $return-codes:=
  			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
     let $precede:=fn:string($node/@startwith) 
+ 
     return 
       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)]                         
                         ) then
           let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))
           (:if return codes contains a comma, do for each subfield???, else string-join?:)
-        for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
-          let $text:=marc2bfutils:clean-string(fn:string-join($s," "))
-          
-          let $cancels:=mbshared:handle-cancels($d,$s)  
-          return 
-                if ($cancels) then
-                    element bf:identifier {element bf:Identifier {
-                            $cancels,
-                            element bf:identifierScheme {fn:string($d/marcxml:subfield[@code="2"])}
-                        }
-                    }
-                else if ( fn:not($node/@property="$2")) then                
-                    element {fn:concat("bf:",fn:string($node/@property))} {	               
-                        if (fn:not($node/@uri)) then
-                             fn:normalize-space(fn:concat($precede,  $text)     )    	                
-                        else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then
-                                attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:lower-case(fn:normalize-space($s)))}
-                        else if (fn:contains(fn:string($node/@property),"lccn")) then
-                                attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s," ",""))
-                                }
-                        
-                        else
-                                attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)}
-            	             }
+          for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
+               let $text:=marc2bfutils:clean-string(fn:string-join($s," "))
+               
+               let $cancels:=mbshared:handle-cancels($d,$s)  
+               return 
+                  if ($cancels) then
+                     element bf:identifier {element bf:Identifier {
+                             $cancels,
+                             element bf:identifierScheme {fn:string($d/marcxml:subfield[@code="2"])}
+                         }
+                     }
+                 else if ( fn:not($node/@property="$2")) then                
+                     element {fn:concat("bf:",fn:string($node/@property))} {	               
+                         if (fn:not($node/@uri)) then
+                              fn:normalize-space(fn:concat($precede,  $text)     )    	                
+                         else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then
+                                let $s:=fn:lower-case(fn:normalize-space($s))
+                                return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}
+                         else if (fn:contains(fn:string($node/@property),"lccn")) then
+                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s," ",""))
+                                 }
+                         
+                         else
+                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)}
+             	             }
                 else (:currently only $2 on identifiers:) 
                     element bf:identifier {element bf:Identifier {
                         element bf:identifierScheme {  fn:string($d/marcxml:subfield[@code="2"])},
@@ -3214,12 +3187,56 @@ declare function mbshared:generate-simple-property(
                         ,$cancels                        
                         }
                     }                 
-     else
+     else (:no matching nodes for this datafield:)
         ()
         
       )
 };
-
+(:~
+:   This is the function generates a literal property or simple uri from a string, using the nodes xml
+:   Example of usage: you need to convert the content of a subfield  before treating it like it's supposed to be treated.
+:    338 $a is the literal string, but you need the code, so you have to look it up.
+let $code :=marc2bfutils:generate-carrier-code("volume")
+mbshared:generate-property-from-text("338","a",$code,"work")
+   
+:       Options in this function are a prefix, (@startwith), indicator2, and concatenation of multiple @sfcodes.
+:       If @ind2 is absent on the node, there is no test, otherwise it must match the datafield @ind2
+:   <node domain="work" tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
+:
+:   @param  $d        element is the MARCXML tag
+:   @param  $domain       element is the domain for this element to sit in. is this needed?
+:                           maybe needed for building related works??
+:   @return bf:* as element()
+: 
+:)
+declare function mbshared:generate-property-from-text(
+    $tag as xs:string,
+    $sfcodes as xs:string,
+    $text as xs:string,
+    $domain as xs:string
+    ) as element ()*
+{
+for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$tag]
+    let $return-codes:=
+ 			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
+    let $precede:=fn:string($node/@startwith) 
+ 
+    return 
+              
+               element {fn:concat("bf:",fn:string($node/@property))} {	               
+                         if (fn:not($node/@uri)) then
+                              fn:normalize-space(fn:concat($precede,  $text)     )    	                
+                         else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then
+                                let $text:=fn:lower-case(fn:normalize-space($text))
+                                return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($text,"-",""))}
+                         else if (fn:contains(fn:string($node/@property),"lccn")) then
+                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($text," ",""))
+                                 }
+                         
+                         else
+                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),$text)}
+             	             } 
+};
 (:~
 :   This function generates a uniformTitle.
 :   It takes a specific datafield as input.
