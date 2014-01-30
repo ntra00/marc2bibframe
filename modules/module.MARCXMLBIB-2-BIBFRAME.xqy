@@ -38,6 +38,7 @@ module namespace marcbib2bibframe  = 'info:lc/id-modules/marcbib2bibframe#';
 (: MODULES :)
 import module namespace marcxml2madsrdf = "info:lc/id-modules/marcxml2madsrdf#" at "module.MARCXML-2-MADSRDF.xqy";
 import module namespace marc2bfutils = "info:lc/id-modules/marc2bfutils#" at "module.MARCXMLBIB-BFUtils.xqy";
+import module namespace restypes = "info:lc/id-modules/marc2bfresourcetypes#" at "module.MARCXMLBIB-ResourceTypes.xqy";
 
 (: NAMESPACES :)
 declare namespace marcxml       	= "http://www.loc.gov/MARC21/slim";
@@ -47,14 +48,10 @@ declare namespace rdfs          	= "http://www.w3.org/2000/01/rdf-schema#";
 declare namespace bf            	= "http://bibframe.org/vocab/";
 declare namespace madsrdf       	= "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
-declare namespace identifiers   	= "http://id.loc.gov/vocabulary/identifiers/";
-declare namespace notes  		    = "http://id.loc.gov/vocabulary/notes/";
- declare namespace dcterms	        = "http://purl.org/dc/terms/";
  declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
- declare namespace cnt              = "http://www.w3.org/2011/content#";
 
 (: VARIABLES :)
-declare variable $marcbib2bibframe:last-edit :="2014-01-27-T14ntra:00";
+declare variable $marcbib2bibframe:last-edit :="2014-01-29-T14:00:00";
 
 
 
@@ -140,7 +137,7 @@ declare variable $marcbib2bibframe:simple-properties:= (
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		          >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		          >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a,z"		        >Standard Technical Report Number</node>
-         <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		>sound recording publisher issue number</node>
+       <!--  <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		>sound recording publisher issue number</node>-->
          <node domain="instance"	property="matrixNumber"						tag="028" sfcodes="a" ind1="1"		>sound recording publisher matrix master number</node>
          <node domain="instance"	property="musicPlate"					  	tag="028" sfcodes="a" ind1="2"		>music publication number assigned by publisher</node>
          <node domain="instance"	property="musicPublisherNumber"		tag="028" sfcodes="a" ind1="3"	  >other publisher number for music</node>
@@ -385,7 +382,7 @@ declare variable $marcbib2bibframe:relationships :=
 :   This is the main function.  It expects a MARCXML record (with embedded hld:holdings optionally) as input.
 :   It generates bibframe RDF data as output.
 :
-:   @param  $marcxml        element is the top  level (may include marcxml and holdings)
+:   @param  $marcxml        element is the top  level (may include marcxml and opac  holdings)
 :   @return rdf:RDF as element()
 :)
 declare function marcbib2bibframe:marcbib2bibframe(
@@ -404,17 +401,19 @@ declare function marcbib2bibframe:marcbib2bibframe(
 
     return
         if ($marcxml/marcxml:leader) then
-            let $work := marcbib2bibframe:generate-work($marcxml, $about) 
+
+            let $work := 
+                if (fn:matches($marcxml/marcxml:leader,"(c|d|i|j)")) then
+                    restypes:generate-musical-work($marcxml, $about)
+                else
+                    marcbib2bibframe:generate-work($marcxml, $about) 
             
             return
-                element rdf:RDF {  
-                (:comment { fn:concat("last edited: ",$marcbib2bibframe:last-edit)},:)                
+                element rdf:RDF {                                
                     $work               
                 }
         else
-            element rdf:RDF {
-            	 (:comment {element dcterms:modified {$marcbib2bibframe:last-edit}},:)
-            	
+            element rdf:RDF {            	            	
                 comment {"No leader - invalid MARC/XML input"}                
             }
 };
