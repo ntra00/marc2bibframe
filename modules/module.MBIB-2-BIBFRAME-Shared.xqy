@@ -44,115 +44,10 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
  declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-02-04-T11:00:00";
+declare variable $mbshared:last-edit :="2014-02-05-T11:00:00";
 
 
-(:code=a unless specified:)
-declare variable $mbshared:identifiers :=
-    ( 
-    <identifiers>
-       
-   <vocab-identifiers>     
-<!--   	<property name="lccn" label="Library of Congress Control Number" domain="Instance"   marc="010- - /a,z"   tag="010"   sfcodes="a,z"/>-->
-	 <property name="nbn" label="National Bibliography Number" domain="Instance"   marc="015--/a,z"   tag="015"   sfcodes="a,z"/>
-		 <property name="nban" label="National bibliography agency control number"   domain="Instance"   marc="016--/a,z"   tag="016"   sfcodes="a,z"/>
-		 <property name="legalDeposit" label="copyright or legal deposit number"   domain="Instance"   marc="017--/a,z"   tag="017"   sfcodes="a,z"/>
-		 <property name="isbn" label="International Standard Bibliographic Number"   domain="Instance"   marc="020--/a,z"   tag="020"   sfcodes="a,z"/>
-		 <property name="issn" label="International Standard Serial Number" domain="Instance"   marc="022--/a,z,y"   tag="022"   sfcodes="a,z,y"/>
-		 <property name="issnL" label="linking International Standard Serial Number"   domain="Work"   marc="022--/l,m"   tag="022"   sfcodes="l,m"/>
-		 <property name="isrc" label="International Standard Recording Code" domain="Instance"   marc="0240-/a,z"   tag="024"   ind1="0"   sfcodes="a,z"/>
-		 <property name="upc" label="Universal Product Code" domain="Instance" marc="0241-/a,z"   tag="024"   ind1="1"   sfcodes="a,z" uri="http://www.checkupc.com/search.php?keyword=076714006997"/>
-		 <property name="ismn" label="International Standard Music Number" domain="Instance"   marc="0242-/a,z"   tag="024"   ind1="2"   sfcodes="a,z" uri="http://www.loc.gov/ismn/987-10-11110" />
-		 <property name="ean" label="International Article Identifier (EAN)" domain="Instance"   marc="0243-/a,z,d"   tag="024"   ind1="3"   sfcodes="a,z,d(sep by -)" uri="http://www.ean-search.org/perl/ean-search.pl?q=5099750442227"/>
-		 <property name="sici" label="Serial Item and Contribution Identifier" domain="Instance"   marc="0244-/a,z"   tag="024"   ind1="4"   sfcodes="a,z"/>
-		 <property name="$2" label="contents of $2"   domain="Instance"   marc="0247-+2'ansi'/a,z"   tag="024"   ind1="7"   sfcodes="a,z"/>
-		 
-		 		 
-		 <property name="lcOverseasAcq"   label="Library of Congress Overseas Acquisition Program number"   domain="Instance"   marc="025--/a"   tag="025"   sfcodes="a"/>
-		 <property name="fingerprint" label="fingerprint identifier" domain="Instance"   marc="026--/e"   tag="026"   sfcodes="e"/>
-		 <property name="strn" label="Standard Technical Report Number" domain="Instance"   marc="027--/a,z"   tag="027"   sfcodes="a,z"/>
-		 <property name="issueNumber" label="sound recording publisher issue number"   domain="Instance"   marc="0280-/a"   tag="028"   ind1="0"   sfcodes="a"/>
-		 <property name="matrixNumber" label="sound recording publisher matrix master number"   domain="Instance"   marc="0281-/a"   tag="028"   ind1="1"   sfcodes="a"/>
-		 <property name="musicPlate" label="music publication number assigned by publisher"   domain="Instance"   marc="0282-/a"   tag="028"   ind1="2"   sfcodes="a"/>
-		 <property name="musicPublisherNumber" label="other publisher number for music"   domain="Instance"   marc="0283-/a"   tag="028"   ind1="3"   sfcodes="a"/>
-		 <property name="videorecordingNumber"   label="publisher assigned videorecording number"   domain="Instance"   marc="0284-/a"   tag="028"   ind1="4"   sfcodes="a"/>
-		 <property name="publisherNumber" label="other publisher assigned number"   domain="Instance"   marc="0285-/a"   tag="028"   ind1="5"   sfcodes="a"/>
-		 <property name="coden" label="CODEN" domain="Instance" marc="030--/a,z" tag="030"   sfcodes="a,z" uri="http://cassi.cas.org/coden/"/>
-		 <property name="postalRegistration" label="postal registration number" domain="Instance"   marc="032--/a"   tag="032"   sfcodes="a"/>
-		 <property name="systemNumber" label="system control number" domain="Instance"   marc="035--/a,z"   tag="035"   sfcodes="a,z"/>
-		 <!--<property name="oclcNumber" domain="Instance"   marc="035 - - /a,z prefix 'OCOLC'"   tag="035"   sfcodes="a,z"/> -->
-		 <property name="studyNumber"   label="original study number assigned by the producer of a computer file"   domain="Instance"   marc="036--/a"   tag="036"   sfcodes="a"/>
-		 <property name="stockNumber" label="stock number for acquisition" domain="Instance"   marc="037--/a"   tag="037"   sfcodes="a"/>
-		 <property name="reportNumber" label="technical report number" domain="Instance"   marc="088--/a,z"   tag="088"   sfcodes="a,z"/>
-         <!--<property domain="Work"  tag ="502" name="dissertationIdentifier" sfcodes="o" >Dissertation identifier</property>-->		 
-		 <property name="hdl" label="handle for a resource" domain="Instance"   marc="555;856--/u('hdl' in URI)"   tag="856"   sfcodes="u('hdl' in URI)"/>
-		 <property name="doi" label="Digital Object Identifier" domain="Instance"   marc="856--/u('doi' in URI)"   tag="856"   sfcodes="u" uri="http://www.crossref.org/guestquery/"/>
-		 <!--<property name="isni" label="International Standard Name Identifier" domain="Agent"   marc="authority:0247-+2'isni'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
-		 <property name="orcid" label="Open Researcher and Contributor Identifier" domain="Agent"   marc="authority:0247-+2'orcid'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>
-		 <property name="viaf" label="Virtual International Authority File number" domain="Agent"   marc="authority:0247-+2'via,zf'/a,z"   tag="aut"   ind1="h"   ind2="o"   sfcodes="a,z"/>-->
-		 
-             </vocab-identifiers>
-    </identifiers>
-    );
-    (:notes are now in the simple list; this is obsolete: 2014-01-15 :)		
-declare variable $mbshared:notes-list:= (
-
-<notes>
-	<work-notes>
-		
-		<note tag ="306" property="duration" sfcodes="a">Playing time</note>		
-		<note tag ="310" property="frequency" sfcodes="a">Issue frequency</note>
-		<note tag ="310" property="frequencyNote" sfcodes="ab">Issue frequency</note>
-		<note tag ="321" property="frequencyNote" sfcodes="ab">Issue frequency</note>
-		<note tag ="130" property="contentCategory" sfcodes="h">Nature of content</note>
-		<note tag ="240" property="contentCategory" sfcodes="h">Nature of content</note>
-		<note tag ="243" property="contentCategory" sfcodes="h">Nature of content</note>
-        <note tag ="245" property="contentCategory" sfcodes="k">Nature of content</note>
-		<note tag ="336" property="contentCategory" sfcodes="a">Nature of content</note>
-        <note tag ="513" property="contentCategory" sfcodes="a">Nature of content</note>
-        <note tag ="516" property="contentCategory" sfcodes="a">Type of Computer File or Data Note</note>
-        <note tag ="730" property="contentCategory" sfcodes="h">Nature of content</note>
-        <note tag ="700" property="contentCategory" sfcodes="h">Nature of content</note>
-        <note tag ="710" property="contentCategory" sfcodes="h">Nature of content</note>
-        <note tag ="711" property="contentCategory" sfcodes="h">Nature of content</note>
-        <note tag ="130" property="originDate" sfcodes="f">Date of origin</note>
-        <note tag ="730" property="originDate" sfcodes="f">Date of origin</note>
-        
-<!--		contentCategory includes  336  /b (codes); 008/24-27BK(codes) ; 008/24-27CR(codes) --> 
-		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
-		<note tag ="502" property="dissertationNote" domain="Work">Dissertation Note</note>-->		
-		<note tag ="505" property="contentsNote" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
-				
-		<note tag ="513" property="temporalCoverageNote" sfcodes="b">Period Covered Note</note>		
-				
-		<note tag ="522" property="geographicCoverageNote">Geographic Coverage Note</note>
-		<note tag ="525" property="supplementaryContentNote" sfcodes="a" >Supplement Note</note>				
-		<note tag ="530" comment="WORK, but needs to be reworked to be an instance or to match with an instance (Delsey - Manifestation)" property="otherPhysicalFormat">Additional Physical Form Available Note </note>
-  	    <note tag ="555" comment="(link?)" property="index">Cumulative Index/Finding Aids Note </note>	
-		<note tag ="586" property="awardNote" sfcodes="3a">Awards Note</note>
-
-
-	</work-notes>
-
-	<instance-notes>	
-	   <note tag ="258" property="philatelicDataNote" sfcodes="ab">Philatelic data note</note>
-		<note tag ="300" property="illustrationNote" sfcodes="b">Illustrative content note</note>
-    <note tag ="345" property="aspectRatio" sfcodes="a">Aspect Ratio</note>
-		<note tag ="500" sfcodes="3a" property="note">General Note</note>		
-		<note tag ="504" property="supplementaryContentNote" startwith=". References: " comment="525a,504--/a+b(precede info in b with References:" sfcodes="ab">Supplementary content note</note>
-		<note tag ="506" property="accessCondition">Restrictions on Access Note</note>
-		<note tag ="507" property="graphicScaleNote" sfcodes="a" >Scale Note for Graphic Material</note>
-		<note tag ="508" property="creditsNote" startwith="Credits: "  comment="precede text with 'Credits:'" >Creation/Production Credits Note </note>
-		<note tag ="511" property="performerNote" comment="precede text with 'Cast:'" startwith="Cast: ">Participant or Performer Note </note>	
-		<note tag ="524" property="preferredCitation">Preferred Citation of Described Materials Note</note>		
-		<note tag ="541" sfcodes="cad" property="immediateAcquisition">Immediate Source of Acquisition Note</note>
-		<note tag ="546" property="languageNote" sfcodes="3a" >Language Note</note>
-		<note tag ="546" property="notation" sfcodes="b" >Language Notation(script)</note>
-	</instance-notes>
-</notes>
-		
-);
-
+  
 (:physdesc are now in the simple list; this is obsolete?: 2014-01-15 :)		 
 declare variable $mbshared:physdesc-list:= 
     (
@@ -230,8 +125,6 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partTitle"					tag="730" sfcodes="p"          >part title</node>
          <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
-         <node domain="title"		property="titleVariation"			     tag="246" sfcodes="abnp"      >title variation</node>
-         <node domain="title"		property="titleVariation"			     tag="247" sfcodes="abnp"      >title variation</node>
          
          <node domain="title"		property="titleSource"			     tag="210" sfcodes="2"      >title source</node>
          <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
@@ -315,6 +208,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="immediateAcquisition"		tag="541" sfcodes="cad"					>Immediate Source of Acquisition Note</node>
          <node domain="instance"		property="languageNote"					  tag="546" sfcodes="3a"					>Language Note</node>
          <node domain="instance"		property="notation"					      tag="546" sfcodes="b"				    >Language Notation(script)</node>
+         
   </properties>
 	)	;
 
@@ -798,8 +692,7 @@ let $id024-028:=
                                                                                       
                                         }
                                         else ()
-                                        ,
-                                      
+                                        ,                                      
                                         (:then deal with the z's:)
                                         if ( $this-tag/marcxml:subfield[fn:matches(@code,"z")]) then
                                             for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"z")]
@@ -1741,67 +1634,7 @@ else if (fn:matches($d/@tag,"(130|630)" ) and fn:number($d/@ind1) gt 0 ) then
 else ()
 
 };
-(:~
-:   This is the function generates 0xx  data for instance or work, based on mappings in $notes-list
-:   Returns subfield $a
-:
-::   @param  $marcxml       element is the marcxml record
-:   @param  $resource      string is the "work" or "instance"
-:   @return bf:* as element()
-:)
-declare function mbshared:generate-notes(
-   $marcxml as element(marcxml:record),
-    $resource as xs:string
-    ) as element ()*
-{
 
-    let $notes:= 
-	   if ($resource="instance") then 
-	       $mbshared:notes-list/instance-notes
-	   else 
-	       $mbshared:notes-list/work-notes
-
-    return 			
-	(	
-		for $note in $notes/note[@ind2]
-			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag][@ind2=$note/@ind2]
-			let $return-codes:=
- 				if ($note/@sfcodes) then fn:string($note/@sfcodes)
- 				else "a"
- 			let $precede:=fn:string($note/@startwith)
-			return
-		                element {fn:concat("bf:",fn:string($note/@property))} {	               
-		                    fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]," ")))
-		                },                
-		for $note in $notes/note[fn:not(@ind2)]
-			for $marc-note in $marcxml/marcxml:datafield[@tag eq $note/@tag]
-			
-					let $return-codes:=
- 						if ($note/@sfcodes) then fn:string($note/@sfcodes)
- 						else "a"
-	 				let $precede:= if ($marc-note/@tag!="504") then 
-	 							fn:string($note/@startwith)
-	 						else if ($marc-note/@tag="504" and $marc-note/marcxml:subfield[@code="b"]) then
-	 							fn:concat(fn:string($note/@startwith),marc2bfutils:clean-string($marc-note/marcxml:subfield[@code="b"]))
-		 					else ()
-					return
-					   if ($marc-note/marcxml:subfield[fn:contains($return-codes,@code)]) then
-	                			element {fn:concat("bf:",fn:string($note/@property))} {
-	                			    if (fn:string($marc-note/@tag)="310"  and $return-codes="a" ) then
-	                			        attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/frequency/",
-	                			                                fn:encode-for-uri(fn:normalize-space(fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")
-	                			                                                )))
-	                			                                                }	                			        
-	                			    else		if ($marc-note/@tag!="504" and $marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]) then	                    							                    						
-	                    						marc2bfutils:clean-string(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[fn:matches(@code,$return-codes)]," ")))	                    						
-	                    					else 
-	                    						fn:normalize-space(fn:concat($precede,fn:string-join($marc-note/marcxml:subfield[@code="a"]," ")))
-	                				}
-                        else ()
-                     
-		 	
-        )
-};
 (:533 to reproduction
 sample bib 723007
 :)
@@ -2341,7 +2174,7 @@ declare function mbshared:generate-work(
             }
 	let $work-identifiers := mbshared:generate-identifiers($marcxml,"work")
 	
-	let $work-classes := mbshared:generate-class($marcxml,"work")
+	let $work-classes := mbshared:generate-classification($marcxml,"work")
 	
  	let $subjects:= 		 
  		for $d in $marcxml/marcxml:datafield[fn:matches(fn:string-join($marc2bfutils:subject-types//@tag," "),fn:string(@tag))]		
@@ -2371,7 +2204,7 @@ declare function mbshared:generate-work(
                             if ($subfield/@code="g") then "bf:note" 
                             else if ($subfield/@code="r") then "bf:creator" 
                             else if ($subfield/@code="u") then "rdf:resource" 
-                            else fn:concat("bf:f505c" , fn:string($subfield/@code))
+                            else "bf:note" 
                         let $sfdata := fn:replace(fn:string($subfield), " --", "")
                         return
                             if ($elname eq "rdf:resource") then
@@ -2456,17 +2289,14 @@ declare function mbshared:generate-work(
             $abstract,
             $abstract-annotation,
             $audience,           
-            $genre,
-       
+            $genre,       
             $cartography,
             $subjects,
             $gacs,            
             $work-classes,            
-            $work-identifiers,            
-            
+            $work-identifiers,                        
             $complex-notes,
-            $work-relateds,
-      (:      $schemes,  removing madsrdf      :)    
+            $work-relateds,      
             $biblink,
             $admin,
            
@@ -2999,7 +2829,7 @@ declare function mbshared:get-title(
      let $title := fn:normalize-space($title)
      
      let $element-name :=
-            if ($d/@tag eq "246" ) then 
+            if ($d/@tag eq "246" or $d/@tag eq "247") then 
                 "bf:titleVariation" 
             else  if ($d/@tag = "222" ) then
                 "bf:keyTitle" 
@@ -3080,7 +2910,7 @@ return element bf:translationOf {
 :   This is the function generates a literal property or simple uri from a marc tag
 :       Options in this function are a prefix, (@startwith), indicator2, and concatenation of multiple @sfcodes.
 :       If @ind2 is absent on the node, there is no test, otherwise it must match the datafield @ind2
-:   <node domain="work" tag ="505" property="contents" ind2=" " sfcodes="agrtu" >Formatted Contents Note</note>
+:   <node domain="work" tag ="500" property="note" ind2=" " sfcodes="ab" >Note</note>
 :
 :   @param  $d        element is the MARCXML tag
 :   @param  $domain       element is the domain for this element to sit in. is this needed?
@@ -3350,13 +3180,13 @@ return
             fn:false() 
 };
 (:~
-:   This function processes out the leader and control fields
-:
+:   This function generates uris to ddc, nlm,lcc classifications or a Classification node
+:    classificationItem is retained, even though it looks like holdings data.
 :  $marcxml    is marcxml:record
 :  $resource is work or instance
 :   @return ??
 :)
-declare function mbshared:generate-class(
+declare function mbshared:generate-classification(
        $marcxml as element(marcxml:record),
     $resource as xs:string
     ) as element ()*    
@@ -3452,51 +3282,48 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                                    else if (fn:matches($this-tag/@tag,"(084|086)") and $this-tag/marcxml:subfield[@code="2"] ) then element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
                                    else ()
                                ,                        
-                        if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="m"] ) then
-                            element bf:classificationDesignation  {
-                                if ($this-tag/marcxml:subfield[@code="m"] ="a") then "standard" 
-                                else if ($this-tag/marcxml:subfield[@code="m"] ="b") then "optional" 
-                                else ()
-                            }
-                        else (),                                    
-            	       element bf:classificationNumber {fn:string($cl)},
-            	       element bf:label {fn:string($cl)},
-             	       if ( $assigner) then 
-                         	element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",fn:encode-for-uri($assigner))}}
-                       else (),             			
-			            	
-           	           if ( 
-             		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
-             		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
-            	 		   ) then  
-                            element bf:classificationEdition {
-                                if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="1") then
-								    "abridged"
-                                else if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="0") then							
-								    "full"
-								else if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] ) then
-								    fn:string($this-tag/marcxml:subfield[@code="2"] )
-								else ()
-							}
-                        else (),
-						
-                        if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
-						    element bf:classificationSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
-						else (),			
-                        
-            
-                        if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="z"]) then
-						 	element bf:classificationTable  {fn:string( $this-tag/marcxml:subfield[@code="z"])} 
-                        else (),
-
-                        if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="y"]) then
-					 		element bf:classificationTableSeq  {fn:string( $this-tag/marcxml:subfield[@code="y"])} 
-                        else ()
+                                if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="m"] ) then
+                                    element bf:classificationDesignation  {
+                                        if ($this-tag/marcxml:subfield[@code="m"] ="a") then "standard" 
+                                        else if ($this-tag/marcxml:subfield[@code="m"] ="b") then "optional" 
+                                        else ()
+                                    }
+                                else (),                                    
+                     	       element bf:classificationNumber {fn:string($cl)},
+                     	       element bf:label {fn:string($cl)},
+                      	       if ( $assigner) then 
+                                  	element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",fn:encode-for-uri($assigner))}}
+                                else (),             			
+         			            	
+                    	       if ( 
+                      		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
+                      		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
+                     	 		   ) then  
+                                     element bf:classificationEdition {
+                                         if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="1") then
+         								    "abridged"
+                                         else if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="0") then							
+         								    "full"
+         								else if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] ) then
+         								    fn:string($this-tag/marcxml:subfield[@code="2"] )
+         								else ()
+         							}
+                                 else (),
+         						
+                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="c"]) then 
+         						    element bf:classificationSpanEnd {fn:string($this-tag/marcxml:subfield[@code="c"])}
+         						else (),			
+                                             
+                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="z"]) then
+         						 	element bf:classificationTable  {fn:string( $this-tag/marcxml:subfield[@code="z"])} 
+                                 else (),
+         
+                                 if (fn:matches($this-tag/@tag,"083") and $this-tag/marcxml:subfield[@code="y"]) then
+         					 		element bf:classificationTableSeq  {fn:string( $this-tag/marcxml:subfield[@code="y"])} 
+                                 else ()
                     }
             }
      else ()
                         
-            )
-            
-            
+            )                        
 };
