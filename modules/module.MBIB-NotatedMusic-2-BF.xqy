@@ -58,11 +58,17 @@ declare function music:generate-notatedmusic-work(
    
     let $types := mbshared:get-resourceTypes($marcxml)
         
-    let $mainType := "Music"
+    let $mainType := "Work" (:NotatedMusic?:)
     return    
         element {fn:concat("bf:" , $mainType)} {
                     attribute rdf:about {$workID},            
-                $types,
-                $instances
+         for $t in fn:distinct-values($types)
+            return            
+                  element rdf:type {
+                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
+                },
+                 
+            for $i in $instances 
+                return element  bf:hasInstance{$i}
          }
 };

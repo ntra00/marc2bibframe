@@ -107,9 +107,18 @@ declare function marcbib2bibframe:marcbib2bibframe(
                     bfdefault:generate-default-work($marcxml, $about) 
             
             return
-                element rdf:RDF {                                
+               <rdf:RDF
+                        xmlns:rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+                        xmlns:rdfs          = "http://www.w3.org/2000/01/rdf-schema#"
+                        xmlns:bf            = "http://bibframe.org/vocab/"
+                        xmlns:madsrdf       = "http://www.loc.gov/mads/rdf/v1#"
+                        xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"                  
+                        xmlns:dcterms       = "http://purl.org/dc/terms/"
+                        >
+                {                          
                     $work               
                 }
+                </rdf:RDF>
  else
         element rdf:RDF {            	            	
             comment {"No leader - invalid MARC/XML input"}                

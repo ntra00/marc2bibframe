@@ -41,7 +41,7 @@ declare namespace rdfs          	= "http://www.w3.org/2000/01/rdf-schema#";
 declare namespace bf            	= "http://bibframe.org/vocab/";
 declare namespace madsrdf       	= "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
- declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
+declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
 declare variable $mbshared:last-edit :="2014-02-05-T11:00:00";
@@ -94,7 +94,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="stockNumber"						tag="037" sfcodes="a"		 group="identifiers"         >stock number for acquisition</node>
          <node domain="instance"	property="reportNumber"						tag="088" sfcodes="a"       	 group="identifiers" >technical report number</node>
          <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/"           >Description source</node>
-             <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="c"   uri="http://id.loc.gov/vocabulary/organizations/"           >Description source</node>
+         <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="c"   uri="http://id.loc.gov/vocabulary/organizations/"           >Description source</node>
          <node domain="annotation"	property="descriptionSource"		  tag="040" sfcodes="d"     uri="http://id.loc.gov/vocabulary/organizations/"          >Description source</node>
          <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptiveconventions/"           >Description conventions</node>
          <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
@@ -133,12 +133,13 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"	    property="treatySignator"		    	tag="710" sfcodes="g"         >treaty Signator</node>
          <node domain="instance"	property="edition"					      tag="250"                    >Edition</node>
          <node domain="instance"	property="editionResponsibility"	      tag="250" sfcodes="b"        >Edition Responsibility</node>
-         <node domain="cartography"	property="cartographicScale"			  tag="255" sfcodes="a"		   >CartographicExclusionGRing</node>
-         <node domain="cartography"	property="cartographicProjection"		  tag="255" sfcodes="b"		   >CartographicExclusionGRing</node>
+         <node domain="cartography"	property="cartographicScale"			  tag="255" sfcodes="a"		   >cartographicScale</node>
+         <node domain="cartography"	property="cartographicScale"			  tag="034" sfcodes=""		   >cartographicScale</node>
+         <node domain="cartography"	property="cartographicProjection"		  tag="255" sfcodes="b"		   >cartographicProjection</node>
          <node domain="cartography"	property="cartographicCoordinates"		  tag="255" sfcodes="c"		   >cartographicCoordinates</node>
          <node domain="cartography"	property="cartographicAscensionAndDeclination"		tag="255" sfcodes="d"		   >cartographicAscensionAndDeclination</node>
          <node domain="cartography"	property="cartographicEquinox"			   tag="255" sfcodes="e"		   >cartographicEquinox</node>
-         <node domain="cartography"	property="cartographicOuterGRing"		   tag="255" sfcodes="f"		   >cartographicEquinox</node>
+         <node domain="cartography"	property="cartographicOuterGRing"		   tag="255" sfcodes="f"		   >cartographicOuterGRing</node>
          <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		   >CartographicExclusionGRing</node>
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
@@ -251,14 +252,12 @@ declare variable $mbshared:relationships :=
 		    <type tag="785" ind2="4" property="absorbedBy">absorbs</type>
 		    <type tag="785" ind2="5"  property="absorbedInPartBy">partiallyAbsorbs</type>
 		    <type tag="785" ind2="6"  property="splitInto">splitFrom</type>
-		    <type tag="785" ind2="7"  property="mergedToForm">mergedFrom</type>	
-    		<!--<type tag="785" ind2="8"  property="changedBackTo">formerlyNamed</type> -->
-    	<type tag="785" ind2="8"  property="succeeds">formerlyNamed</type>
+		    <type tag="785" ind2="7"  property="mergedToForm">mergedFrom</type>	    		
+    	    <type tag="785" ind2="8"  property="continuedBy">formerlyNamed</type>
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
 		    <type tag="534" property="originalVersion"></type>
-    		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   	  	    
-	  	    
+    		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   	  	    	  	    
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>
             <type tag="730" property="relatedWork">relatedItem</type>             
@@ -371,17 +370,19 @@ declare function mbshared:generate-instance-from260(
 
     let $physMapData := 
         (
-            for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "a"]   
+            for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "a"]
+                
             return element bf:cartographicScale {
-            		if (fn:string($i)="a") then "Linear scale" 
-            		else if (fn:string($i)="b") then "Angular scale" else if (fn:string($i)="z") then "Other scale type" else "invalid"
-            		},
+            		  if (fn:string($i)="a") then "Linear scale" 
+            		else if (fn:string($i)="b") then "Angular scale" else if (fn:string($i)="z") then "Other scale type" else "invalid" 
+            		}
+            		,
 	for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "b" or @code eq "c"]  
             	return element bf:cartographicScale { fn:string($i)},
             
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "a"]
             return element bf:cartographicScale {fn:string($i)},
-                       
+                                              
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "b"]
             return element bf:cartographicProjection {fn:string($i)},
             
@@ -1215,9 +1216,7 @@ declare function mbshared:generate-instance-from250(
         else ():)
     (:get the physical details:)
     (: We only ask for the first 260 :)
-	let $instance :=  (:mbshared:generate-instance-from260($d/../marcxml:datafield[@tag eq "260" or @tag eq "264"][1], $workID):)
-	mbshared:generate-instance-from260($d/../marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1], $workID)
-        
+	let $instance := mbshared:generate-instance-from260($d/../marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1], $workID)        
         
     let $instanceOf :=  
         element bf:instanceOf {
@@ -2863,6 +2862,9 @@ return element bf:translationOf {
 :       If @ind2 is absent on the node, there is no test, otherwise it must match the datafield @ind2
 :   <node domain="work" tag ="500" property="note" ind2=" " sfcodes="ab" >Note</note>
 :
+:   if there's only one subfield code in sfcodes, it looks for all those subfields (repeatables)
+:   if there's a string of subfields, it does a stringjoin of all, but still creates a sequence in $text
+:
 :   @param  $d        element is the MARCXML tag
 :   @param  $domain       element is the domain for this element to sit in. is this needed?
 :                           maybe needed for building related works??
@@ -2882,19 +2884,28 @@ declare function mbshared:generate-simple-property(
  
     return 
       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
-          let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))    
-          return                  
-                     element {fn:concat("bf:",fn:string($node/@property))} {	               
+        let $text:= if (fn:string-length($return-codes) > 1) then 
+                    (marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")) )
+                else
+                    (for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
+                    return fn:string($s)
+                    )
+                    
+          (:let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")):)    
+          
+          return
+           for $i in $text
+                     return element {fn:concat("bf:",fn:string($node/@property))} {	               
                          if (fn:not($node/@uri)) then
-                              fn:normalize-space(fn:concat($startwith,  $text) )    	                
+                              fn:normalize-space(fn:concat($startwith,  $i) )    	                
                          else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then                         
-                                let $s:=fn:lower-case(fn:normalize-space($text))
+                                let $s:=fn:lower-case(fn:normalize-space($i))
                                 return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}
                          else if (fn:starts-with($text,"(OCoLC)")) then
-  	                             let $s :=  marc2bfutils:clean-string(fn:replace($text, "\(OCoLC\)", ""))
+  	                             let $s :=  marc2bfutils:clean-string(fn:replace($i, "\(OCoLC\)", ""))
            	                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
                          else if (fn:contains(fn:string($node/@property),"lccn")) then
-                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($text," ",""))       }                         
+                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($i," ",""))       }                         
                          else
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),$text)}
              	             }
@@ -2929,7 +2940,7 @@ declare function mbshared:generate-property-from-text(
     $domain as xs:string
     ) as element ()*
 {
-for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$tag][fn:contains(fn:string(@sfcodes),$sfcodes)]
+for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$tag][fn:contains(fn:string(@sfcodes),$sfcodes) or @sfcodes=""]
     let $return-codes:=
  			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
     let $startwith:=fn:string($node/@startwith) 
@@ -3161,7 +3172,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
         for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
-                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055|070)"))) then
+                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055)"))) then
                 			fn:string($cl)
                 		else (:050 has non-class stuff in it: :)
                   			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
@@ -3211,6 +3222,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                                    else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"nlm"}
                                    else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"udc"}                                   
                                    else if (fn:matches($this-tag/@tag,"082"))      then element bf:classificationScheme {"ddc"}
+                                   (:nal??:)
                                    else if (fn:matches($this-tag/@tag,"(084|086)") and $this-tag/marcxml:subfield[@code="2"] ) then element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
                                    else ()
                                ,                        
@@ -3250,5 +3262,5 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
             }
      else ()
                         
-            )                        
+   )                        
 };

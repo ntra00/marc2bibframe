@@ -129,9 +129,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             xmlns:rdfs          = "http://www.w3.org/2000/01/rdf-schema#"
             xmlns:bf            = "http://bibframe.org/vocab/"
             xmlns:madsrdf       = "http://www.loc.gov/mads/rdf/v1#"
-            xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"
-            xmlns:identifiers   = "http://id.loc.gov/vocabulary/identifiers/"
-            xmlns:notes         = "http://id.loc.gov/vocabulary/notes/"
+            xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"                  
             xmlns:dcterms       = "http://purl.org/dc/terms/"
             >
 
