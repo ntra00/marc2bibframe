@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-02-05-T11:00:00";
+declare variable $mbshared:last-edit :="2014-02-06-T11:00:00";
 
 
   
@@ -102,8 +102,9 @@ declare variable $mbshared:simple-properties:= (
          <node domain="classification"		property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
          <node domain="classification"		property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
          <node domain="classification"		property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
-         <node domain="classification"		property="classificationAssigner"   tag="083" sfcodes=""	         	>various orgs assig</node>
-         
+         <node domain="classification"		property="classificationAssigner"   tag="083" sfcodes=""	         	>various orgs assiger</node>
+         <node domain="classification"		property="classificationEdition"   tag="082" sfcodes=""	         	>classificationEdition</node>
+         <node domain="classification"		property="classificationEdition"   tag="083" sfcodes=""	         	>classificationEdition</node>
          <node domain="title"		property="titleQualifier"			tag="210" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
@@ -126,9 +127,14 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partTitle"					tag="730" sfcodes="p"          >part title</node>
          <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
-         
          <node domain="title"		property="titleSource"			     tag="210" sfcodes="2"      >title source</node>
+         <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="k"      >title attributes</node>
+         <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="d"      >title attributes</node>         
+         <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="g"      >title attributes</node>
+         
+         
          <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
+         
          <node domain="instance"	property="responsibilityStatement"		    	tag="245" sfcodes="c"         >responsibility Statement</node>
          <node domain="work"	    property="treatySignator"		    	tag="710" sfcodes="g"         >treaty Signator</node>
          <node domain="instance"	property="edition"					      tag="250"                    >Edition</node>
@@ -143,6 +149,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		   >CartographicExclusionGRing</node>
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
+         
          <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="a"	uri="http://id.loc.gov/vocabulary/mediaCategory/"		    >Media Category</node>
          <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="b"	uri="http://id.loc.gov/vocabulary/mediaCategory/"		    >Media Category</node>
          <node domain="specialinstnc"	property="carrierCategory"					        tag="338" sfcodes="b"	uri="http://id.loc.gov/vocabulary/carriers/"		    >Physical Description</node>
@@ -158,7 +165,11 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="dimensions"					    tag="300" sfcodes="c"			     	>Physical Size</node>
          <node domain="work"				property="duration"					      tag="306" sfcodes="a"			     	>Playing time</node>
          <node domain="work"				property="frequencyNote"					tag="310" sfcodes="ab"					>Issue frequency</node>
-         <node domain="work"				property="frequencyNote"					tag="321" sfcodes="ab"					>Issue frequency</node>
+         <node domain="work"				property="frequencyNote"				tag="321" sfcodes="ab"					>Issue frequency</node>
+         <node domain="arrangement"			property="materialPart"			        tag="351" sfcodes="3"					>material Organization</node>
+         <node domain="arrangement"			property="materialOrganization"			tag="351" sfcodes="a"					>material Organization</node>
+         <node domain="arrangement"			property="materialArrangement"			tag="351" sfcodes="b"					>ImaterialArrangement</node>
+         <node domain="arrangement"			property="materialHierarchicalLevel"	tag="351" sfcodes="c"					>materialHierarchicalLevel</node>
          <node domain="work"				property="contentCategory"				tag="130" sfcodes="h"						>Nature of content</node>
          <node domain="work"				property="contentCategory"				tag="240" sfcodes="h"						>Nature of content</node>
          <node domain="work"				property="contentCategory"				tag="243" sfcodes="h"						>Nature of content</node>
@@ -614,15 +625,15 @@ declare function mbshared:generate-identifiers(
 		                            element bf:identifierScheme {				 
 		                                fn:string($id/@property)
 		                            },	                            
+		                            element bf:identifierValue { 		                               
+		                                    fn:string($this-tag/marcxml:subfield[@code="a"][1])
+		                            },
 		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
 		                            	return element bf:identifierAssigner { 	fn:string($sub)},		
 		                            for $sub in $this-tag/marcxml:subfield[@code="q" ][$this-tag/@tag!="856"]
 		                            	return element bf:identifierQualifier {fn:string($sub)},
 	                             for $sub in $this-tag[@tag="037"]/marcxml:subfield[@code="c"]
-		                            	return element bf:identifierQualifier {fn:string($sub)},	                          
-		                            element bf:identifierValue { 		                               
-		                                    fn:string($this-tag/marcxml:subfield[@code="a"][1])
-		                            }
+		                            	return element bf:identifierQualifier {fn:string($sub)}	                          		                           
 	                        	},
 	                        	$cancels	                        			                              
 		                        )
@@ -650,8 +661,15 @@ let $id024-028:=
                                         $this-tag/marcxml:subfield[@code="q"] or 
         			                     $this-tag/marcxml:subfield[@code="b"]
         			                 ) then	
-	                                element bf:Identifier{
-	                                    element bf:identifierScheme {$scheme},			                            
+        			                 let $value:=
+        			                     if ($this-tag/marcxml:subfield[@code="d"]) then 
+        			                           fn:string-join($this-tag/marcxml:subfield[fn:matches(@code,"(a|d)")],"-")
+        			                         else
+        			                           fn:string($this-tag/marcxml:subfield[@code="a"])
+	                                return 
+	                                    element bf:Identifier{
+	                                    element bf:identifierScheme {$scheme},
+	                                    element bf:identifierValue {$value},
 	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
 	                                       return element bf:identifierAssigner{fn:string($sub)},
 	        
@@ -659,14 +677,8 @@ let $id024-028:=
 	                                       return element bf:identifierQualifier {fn:replace(fn:substring-after($sub,"(" ),"\)","")},
 	        
 	                                    for $sub in $this-tag/marcxml:subfield[@code="q"][$this-tag/@tag!="856"] 
-	                                       return element bf:identifierQualifier {fn:string($sub)},	            
-             	                                    element bf:identifierValue {
-             	                                        fn:string($this-tag/marcxml:subfield[@code="a"]),						
-             	                                        if ($this-tag/marcxml:subfield[@code="d"] ) then
-             	                                            fn:concat("-",fn:string($this-tag/marcxml:subfield[@code="d"]))
-             	                                        else
-             					                                ()
-				                            }
+	                                       return element bf:identifierQualifier {fn:string($sub)}	            
+                                    
 	                                   }	
                             else (:not c,q,b:)
                                 let $property-name:= (:024 had a z only; no $a: bibid;17332794:)
@@ -989,26 +1001,9 @@ declare function mbshared:generate-physdesc
                         },
                         for $d in $marcxml/marcxml:datafield[@tag="351"]                              
                              return                             
-                                 element bf:arrangement {		
-                                    
-                                         element bf:Arrangement {
-                                         for $sub in $d/marcxml:subfield[@code="3"] 
-                                            return element bf:materialPart {
-                                                fn:normalize-space( fn:string($sub))
-                                                },
-                                            for $sub in $d/marcxml:subfield[@code="a"] 
-                                            return element bf:materialOrganization {
-                                                fn:normalize-space( fn:string($sub))
-                                                },
-                                            for $sub in $d/marcxml:subfield[@code="b"] 
-                                              return  element bf:materialArrangement {
-                                                fn:normalize-space( fn:string($sub))
-                                            },
-                                            for $sub in $d/marcxml:subfield[@code="c"] 
-                                              return
-                                                element bf:materialHierarchicalLevel {
-                                                fn:normalize-space( fn:string($sub))
-                                                }
+                                 element bf:arrangement {		                                    
+                                        element bf:Arrangement {
+                                            mbshared:generate-simple-property($d,"arrangement")
                                         }
                                      }
                  )
@@ -1887,7 +1882,7 @@ declare function mbshared:related-works
 			  	return mbshared:generate-related-work($d,$type)
             
             else 
-                for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t"]]		
+                for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t" or @code="s"]]		
 			   	return mbshared:generate-related-work($d,$type)
 				
     return $relatedWorks
@@ -2223,7 +2218,7 @@ declare function mbshared:generate-work(
              $aLabel,
             $aLabelsWork880,
           
-            $dissertation,
+            $dissertation,         
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
@@ -2453,7 +2448,7 @@ let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
                     }
      let $first-041a:= fn:string($simple-a[1]/@rdf:resource)
                         
-     let $lang008 := fn:normalize-space(fn:substring($cf008, 36, 3))
+    let $lang008 := fn:normalize-space(fn:substring($cf008, 36, 3))
     let $lang008 := 
         if ($lang008 ne "" and $lang008 ne "|||" and $lang008 ne fn:substring-after($first-041a,"/languages/")) then
             element bf:language {
@@ -2461,9 +2456,9 @@ let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
             }
         else
             ()   	 
-	let $non-a:=
-	for $sf in $marcxml/marcxml:datafield[@tag="041"]/marcxml:subfield[fn:matches(@code,"(b|d|e|f|g|h|j|k|m|n)")] 
-	return element bf:language {
+	let $parts:=
+       	for $sf in $marcxml/marcxml:datafield[@tag="041"]/marcxml:subfield[fn:matches(@code,"(b|d|e|f|g|h|j|k|m|n)")] 
+       	    return element bf:language {
 	           element bf:Language {
 	               element bf:resourcePart{
         	           fn:string($parts//sf[@code=$sf/@code])
@@ -2481,8 +2476,8 @@ let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
 	       }      
 return 
     ($lang008,
-    $simple-a,
-    $non-a
+    $simple-a,    
+    $parts
 
    )
 	       
@@ -2790,42 +2785,44 @@ declare function mbshared:get-title(
             else
                 "bf:instanceTitle"
                 
-       let $lang := if ($d/@tag = "242" and $d/marcxml:subfield[@code = "y"] ne "" ) then                            
+       let $lang-attribute := if ($d/@tag = "242" and $d/marcxml:subfield[@code = "y"] ne "" ) then                            
                         attribute xml:lang {fn:string($d/marcxml:subfield[@code = "y"][1])}
                     else
                         ()
-       let $constructedTitle:=
+        let $title-type:=            
+            if (fn:matches($d/@tag , "(242|246|247)")) then
+              if ($d/@tag="242") then "Translated title"
+              else if ($d/@tag="247") then "Former title"
+              else  (:246 :)        
+                if ($d/@ind2=" "  and $d/marcxml:subfield[@code = "i"]) then
+                    fn:string($d/marcxml:subfield[@code = "i"])
+                 else  if ($d/@ind2="0") then "title portion"
+                 else if ($d/@ind2="1") then "parallel title"
+                 else if ($d/@ind2="2") then "distinctive title"
+                 else if ($d/@ind2="3") then "other title"
+                 else if ($d/@ind2="4") then "cover title"
+                 else if ($d/@ind2="5") then "added title page title"
+                 else if ($d/@ind2="6") then "caption title"
+                 else if ($d/@ind2="7") then "Running title"
+                 else if ($d/@ind2="8") then "Spine title"    
+                 else ()
+            else
+                ()
+       let $constructed-title:=
        element {$element-name} {
                 element bf:Title { 
-                      if ($d/@ind2!=" " and $d/@tag = "246") then element bf:titleType {
-                             if ($d/@ind2="0") then "title portion"
-                             else if ($d/@ind2="1") then "parallel title"
-                             else if ($d/@ind2="2") then "distinctive title"
-                             else if ($d/@ind2="3") then "other title"
-                             else if ($d/@ind2="4") then "cover title"
-                             else if ($d/@ind2="5") then "added title page title"
-                             else if ($d/@ind2="6") then "caption title"
-                             else if ($d/@ind2="7") then "Running title"
-                             else if ($d/@ind2="8") then "Spine title"                                      
-                             else if ($d/@tag="242") then "Translated title"
-                             else if ($d/@tag="247") then "Former title"
-                            else ()
-                            }
-                       else (),
-                     
-                     mbshared:generate-simple-property($d,"title")
-                   
+                 if ($title-type ne "") then                      
+                      element bf:titleType {$title-type}                                                      
+                 else (),                     
+                     mbshared:generate-simple-property($d,"title")                  
                 }
              } (:end Title:)
              
     return 
-        ( element bf:title { $lang,             $title         },
-        (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
-        $constructedTitle,        
-                                                
-          
-             mbshared:generate-titleNonsort($d,$title, $element-name),
-       
+        ( element bf:title {  $lang-attribute, $title },
+            (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
+            $constructed-title,        
+            mbshared:generate-titleNonsort($d,$title, $element-name),       
             mbshared:generate-880-label($d,"title")
         )
 };
@@ -2843,7 +2840,8 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
 {
   let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:not(fn:matches(@code,"(0|6|8|l)") ) ]," "))    
     
-return element bf:translationOf {
+return
+            element bf:translationOf {
                element bf:Work {
                 (:element bf:authorizedAccessPoint{$label},:)                
                 element bf:title {$aLabel},
@@ -2876,7 +2874,7 @@ declare function mbshared:generate-simple-property(
     $domain as xs:string
     ) 
 {
-(			
+
   for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1][ fn:not(@ind2) or @ind2=$d/@ind2]
     let $return-codes:=
  			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
@@ -2885,15 +2883,12 @@ declare function mbshared:generate-simple-property(
     return 
       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
         let $text:= if (fn:string-length($return-codes) > 1) then 
-                    (marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")) )
+                    element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))}
                 else
-                    (for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
-                    return fn:string($s)
-                    )
-                    
-          (:let $text:=marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," ")):)    
-          
-          return
+                    for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
+                        return element wrap{fn:string($s)}
+                         
+       return 
            for $i in $text
                      return element {fn:concat("bf:",fn:string($node/@property))} {	               
                          if (fn:not($node/@uri)) then
@@ -2913,7 +2908,7 @@ declare function mbshared:generate-simple-property(
      else (:no matching nodes for this datafield:)
         ()
        
-     )
+   
 };
 (:~
 :   This is the function generates a literal property or simple uri from a string, using the nodes xml
@@ -2940,7 +2935,7 @@ declare function mbshared:generate-property-from-text(
     $domain as xs:string
     ) as element ()*
 {
-for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$tag][fn:contains(fn:string(@sfcodes),$sfcodes) or @sfcodes=""]
+for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$tag][fn:contains(fn:string(@sfcodes),$sfcodes) or @sfcodes="" or $sfcodes=""]
     let $return-codes:=
  			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
     let $startwith:=fn:string($node/@startwith) 
@@ -2975,7 +2970,7 @@ declare function mbshared:get-uniformTitle(
     (:??? filter out nonsorting chars???:)
     (:remove $o in musical arrangements???:)
     let $aLabel := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , ' '))       
-    let $translationOf :=  
+    let $translationOf := 
         if ($d/marcxml:subfield[@code="l"]) then mbshared:generate-translationOf($d)
                 else ()
                 
@@ -3028,7 +3023,8 @@ declare function mbshared:get-uniformTitle(
         element bf:Work {
                 element bf:label {$aLabel},        
 	  		    element bf:title {$aLabel},              
-              $elementList,
+              $elementList,              
+             element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
               $translationOf
             }                    
 };
@@ -3238,7 +3234,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                       	       if ( $assigner) then 
                                   	(element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",fn:encode-for-uri($assigner))}}
                                   	(: does this work ? can't find example:
-                                  	,mbshared:generate-property-from-text($this-tag,"",$assigner,"work"):)
+                                  	,mbshared:generate-property-from-text($this-tag,"",$assigner,"classification"):)
                                   	)
                                 else (),             			
          			            	
@@ -3246,7 +3242,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                       		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
                       		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
                      	 		   ) then  
-                                     element bf:classificationEdition {
+                     	 		       let $edition:=                                     
                                          if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="1") then
          								    "abridged"
                                          else if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="0") then							
@@ -3254,7 +3250,10 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
          								else if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] ) then
          								    fn:string($this-tag/marcxml:subfield[@code="2"] )
          								else ()
-         							}
+         							  return if ($edition ne "") then
+         								   mbshared:generate-property-from-text(fn:string($this-tag/@tag),"",$edition,"classification")
+         								   else ()
+         							
                                  else (),
          						 for $d in $this-tag[@tag="083"] return mbshared:generate-simple-property($d,"classification")
                             
