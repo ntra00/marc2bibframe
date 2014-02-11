@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-02-06-T11:00:00";
+declare variable $mbshared:last-edit :="2014-02-10-T11:00:00";
 
 
   
@@ -243,6 +243,7 @@ declare variable $mbshared:relationships :=
 		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>		    	
 		
 		    <type tag="773" property="containedIn">hasConstituent</type>
+		         <type tag="774" property="hasPart">has Part</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
 		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
 		   
@@ -280,7 +281,7 @@ declare variable $mbshared:relationships :=
         <!-- Instance to Work relationships (none!) -->
 	  	<instance-relateds>
 	  	  (:<type tag="6d30"  property="subject">isSubjectOf</type>:)
-	  	  <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
+	  	  <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>	  	  
 	  	</instance-relateds>
 	</relationships>
 );
@@ -292,11 +293,13 @@ declare variable $mbshared:relationships :=
 :   @return bf:*           hasAnnotation element
 :)
 declare function mbshared:generate-admin-metadata(
-    $marcxml as element(marcxml:record)   
+    $marcxml as element(marcxml:record)   ,
+    $workID as xs:string
     ) as element (bf:hasAnnotation) 
 {
     let $biblink:=fn:concat(
-                    "http://id.loc.gov/resources/bibs/",
+                    (:"http://id.loc.gov/resources/bibs/",:)
+                    $workID,
                     fn:string($marcxml/marcxml:controlfield[@tag eq "001"])                   
                  )
     let $derivedFrom := 
@@ -338,7 +341,8 @@ declare function mbshared:generate-instance-from260(
 {
      let $biblink:= 
         element bf:derivedFrom {
-            attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($d/../marcxml:controlfield[@tag eq "001"]))}
+        (:attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($d/../marcxml:controlfield[@tag eq "001"]))}:)
+            attribute rdf:resource{fn:concat($workID,fn:string($d/../marcxml:controlfield[@tag eq "001"]))}
         }
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|222|242|210)")]
@@ -1677,8 +1681,8 @@ declare function mbshared:generate-finding-aid-work
         $d as element(marcxml:datafield) 
     )
 { 	 
-let $property-name := if ($d/@ind1="0") then "findingAid"
-                        else "index"
+let $property-name := if ($d/@ind1="0") then "bf:findingAid"
+                        else "bf:index"
  return element {$property-name}     
     {
         element bf:Work{ 
@@ -2192,7 +2196,8 @@ declare function mbshared:generate-work(
             		
     let $biblink:= 
         element bf:derivedFrom {
-            attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}
+            (:attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}:)
+            attribute rdf:resource{fn:concat($workID,fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}
         }
     
     (:let $schemes := 
@@ -2202,7 +2207,7 @@ declare function mbshared:generate-work(
  	let $work-simples:=
  	  for $d in $marcxml/marcxml:datafield
  	      return mbshared:generate-simple-property($d,"work")
- 	let $admin:=mbshared:generate-admin-metadata($marcxml) 
+ 	let $admin:=mbshared:generate-admin-metadata($marcxml, $workID) 
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
@@ -2889,7 +2894,7 @@ declare function mbshared:generate-simple-property(
                         return element wrap{fn:string($s)}
                          
        return 
-           for $i in $text
+           for $i in $text/*
                      return element {fn:concat("bf:",fn:string($node/@property))} {	               
                          if (fn:not($node/@uri)) then
                               fn:normalize-space(fn:concat($startwith,  $i) )    	                
