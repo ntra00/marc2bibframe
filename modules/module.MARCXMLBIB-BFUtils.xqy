@@ -2363,9 +2363,15 @@ declare function marc2bfutils:clean-title-string(
 	let $s:= fn:replace($s,"from old catalog","","i")
     let $s := fn:replace($s, "([\[\]]+)", "")
     let $s := fn:replace($s, " :", "")
+     
     let $s := fn:normalize-space($s)
     let $s := 
         if ( fn:ends-with($s, ",") ) then
+            fn:substring($s, 1, (fn:string-length($s) - 1) )
+        else
+            $s
+            let $s := 
+        if ( fn:ends-with($s, "/") ) then
             fn:substring($s, 1, (fn:string-length($s) - 1) )
         else
             $s

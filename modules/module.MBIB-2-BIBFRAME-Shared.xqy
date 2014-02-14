@@ -347,7 +347,7 @@ declare function mbshared:generate-instance-from260(
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|222|242|210)")]
             for $t in $titles
-            return mbshared:get-title($t,"instance")
+            return mbshared:get-title($t,"instance") 
     
     let $names := 
         for $datafield in $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
@@ -2801,13 +2801,13 @@ declare function mbshared:get-title(
               else  (:246 :)        
                 if ($d/@ind2=" "  and $d/marcxml:subfield[@code = "i"]) then
                     fn:string($d/marcxml:subfield[@code = "i"])
-                 else  if ($d/@ind2="0") then "title portion"
-                 else if ($d/@ind2="1") then "parallel title"
-                 else if ($d/@ind2="2") then "distinctive title"
-                 else if ($d/@ind2="3") then "other title"
-                 else if ($d/@ind2="4") then "cover title"
-                 else if ($d/@ind2="5") then "added title page title"
-                 else if ($d/@ind2="6") then "caption title"
+                 else  if ($d/@ind2="0") then "Title portion"
+                 else if ($d/@ind2="1") then "Parallel title"
+                 else if ($d/@ind2="2") then "Distinctive title"
+                 else if ($d/@ind2="3") then "Other title"
+                 else if ($d/@ind2="4") then "Cover title"
+                 else if ($d/@ind2="5") then "Added title page title"
+                 else if ($d/@ind2="6") then "Caption title"
                  else if ($d/@ind2="7") then "Running title"
                  else if ($d/@ind2="8") then "Spine title"    
                  else ()
@@ -2819,14 +2819,16 @@ declare function mbshared:get-title(
                  if ($title-type ne "") then                      
                       element bf:titleType {$title-type}                                                      
                  else (),                     
-                     mbshared:generate-simple-property($d,"title")                  
+                     mbshared:generate-simple-property($d,"title")
+                    
                 }
              } (:end Title:)
              
     return 
         ( element bf:title {  $lang-attribute, $title },
+     
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
-            $constructed-title,        
+            $constructed-title,
             mbshared:generate-titleNonsort($d,$title, $element-name),       
             mbshared:generate-880-label($d,"title")
         )
@@ -2893,8 +2895,8 @@ declare function mbshared:generate-simple-property(
                     for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
                         return element wrap{fn:string($s)}
                          
-       return 
-           for $i in $text/*
+       return
+           for $i in $text
                      return element {fn:concat("bf:",fn:string($node/@property))} {	               
                          if (fn:not($node/@uri)) then
                               fn:normalize-space(fn:concat($startwith,  $i) )    	                
@@ -2909,7 +2911,7 @@ declare function mbshared:generate-simple-property(
                          else
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),$text)}
              	             }
-           
+        
      else (:no matching nodes for this datafield:)
         ()
        
