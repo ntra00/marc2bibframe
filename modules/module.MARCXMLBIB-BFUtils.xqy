@@ -44,9 +44,7 @@ declare variable $marc2bfutils:resourceTypes := (
         <type sf336b="(ntm|ccm)">NotatedMusic</type>`        
         <type sf336a="(notated movement|tactile notated movement)">NotatedMovement</type>
         <type sf336b="(ntv|tcn)">NotatedMovement</type>
-        <type leader6="d">Manuscript</type>
-        <type leader6="f">Manuscript</type>
-        <type leader6="t">Manuscript</type>
+        
         <type leader6="e">Cartography</type>
         <type leader6="f">Cartography</type>
         <type cf007="adr">Cartography</type>
@@ -84,6 +82,26 @@ declare variable $marc2bfutils:resourceTypes := (
         <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Dataset</type>
         <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Dataset</type>
     </resourceTypes>
+    );
+    declare variable $marc2bfutils:instanceTypes := (
+    <instanceTypes>
+        <type leader6="d">Manuscript</type>
+        <type leader6="f">Manuscript</type>
+        <type leader6="t">Manuscript</type>
+        <type leader7="c">Collection</type>
+        <type leader7="d">Collection</type>        
+        <type leader7="i">Integrating</type>
+        <type leader7="b">Serial</type>        
+        <type leader7="s">Serial</type>
+        <type leader8="a">Archival</type>
+        <type cf007="f">Tactile</type>
+        <type cf007="c">Electronic</type>          
+        <type sf336a="tactile text">Tactile</type>
+        <type sf336b="tct">Tactile</type>
+        
+      
+       
+    </instanceTypes>
     );
 declare variable $marc2bfutils:targetAudiences := (
     <targetAudiences>

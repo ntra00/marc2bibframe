@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-02-10-T11:00:00";
+declare variable $mbshared:last-edit :="2014-02-18-T16:00:00";
 
 
   
@@ -52,13 +52,12 @@ declare variable $mbshared:last-edit :="2014-02-10-T11:00:00";
 declare variable $mbshared:physdesc-list:= 
     (
         <physdesc>
-            <instance-physdesc>
-                <!--<field tag="300" codes="3" property="materialsSpecified">Materials specified</field>-->
+            <instance-physdesc>                
                 <field tag="300" codes="af" property="extent">Physical Description</field>              
                 <field tag="300" codes="c" property="dimensions">Physical Size</field>
-        	   </instance-physdesc>
-	           <work-physdesc>	           
-	                <field tag="384" codes="a" property="musicKey" > Key </field>
+        	</instance-physdesc>
+	        <work-physdesc>	           
+	            <field tag="384" codes="a" property="musicKey" > Key </field>
 	       </work-physdesc>
         </physdesc>
     );
@@ -230,8 +229,7 @@ declare variable $mbshared:relationships :=
     <relationships>
         <!-- Work to Work relationships -->
         <work-relateds all-tags="()">
-            <type tag="(700|710|711|720)" ind2="2" property="contains">isIncludedIn</type>
-            
+            <type tag="(700|710|711|720)" ind2="2" property="contains">isIncludedIn</type>            
             <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
 		    <type tag="740" ind2="2" property="contains">isContainedIn</type>
@@ -271,7 +269,7 @@ declare variable $mbshared:relationships :=
 		    <type tag="534" property="originalVersion"></type>
     		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   	  	    	  	    
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
-	  	    <type tag="(400|410|411|440|490|760|800|810|811|830)" property="series">hasParts</type>
+	  	    <type tag="(400|410|411|430|440|490|800|810|811|830)" property="series">hasParts</type>
             <type tag="730" property="relatedWork">relatedItem</type>             
         </work-relateds>
         <!--
@@ -407,20 +405,18 @@ declare function mbshared:generate-instance-from260(
             for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "d" or @code eq "e" or @code eq "f" or @code eq "g"]  
             return element bf:cartographicCoordinates {fn:string($i)}
         ) 
-let             $physBookData:=()
-let $physSerialData:=()
-let $physResourceData:=()
-            (:this is not right yet  :)        
-    let $leader:=fn:string($d/../marcxml:leader)
-    let $leader7:=fn:substring($leader,8,1)
-	let $leader19:=fn:substring($leader,20,1)
- let $issuance:=
-           	if (fn:matches($leader7,"(a|c|d|m)"))	then "Monograph"
-           	else if ($leader7="m" and 
-           	    fn:matches($leader19,"(a|b|c)")) 	then "MultipartMonograph"
+        
+let $leader:=fn:string($d/../marcxml:leader) 
+let $leader6:=fn:substring($leader,7,1)
+let $leader7:=fn:substring($leader,8,1)
+let $leader8:=fn:substring($leader,9,1)
+let $leader19:=fn:substring($leader,20,1)
+let $instance-type:=          
+           if ($leader7="m" and 
+           	         fn:matches($leader19,"(a|b|c)")) 	then "MultipartMonograph"
+           	else if (fn:matches($leader7,"(a|c|d|m)"))	then "Monograph"
             else if ($leader7='s')           		then "Serial"           	
-           	else if ($leader7='i') 				   	then "Integrating"
-           	
+           	else if ($leader7='i') 				   	then "Integrating"           	
            	else ()
 (:           	Print
 Archival
@@ -428,15 +424,20 @@ Collection
 Electronic
 
 :)
-           	
-     let $issuance := 
-                if ($issuance) then 
-                   element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$issuance)}}                  
+  let $instance-cat:=  (
+    if (fn:matches($leader7,"(c|d)"))	then "Collection" else (),
+    if (fn:matches($leader6,"(d|f|t)"))	then "Manuscript" else (),
+    if ($leader8="a")	then "Archival" else ()
+    
+  )
+     let $instance-type := 
+                if ($instance-type) then 
+                   element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$instance-type)}}                  
                 else ()
       (:instance subclasses are tactile, manuscript, modes of issuance
       Replaces instanceType:)
       
-    let $instanceType :=         
+   (: let $instanceType :=         
         if ( fn:count($physBookData) gt 0 ) then
             "PhysicalBook"
         else if ( fn:count($physMapData) gt 0 ) then
@@ -446,7 +447,21 @@ Electronic
         else if ( fn:count($physResourceData) > 0 ) then
             "PhysicalResource"
         else 
-            ""
+            "":)
+let $issuance:=
+           	if (fn:matches($leader7,"(a|c|d|m)")) 		then "monographic"
+           	else if ($leader7="b") 						then "continuing"
+           	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "multipart monograph"
+           	else if ($leader7='m' and $leader19='#') 				then "single unit"
+           	else if ($leader7='i') 						           	then "integrating resource"
+           	else if ($leader7='s')           						then "serial"
+           	else ()
+     let $issuance := 
+                if ($issuance) then 
+                   element bf:modeOfIssuance {$issuance}                  
+                else ()
+            
+            
       let $holdings := mbshared:generate-holdings($d/ancestor::marcxml:record, $workID)
  
     let $instance-identifiers :=
@@ -476,14 +491,13 @@ Electronic
  	
     return 
         element bf:Instance {        
-           $issuance,                            
+           $instance-type,                            
             $instance-title,            
             $names,
             $edition,
-            $publication,          
-            $physResourceData,  (: ??? work on this:)         
+            $publication,                       
             $physMapData,
-            $physSerialData,
+          $issuance,
             $instance-simples,
             $i504,             
             $instance-identifiers,               
@@ -2003,18 +2017,7 @@ declare function mbshared:generate-work(
     let $leader7:=fn:substring($leader,8,1)
 	let $leader19:=fn:substring($leader,20,1)
 
-     let $issuance:=
-           	if (fn:matches($leader7,"(a|c|d|m)")) 		then "monographic"
-           	else if ($leader7="b") 						then "continuing"
-           	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "multipart monograph"
-           	else if ($leader7='m' and $leader19='#') 				then "single unit"
-           	else if ($leader7='i') 						           	then "integrating resource"
-           	else if ($leader7='s')           						then "serial"
-           	else ()
-     let $issuance := 
-                if ($issuance) then 
-                   element bf:modeOfIssuance {$issuance}                  
-                else ()
+    
     (: 
         Here's a thought. If this Work *isn't* English *and* it does 
         have a uniform title (240), we should probably figure out the 
@@ -2232,8 +2235,7 @@ declare function mbshared:generate-work(
             $names,
             $work-simples,
               $aud521,
-            $issuance,             
-            
+         
             $langs,
             $findaids,
             $abstract,
@@ -2708,7 +2710,52 @@ return if ($type= "Audience: ") then
 :)
 };
 (:~
-:   This is the function generates a work resource.
+:   This is the function generates an Instance subclass.
+:
+:   @param  $marcxml        element is the MARCXML  
+:   @return bf:* as element()
+:)
+declare function mbshared:get-instanceTypes(
+    $record as element(marcxml:record)
+    ) as item()*
+{
+
+    let $leader06 := fn:substring(fn:string($record/marcxml:leader), 7, 1)   
+    let $leader07 := fn:substring(fn:string($record/marcxml:leader), 8, 1)
+    let $leader08 := fn:substring(fn:string($record/marcxml:leader), 9, 1)
+    let $leader19 := fn:substring(fn:string($record/marcxml:leader), 20, 1)
+    let $types:=
+    (	for $cf in $record/marcxml:controlfield[@tag="007"]/fn:substring(text(),1,1)
+    		for $t in $marc2bfutils:instanceTypes/type[@cf007]
+    			where fn:matches($cf,$t/@cf007) 
+    				return fn:string($t),    	
+
+    	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="a"]    		
+    		for $t in $marc2bfutils:instanceTypes/type[@sf336a]
+    			where fn:matches(fn:string($field),$t/@sf336a) 
+    				return fn:string($t),   				
+
+    	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="b"]    		
+    		for $t in $marc2bfutils:instanceTypes/type[@sf336b]
+    			where fn:matches(fn:string($field),$t/@sf336b)
+    				return fn:string($t),     				
+    
+    	for $t in $marc2bfutils:instanceTypes/type
+        		where $t/@leader6 eq $leader06
+        		return fn:string($t),
+        for $t in $marc2bfutils:instanceTypes/type
+        		where $t/@leader8 eq $leader08
+        		return fn:string($t),
+        if (fn:matches($leader07,"(a|m)") and fn:not($leader19="a")) then "Monograph" 
+        else if (fn:matches($leader07,"(a|m)") and $leader19="a") then "Multipart monograph"
+        else ()
+        
+	)
+    return $types
+    
+};
+(:~
+:   This is the function generates a work subclass.
 :
 :   @param  $marcxml        element is the MARCXML  
 :   @return bf:* as element()
@@ -2718,35 +2765,33 @@ declare function mbshared:get-resourceTypes(
     ) as item()*
 {
 
-    let $leader06 := fn:substring(fn:string($record/marcxml:leader), 7, 1)
-    (:let $cf007-00 :=:)
+    let $leader06 := fn:substring(fn:string($record/marcxml:leader), 7, 1)   
     let $types:=
     (	for $cf in $record/marcxml:controlfield[@tag="007"]/fn:substring(text(),1,1)
     		for $t in $marc2bfutils:resourceTypes/type[@cf007]
     			where fn:matches($cf,$t/@cf007) 
-    				return fn:string($t)    	
-    (:let $sf336a :=:) ,
+    				return fn:string($t)    ,	
+
     	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="a"]    		
     		for $t in $marc2bfutils:resourceTypes/type[@sf336a]
     			where fn:matches(fn:string($field),$t/@sf336a) 
     				return fn:string($t),   				
-(:    let $sf336b := :)
+
     	for $field in $record/marcxml:datafield[@tag="336"]/marcxml:subfield[@code="b"]    		
     		for $t in $marc2bfutils:resourceTypes/type[@sf336b]
     			where fn:matches(fn:string($field),$t/@sf336b)
     				return fn:string($t), 
     				
-    (:let $sf337a := :)
+    
     	for $field in $record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="a"]		
     		for $t in $marc2bfutils:resourceTypes/type[@sf337a]
     			where fn:matches(fn:string($field),$t/@sf337a)
     				return fn:string($t) ,   	
-(:let $sf337b := :)
+
     	for $field in $record/marcxml:datafield[@tag="337"]/marcxml:subfield[@code="b"]    		
     		for $t in $marc2bfutils:resourceTypes/type[@sf337b]
     			where fn:matches(fn:string($field),$t/@sf337b)
-    				return fn:string($t)  ,  	
-    (:let $ldr6 :=:) 
+    				return fn:string($t)  ,  	    
     	for $t in $marc2bfutils:resourceTypes/type
         		where $t/@leader6 eq $leader06
         		return fn:string($t)
