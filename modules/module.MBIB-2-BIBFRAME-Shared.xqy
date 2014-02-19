@@ -44,23 +44,11 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-02-18-T16:00:00";
+declare variable $mbshared:last-edit :="2014-02-19-T11:00:00";
 
 
   
-(:physdesc are now in the simple list; this is obsolete?: 2014-01-15 :)		 
-declare variable $mbshared:physdesc-list:= 
-    (
-        <physdesc>
-            <instance-physdesc>                
-                <field tag="300" codes="af" property="extent">Physical Description</field>              
-                <field tag="300" codes="c" property="dimensions">Physical Size</field>
-        	</instance-physdesc>
-	        <work-physdesc>	           
-	            <field tag="384" codes="a" property="musicKey" > Key </field>
-	       </work-physdesc>
-        </physdesc>
-    );
+
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $mbshared:simple-properties:= (
@@ -169,17 +157,17 @@ declare variable $mbshared:simple-properties:= (
          <node domain="arrangement"			property="materialOrganization"			tag="351" sfcodes="a"					>material Organization</node>
          <node domain="arrangement"			property="materialArrangement"			tag="351" sfcodes="b"					>ImaterialArrangement</node>
          <node domain="arrangement"			property="materialHierarchicalLevel"	tag="351" sfcodes="c"					>materialHierarchicalLevel</node>
-         <node domain="work"				property="contentCategory"				tag="130" sfcodes="h"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="240" sfcodes="h"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="243" sfcodes="h"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="245" sfcodes="k"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="336" sfcodes="a"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="513" sfcodes="a"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="516" sfcodes="a"						>Type of Computer File or Data Note</node>
-         <node domain="work"				property="contentCategory"				tag="730" sfcodes="h"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="700" sfcodes="h"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="710" sfcodes="h"						>Nature of content</node>
-         <node domain="work"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>
+         
+         <node domain="contentcategory"		property="contentCategory"				tag="130" sfcodes="h"					>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="240" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="243" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="245" sfcodes="k"						>Nature of content</node>         
+         <node domain="contentcategory"				property="contentCategory"				tag="513" sfcodes="a"						>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="516" sfcodes="a"						>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="730" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="700" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="710" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>-->
          <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="046" sfcodes="kl"					>Date of origin</node>
@@ -407,33 +395,30 @@ declare function mbshared:generate-instance-from260(
         ) 
         
 let $leader:=fn:string($d/../marcxml:leader) 
-let $leader6:=fn:substring($leader,7,1)
+
 let $leader7:=fn:substring($leader,8,1)
-let $leader8:=fn:substring($leader,9,1)
+
 let $leader19:=fn:substring($leader,20,1)
-let $instance-type:=          
-           if ($leader7="m" and 
+let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)                  
+    (: (if ($leader7="m" and 
            	         fn:matches($leader19,"(a|b|c)")) 	then "MultipartMonograph"
            	else if (fn:matches($leader7,"(a|c|d|m)"))	then "Monograph"
             else if ($leader7='s')           		then "Serial"           	
            	else if ($leader7='i') 				   	then "Integrating"           	
-           	else ()
-(:           	Print
-Archival
-Collection
-Electronic
-
-:)
-  let $instance-cat:=  (
+           	else (),
     if (fn:matches($leader7,"(c|d)"))	then "Collection" else (),
     if (fn:matches($leader6,"(d|f|t)"))	then "Manuscript" else (),
-    if ($leader8="a")	then "Archival" else ()
-    
-  )
-     let $instance-type := 
+    if ($leader8="a")	then "Archival" else (),
+ 
+    ):)
+  let $instance-types:= 
+        for $i in fn:distinct-values($instance-types)
+                return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
+    (: let $instance-type := 
                 if ($instance-type) then 
                    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$instance-type)}}                  
-                else ()
+                else ():)
+          
       (:instance subclasses are tactile, manuscript, modes of issuance
       Replaces instanceType:)
       
@@ -491,7 +476,7 @@ let $issuance:=
  	
     return 
         element bf:Instance {        
-           $instance-type,                            
+           $instance-types,                            
             $instance-title,            
             $names,
             $edition,
@@ -952,51 +937,53 @@ declare function mbshared:generate-physdesc
         $marcxml as element(marcxml:record),
         $resource as xs:string
     ) as element ()*
-{
-
-    let $physdescs:= 
-    	if ($resource="instance") then 
-           	 $mbshared:physdesc-list/instance-physdesc
-        	else 
-           	$mbshared:physdesc-list/work-physdesc
-    return 
-        (
-          
+{ 
+        (          
              (:---337,338:)
-             	if ($resource="instance") then 
-              ( for $d in $marcxml/marcxml:datafield[@tag="337" ]
+             if ($resource="instance") then 
+              (  (:-------------337----------------:)
+                     for $d in $marcxml/marcxml:datafield[@tag="337" ]
                 let $src:=fn:string($d/marcxml:subfield[@code="2"])
                 
                 return
                     if (   $src="rdamedia"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:mediaCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}	
+                    for $s in $d/marcxml:subfield[@code="a"]
+                            let $media-code:=marc2bfutils:generate-mediatype-code(fn:string($s))
+                           return element bf:mediaCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/mediaTypes/",fn:encode-for-uri($media-code))}	
                                 }
-                     else if         ($d/marcxml:subfield[@code="a"]) then
-                      element bf:mediaCategory { 
-                            element bf:Category {
-                                    element bf:label{fn:string($d/marcxml:subfield[@code="a"])},		
-                                    element bf:categoryValue{fn:string($d/marcxml:subfield[@code="a"])},
-                                    element bf:categoryType{"media category"}
-                                    } 
-                                }
+                     else if ($d/marcxml:subfield[@code="a"]) then
+                           for $s in $d/marcxml:subfield[@code="a"]
+                             return element bf:mediaCategory { 
+                                 element bf:Category {
+                                         element bf:label{fn:string($s)},		
+                                         element bf:categoryValue{fn:string($s)},
+                                         element bf:categoryType{"media category"}
+                                         } 
+                                     }
                         else   if (   $src="rdamedia"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:mediaCategory {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/mediaCategory/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="b"])))}		
+                                    for $s in $d/marcxml:subfield[@code="b"]
+                                        return element bf:mediaCategory {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/mediaTypes/",fn:encode-for-uri(fn:string($s)))}		
                         } 
                      else  (),  
+                      (:----------338-------------------:)
                for $d in $marcxml/marcxml:datafield[@tag="338"]
                 let $src:=fn:string($d/marcxml:subfield[@code="2"])
                 
                 return
                     if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="a"]) then
-                           element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/marcsmd/",fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}		
+                        for $s in $d/marcxml:subfield[@code="a"]
+                        let $carrier-code:=marc2bfutils:generate-carrier-code(fn:string($s))
+                           return element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/carriers/",fn:encode-for-uri($carrier-code))}		
                                 }
-                     else if         ($d/marcxml:subfield[@code="a"]) then
-                      element bf:carrierCategory {                           
-                            attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/somecarrier/",
-                          fn:encode-for-uri(fn:string($d/marcxml:subfield[@code="a"])))}
-                          }
-                        else   if (   $src="rdacarrier"  and $d/marcxml:subfield[@code="b"]) then
-                           element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/test/rdacarrrier/",fn:string($d/marcxml:subfield[@code="b"]))}		
+                     else if  ($d/marcxml:subfield[@code="a"]) then
+                            for $s in $d/marcxml:subfield[@code="a"]
+                              return  element bf:carrierCategory {                           
+                                      attribute rdf:resource {fn:concat("http://somecarrier.example.org/",
+                                          fn:encode-for-uri(fn:string($s)))}
+                                  }
+                        else   if (  $src="rdacarrier"  and $d/marcxml:subfield[@code="b"]) then
+                            for $s in $d/marcxml:subfield[@code="b"]
+                            return  element bf:carrierCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/carriers/",fn:string($s))}		
                         } 
                      else  (),  
               (:---337, 338 end ---:)
@@ -1024,8 +1011,41 @@ declare function mbshared:generate-physdesc
                                             mbshared:generate-simple-property($d,"arrangement")
                                         }
                                      }
-                 )
-                 else () (:work physdesc excludes the above:)
+                 ) (:instance end:)
+                 else  (: work-------------336----------------:)
+              for $d in $marcxml/marcxml:datafield[@tag="336" ]
+                let $src:=fn:string($d/marcxml:subfield[@code="2"])
+               
+                return
+                    if (   $src="rdacontent"  and $d/marcxml:subfield[@code="a"]) then
+                    for $s in $d/marcxml:subfield[@code="a"]
+                            let $content-code:=marc2bfutils:generate-content-code(fn:string($s))
+                                return element bf:contentCategory {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/contentTypes/",fn:encode-for-uri($content-code))}	
+                                }
+                     else if ($d/marcxml:subfield[@code="a"]) then
+                           for $s in $d/marcxml:subfield[@code="a"]
+                             return element bf:contentCategory { 
+                                 element bf:Category {                                       
+                                         element bf:categoryValue{fn:string($s)},
+                                         element bf:categoryType{"content category"}
+                                         } 
+                                     }
+                        else   if (   $src="rdacontent"  and $d/marcxml:subfield[@code="b"]) then
+                                    for $s in $d/marcxml:subfield[@code="b"]
+                                        return element bf:contentCategory {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/contentTypes/",fn:encode-for-uri(fn:string($s)))}		
+                        } 
+                     else  (),                   
+                      for $node in  $mbshared:simple-properties//node[fn:string(@domain)="contentcategory"]
+                        let $return-codes:=
+ 			                    if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
+                         for $s in $marcxml/marcxml:datafield[@tag=$node/@tag]/marcxml:subfield[fn:matches(@code,$return-codes)]
+                               return element bf:contentCategory { 
+                                 element bf:Category {                                      
+                                         element bf:categoryValue{fn:string($s)},
+                                         element bf:categoryType{"content category"}
+                                         } 
+                                     }
+
         	)
 };
 
@@ -2719,12 +2739,13 @@ declare function mbshared:get-instanceTypes(
     $record as element(marcxml:record)
     ) as item()*
 {
-
-    let $leader06 := fn:substring(fn:string($record/marcxml:leader), 7, 1)   
-    let $leader07 := fn:substring(fn:string($record/marcxml:leader), 8, 1)
-    let $leader08 := fn:substring(fn:string($record/marcxml:leader), 9, 1)
-    let $leader19 := fn:substring(fn:string($record/marcxml:leader), 20, 1)
-    let $types:=
+let $leader:=fn:string($record/marcxml:leader) 
+let $leader06:=fn:substring($leader,7,1)
+let $leader07:=fn:substring($leader,8,1)
+let $leader08:=fn:substring($leader,9,1)
+let $leader19:=fn:substring($leader,20,1)
+    
+let $types:=
     (	for $cf in $record/marcxml:controlfield[@tag="007"]/fn:substring(text(),1,1)
     		for $t in $marc2bfutils:instanceTypes/type[@cf007]
     			where fn:matches($cf,$t/@cf007) 
@@ -2747,9 +2768,15 @@ declare function mbshared:get-instanceTypes(
         		where $t/@leader8 eq $leader08
         		return fn:string($t),
         if (fn:matches($leader07,"(a|m)") and fn:not($leader19="a")) then "Monograph" 
-        else if (fn:matches($leader07,"(a|m)") and $leader19="a") then "Multipart monograph"
-        else ()
-        
+            else if (fn:matches($leader07,"(a|m)") and $leader19="a") then "Multipart monograph"
+            else (),                 
+        if ($leader07='s')           		then "Serial"           	
+           	else if ($leader07='i') 				   	then "Integrating"           	
+           	else (),
+            if (fn:matches($leader07,"(c|d)"))	then "Collection" else (),
+            if (fn:matches($leader06,"(d|f|t)"))	then "Manuscript" else (),
+            if ($leader08="a")	then "Archival" else ()                        
+         
 	)
     return $types
     
@@ -2948,6 +2975,7 @@ declare function mbshared:generate-simple-property(
                          else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then                         
                                 let $s:=fn:lower-case(fn:normalize-space($i))
                                 return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}
+
                          else if (fn:starts-with($text,"(OCoLC)")) then
   	                             let $s :=  marc2bfutils:clean-string(fn:replace($i, "\(OCoLC\)", ""))
            	                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }

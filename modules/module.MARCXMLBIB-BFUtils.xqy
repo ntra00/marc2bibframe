@@ -103,7 +103,7 @@ declare variable $marc2bfutils:resourceTypes := (
        
     </instanceTypes>
     );
-declare variable $marc2bfutils:targetAudiences := (
+    declare variable $marc2bfutils:targetAudiences := (
     <targetAudiences>
         <type cf008-22="a">pre</type>
         <type cf008-22="b">pri</type>
