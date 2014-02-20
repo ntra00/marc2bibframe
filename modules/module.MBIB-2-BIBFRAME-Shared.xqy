@@ -44,11 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-02-19-T11:00:00";
-
-
-  
-
+declare variable $mbshared:last-edit :="2014-02-20-T16:00:00";
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $mbshared:simple-properties:= (
@@ -96,12 +92,14 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
+         <node domain="title"		property="titleValue"					tag="130" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="titleValue"					tag="210" sfcodes="a"          > title itself</node>
          <node domain="title"		property="titleValue"					tag="222" sfcodes="a"          > title itself</node>
-         <node domain="title"		property="titleValue"					tag="245" sfcodes="a"          > title itself</node>
-         
+         <node domain="title"		property="titleValue"					tag="240" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="titleValue"					tag="242" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="titleValue"					tag="245" sfcodes="a"          > title itself</node>                  
          <node domain="title"		property="titleValue"					tag="246" sfcodes="a"          >title itself</node>
-         <node domain="title"		property="titleValue"					tag="247" sfcodes="a"          >title itself</node>
-         <node domain="title"		property="titleValue"					tag="210" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="titleValue"					tag="247" sfcodes="a"          >title itself</node>         
          <node domain="title"		property="subtitle"					    tag="245" sfcodes="b"          > subtitle </node>
          <node domain="title"		property="subtitle"				        tag="246" sfcodes="b"          >subtitle</node>
          <node domain="title"		property="subtitle"					    tag="247" sfcodes="b"          >subtitle</node>
@@ -114,15 +112,18 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partTitle"					tag="730" sfcodes="p"          >part title</node>
          <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
-         <node domain="title"		property="titleSource"			     tag="210" sfcodes="2"      >title source</node>
+         <node domain="title"		property="titleSource"			        tag="210" sfcodes="2"      >title source</node>
          <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="k"      >title attributes</node>
          <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="d"      >title attributes</node>         
          <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="g"      >title attributes</node>
          
+         <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="g"      >Miscellaneous </node>         
+         <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="o"      >arrangement</node>
+         <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="s"      >version</node>
          
          <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
          
-         <node domain="instance"	property="responsibilityStatement"		    	tag="245" sfcodes="c"         >responsibility Statement</node>
+         <node domain="instance"	property="responsibilityStatement"		tag="245" sfcodes="c"         >responsibility Statement</node>
          <node domain="work"	    property="treatySignator"		    	tag="710" sfcodes="g"         >treaty Signator</node>
          <node domain="instance"	property="edition"					      tag="250"                    >Edition</node>
          <node domain="instance"	property="editionResponsibility"	      tag="250" sfcodes="b"        >Edition Responsibility</node>
@@ -286,7 +287,7 @@ declare function mbshared:generate-admin-metadata(
     let $biblink:=fn:concat(
                     (:"http://id.loc.gov/resources/bibs/",:)
                     $workID,
-                    fn:string($marcxml/marcxml:controlfield[@tag eq "001"])                   
+                    fn:normalize-space(fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))                   
                  )
     let $derivedFrom := 
         element bf:derivedFrom {
@@ -328,7 +329,7 @@ declare function mbshared:generate-instance-from260(
      let $biblink:= 
         element bf:derivedFrom {
         (:attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($d/../marcxml:controlfield[@tag eq "001"]))}:)
-            attribute rdf:resource{fn:concat($workID,fn:string($d/../marcxml:controlfield[@tag eq "001"]))}
+            attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}
         }
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|222|242|210)")]
@@ -470,8 +471,8 @@ let $issuance:=
                 )
         }
     
-  let $instance-simples:= 
- 	  for $i in $d/../marcxml:datafield
+  let $instance-simples:= (:all but identifiers:)
+ 	  for $i in $d/../marcxml:datafield[fn:not(fn:matches(@tag,"^0[1-9]")) ] 
  	       return mbshared:generate-simple-property($i,"instance")
  	
     return 
@@ -620,11 +621,11 @@ declare function mbshared:generate-identifiers(
                 			(:if contains subprops, build class for $a else just prop w/$a:)
                 	let $cancels:= for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(m|y|z)")]     
 		                                return mbshared:handle-cancels($this-tag, $sf, fn:string($id/@property))		                                              		        	           
-                   	return 
-                   	    	if ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or                    				                        		
-		                        ($this-tag[@tag="037"][marcxml:subfield[@code="c"]]) 				
+                   	return  (:need to construct blank node if there's no uri or there are qualifiers/assigners:)
+                   	    	if (fn:not($id/@uri) and ( $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")] or                    				                        		
+		                        ($this-tag[@tag="037"][marcxml:subfield[@code="c"]])) 				
 					           ) then 
-		                       ( element bf:Identifier{
+		                       ( element bf:Identifier{		                          
 		                            element bf:identifierScheme {				 
 		                                fn:string($id/@property)
 		                            },	                            
@@ -641,7 +642,7 @@ declare function mbshared:generate-identifiers(
 	                        	$cancels	                        			                              
 		                        )
 	                    	else 	(: not    @code,"(b|q|2):)                
-	                        ( mbshared:generate-simple-property($this-tag,$domain),
+	                        ( mbshared:generate-simple-property($this-tag,$domain),	                        
 	                        $cancels	                  	                           
 			                 )(: END OF not    @code,"(b|q|2), end of tags matching ids without @ind1:)
                
@@ -671,17 +672,12 @@ let $id024-028:=
         			                           fn:string($this-tag/marcxml:subfield[@code="a"])
 	                                return 
 	                                    element bf:Identifier{
-	                                    element bf:identifierScheme {$scheme},
-	                                    element bf:identifierValue {$value},
-	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
-	                                       return element bf:identifierAssigner{fn:string($sub)},
-	        
-	                                    for $sub in $this-tag[fn:contains(fn:string(marcxml:subfield[@code="c"]),"(") ] 
-	                                       return element bf:identifierQualifier {fn:replace(fn:substring-after($sub,"(" ),"\)","")},
-	        
-	                                    for $sub in $this-tag/marcxml:subfield[@code="q"][$this-tag/@tag!="856"] 
-	                                       return element bf:identifierQualifier {fn:string($sub)}	            
-                                    
+       	                                    element bf:identifierScheme {$scheme},
+       	                                    element bf:identifierValue {$value},
+       	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
+       	                                       return element bf:identifierAssigner{fn:string($sub)},	        
+       	                                    for $sub in $this-tag/marcxml:subfield[@code="q"] 
+       	                                       return element bf:identifierQualifier {fn:string($sub)}	                                                       
 	                                   }	
                             else (:not c,q,b:)
                                 let $property-name:= (:024 had a z only; no $a: bibid;17332794:)
@@ -1320,11 +1316,12 @@ declare function mbshared:generate-instance-from856(
  	return 
 	 if ( $category="instance" ) then 
                 element bf:hasInstance {
-                	element bf:Instance {
+                	element bf:Instance {               	      
+                	        element rdf:type {attribute rdf:resource {"http://bibframe.org/vocab/Electronic"}},
                     		element bf:label {
                     			if ($d/marcxml:subfield[@code="3"]) then fn:normalize-space(fn:string($d/marcxml:subfield[@code="3"]))
                     			else "Electronic Resource"
-                    		},
+                    		},                    		
                		        mbshared:handle-856u($d)           		        ,
 	                    element bf:instanceOf {
 	                        attribute rdf:resource {$workID}
@@ -1357,7 +1354,9 @@ declare function mbshared:generate-instance-from856(
 	                    	                  attribute rdf:resource {                  	
 	                    		                 fn:normalize-space(fn:string($u))
 	                    		                }
-	                    		},                    			                        
+	                    		},
+	                    for $s in $d/marcxml:subfield[@code="z"]
+                    		  return element bf:copyNote {fn:string($s)},
 	                    $annotates
               		}
               	}
@@ -2069,7 +2068,7 @@ declare function mbshared:generate-work(
                     ):)
                 ) then
                     element bf:intendedAudience {
-                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/test/targetAudiences/" , $aud) }
+                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/targetAudiences/" , $aud) }
                     }
                 else ()
         else
@@ -2093,7 +2092,7 @@ declare function mbshared:generate-work(
         else
             ()
                         
-     (:let $work3xx := mbshared:generate-physdesc($marcxml,"work"):) (:384:)
+      let $work3xx := mbshared:generate-physdesc($marcxml,"work") (:336:)
       let $cartography:=  for $d in $marcxml/marcxml:datafield[@tag="255"] 
       				          return
       				          mbshared:generate-simple-property($d,"cartography")      				          
@@ -2220,7 +2219,7 @@ declare function mbshared:generate-work(
     let $biblink:= 
         element bf:derivedFrom {
             (:attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}:)
-            attribute rdf:resource{fn:concat($workID,fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}
+            attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($marcxml/marcxml:controlfield[@tag eq "001"])))}
         }
     
     (:let $schemes := 

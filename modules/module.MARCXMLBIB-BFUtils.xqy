@@ -97,22 +97,19 @@ declare variable $marc2bfutils:resourceTypes := (
         <type cf007="f">Tactile</type>
         <type cf007="c">Electronic</type>          
         <type sf336a="tactile text">Tactile</type>
-        <type sf336b="tct">Tactile</type>
-        
-      
-       
+        <type sf336b="tct">Tactile</type>        
     </instanceTypes>
     );
     declare variable $marc2bfutils:targetAudiences := (
     <targetAudiences>
-        <type cf008-22="a">pre</type>
-        <type cf008-22="b">pri</type>
-        <type cf008-22="c">pra</type>
-        <type cf008-22="d">ado</type>
-        <type cf008-22="e">adu</type>
-        <type cf008-22="f">spe</type>
-        <type cf008-22="g">gen</type>
-        <type cf008-22="j">juv</type>
+        <type cf008-22="a">Pre</type>
+        <type cf008-22="b">Pri</type>
+        <type cf008-22="c">Pra</type>
+        <type cf008-22="d">Ado</type>
+        <type cf008-22="e">Adu</type>
+        <type cf008-22="f">Spe</type>
+        <type cf008-22="g">Gen</type>
+        <type cf008-22="j">Juv</type>
     </targetAudiences>
     );
     
