@@ -44,7 +44,17 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-02-20-T16:00:00";
+declare variable $mbshared:last-edit :="2014-03-04-T12:00:00";
+
+(:rules have a status of "on" or "off":)
+declare variable $mbshared:transform-rules :=(
+<rules>
+<rule status="on" id="1" label="isbn" category="instance-splitting">New instances on secondary unique ISBNs</rule>
+<rule status="on" id="1" label="issn" category="instance-splitting">New instances on secondary unique ISSNs</rule>
+<rule status="on" id="1" label="260" category="instance-splitting">New instances on multiple 260s</rule>
+<rule status="on" id="1" label="250" category="instance-splitting">New instances on multiple 250s</rule>
+</rules>
+);
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $mbshared:simple-properties:= (
@@ -92,10 +102,15 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
+         
          <node domain="title"		property="titleValue"					tag="130" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="titleValue"					tag="240" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="partNumber"					tag="130" sfcodes="n"          >part number</node>
+         <node domain="title"		property="partNumber"					tag="240" sfcodes="n"          >part number</node>
+         
          <node domain="title"		property="titleValue"					tag="210" sfcodes="a"          > title itself</node>
          <node domain="title"		property="titleValue"					tag="222" sfcodes="a"          > title itself</node>
-         <node domain="title"		property="titleValue"					tag="240" sfcodes="a"          >title itself</node>
+         
          <node domain="title"		property="titleValue"					tag="242" sfcodes="a"          >title itself</node>
          <node domain="title"		property="titleValue"					tag="245" sfcodes="a"          > title itself</node>                  
          <node domain="title"		property="titleValue"					tag="246" sfcodes="a"          >title itself</node>
@@ -110,17 +125,17 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partTitle"					tag="242" sfcodes="p"          >part title</node>
          <node domain="title"		property="partTitle"					tag="130" sfcodes="p"          >part title</node>
          <node domain="title"		property="partTitle"					tag="730" sfcodes="p"          >part title</node>
+         <node domain="title"		property="partTitle"					tag="240" sfcodes="p"          >part title</node>
          <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleSource"			        tag="210" sfcodes="2"      >title source</node>
-         <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="k"      >title attributes</node>
-         <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="d"      >title attributes</node>         
-         <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="g"      >title attributes</node>
-         
+                         
+         <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="g"      >title attributes</node>         
          <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="g"      >Miscellaneous </node>         
-         <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="o"      >arrangement</node>
-         <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="s"      >version</node>
          
+         <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="o"      >arrangement</node>
+         <node domain="work"		property="musicVersion"			     tag="130" sfcodes="s"      >version</node>
+         <node domain="work"		property="musicVersion"			     tag="240" sfcodes="s"      >version</node>
          <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
          
          <node domain="instance"	property="responsibilityStatement"		tag="245" sfcodes="c"         >responsibility Statement</node>
@@ -145,6 +160,9 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicKey"					      tag="384" sfcodes="a"		    		> Key </node>
          <node domain="work"				property="musicKey"					      tag="130" sfcodes="r"				    > Key </node>
          <node domain="work"				property="musicKey"					      tag="240" sfcodes="r"			 	    > Key </node>
+         <node domain="work"		property="formDesignation"			     tag="130" sfcodes="k"      >Form subheading from title</node>         
+         <node domain="work"		property="formDesignation"			     tag="240" sfcodes="k"      >Form subheading from title</node>         
+         
          <node domain="work"				property="musicMediumNote"				tag="382" sfcodes="adp"		    	> Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="130" sfcodes="m"				    > Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="730" sfcodes="m"			     	> Music medium note </node>
@@ -178,8 +196,9 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicNumber"					tag="730" sfcodes="n"						>Music Number</node>
          <node domain="work"				property="musicVersion"					tag="130" sfcodes="o"						>Music Version</node>
          <node domain="work"				property="musicVersion"					tag="240" sfcodes="o"						>Music Version</node>
-         <node domain="work"				property="legalDate"					tag="130" sfcodes="d"						>Legal Date</node>
+         <node domain="work"				property="legalDate"					tag="130" sfcodes="d"						>Legal Date</node>         
          <node domain="work"				property="legalDate"					tag="730" sfcodes="d"						>Legal Date</node>
+         <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Legal Date</node>
          <node domain="work"				property="note"					        tag="500" sfcodes="3a"					>General Note</node>
          <node domain="work"				property="dissertationNote"				tag="502" sfcodes="a"		                >Dissertation Note</node>
          <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
@@ -332,7 +351,7 @@ declare function mbshared:generate-instance-from260(
             attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}
         }
     let $instance-title := 
-        for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|222|242|210)")]
+        for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|247|222|242|210)")]
             for $t in $titles
             return mbshared:get-title($t,"instance") 
     
@@ -1626,7 +1645,7 @@ declare function mbshared:generate-titleNonsort(
     $property as xs:string 
     ) as element ()*
 {
-if (fn:matches($d/@tag,"(222|242|243|245|440)" ) and fn:number($d/@ind2) gt 0 ) then
+if (fn:matches($d/@tag,"(222|242|243|245|440|240)" ) and fn:number($d/@ind2) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
                 element bf:title {attribute xml:lang {"en-US-bf"},
                        fn:substring($title, fn:number($d/@ind2)+1)
@@ -1991,7 +2010,7 @@ declare function mbshared:generate-work(
     let $titles := 
         <titles>
             {
-    	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(210|245|243|247)")]
+    	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(245|243|247)")]
     	       return mbshared:get-title($t, "work")
             }
         </titles>
@@ -2905,7 +2924,7 @@ declare function mbshared:get-title(
         )
 };
 (:~
-:   This function generates a related work, as translation of from the 100, 240.
+:   This function generates a related work (rda expression?), as translation of from the 100, 240.
 :   It takes a 130 or 240 element.
 :   It generates a bf:translationOf/bf:Work
 :
@@ -3046,14 +3065,23 @@ declare function mbshared:get-uniformTitle(
     ) as element(bf:Work)
 {
     (:let $label := fn:string($d/marcxml:subfield["a"][1]):)
-    (:??? filter out nonsorting chars???:)
-    (:remove $o in musical arrangements???:)
+    (:??? filter out nonsorting chars??? 880s?:)
+    
     let $aLabel := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , ' '))       
     let $translationOf := 
         if ($d/marcxml:subfield[@code="l"]) then mbshared:generate-translationOf($d)
                 else ()
                 
-    
+    let $title-nonsort:=mbshared:generate-titleNonsort($d,$aLabel,"bf:title")
+    let $ut-local-id:=if ($d/marcxml:subfield[@code = '0' ]) then
+                        element bf:identifier {
+                            element bf:Identifier {
+                                element bf:identifierValue {fn:string($d/marcxml:subfield[@code = '0' ])},
+                                element bf:identifierScheme {"local"}
+                                }
+                        }
+                        
+    else ()
     let $elementList := 
         element bf:hasAuthority {
         element madsrdf:Authority {
@@ -3101,9 +3129,11 @@ declare function mbshared:get-uniformTitle(
     
         element bf:Work {
                 element bf:label {$aLabel},        
-	  		    element bf:title {$aLabel},              
+	  		    element bf:title {$aLabel},
+	  		  $title-nonsort,
               $elementList,              
              element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
+             $ut-local-id,
               $translationOf
             }                    
 };
