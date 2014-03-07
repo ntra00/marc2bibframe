@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-03-04-T12:00:00";
+declare variable $mbshared:last-edit :="2014-03-06-T12:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -87,8 +87,6 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="stockNumber"						tag="037" sfcodes="a"		 group="identifiers"         >stock number for acquisition</node>
          <node domain="instance"	property="reportNumber"						tag="088" sfcodes="a"       	 group="identifiers" >technical report number</node>
          <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/"           >Description source</node>
-         <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="c"   uri="http://id.loc.gov/vocabulary/organizations/"           >Description source</node>
-         <node domain="annotation"	property="descriptionSource"		  tag="040" sfcodes="d"     uri="http://id.loc.gov/vocabulary/organizations/"          >Description source</node>
          <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptiveconventions/"           >Description conventions</node>
          <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
          
@@ -1998,7 +1996,7 @@ declare function mbshared:generate-work(
     let $uniformTitle := 
         for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
         return mbshared:get-uniformTitle($d)
-                
+              
     let $names := 
         for $d in (
                     $marcxml/marcxml:datafield[@tag eq "100"]|
@@ -2638,16 +2636,14 @@ declare function mbshared:get-name(
     return
 
        element {$resourceRole} {
-            element {$class} {  (:$internal-name-link,      :)
+            element {$class} { 
                 element bf:label { marc2bfutils:clean-name-string($label)},                
                 if ($d/@tag!='534') then element bf:authorizedAccessPoint {$aLabel} else (),
                 mbshared:generate-880-label($d,"name"),
-                $elementList,             
-             (:   $resourceRoleTerms,:)
+                $elementList,                          
                  $system-number,
                  $bio-links
-                 (:nate removed this so we can re-use the agent. now we assume that creator is primary and contributors are not:)
-                (:element bf:descriptionRole { $desc-role}:)
+                 
             }
         }
 };
@@ -3069,9 +3065,19 @@ declare function mbshared:get-uniformTitle(
     
     let $aLabel := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , ' '))       
     let $translationOf := 
-        if ($d/marcxml:subfield[@code="l"]) then mbshared:generate-translationOf($d)
+        if ($d/marcxml:subfield[@code="l"]) then
+            (for $s in  $d/marcxml:subfield[@code="l"]
+                  let $lang:= (:some have 2 codes german = deu, ger :)
+                    $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation($s,".")]/iso6392[1]
+                  return if ($lang!="") then element bf:language { 
+                                                attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
+                                              }
+         else element bf:languageNote {marc2bfutils:clean-string($s)},
+         
+         mbshared:generate-translationOf($d)
+        )
                 else ()
-                
+                   
     let $title-nonsort:=mbshared:generate-titleNonsort($d,$aLabel,"bf:title")
     let $ut-local-id:=if ($d/marcxml:subfield[@code = '0' ]) then
                         element bf:identifier {
@@ -3084,57 +3090,57 @@ declare function mbshared:get-uniformTitle(
     else ()
     let $elementList := 
         element bf:hasAuthority {
-        element madsrdf:Authority {
-       element madsrdf:authoritativeLabel{ fn:string($aLabel)},
-        element madsrdf:elementList {
-        	attribute rdf:parseType {"Collection"},
-            for $s in $d/marcxml:subfield
-            return
-                if ($s/@code eq "a") then
-                     element madsrdf:MainTitleElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-                else if ($s/@code eq "p") then
-                     element madsrdf:PartNameElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-                else if ($s/@code eq "l") then
-                     element madsrdf:LanguageElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-                else if ($s/@code eq "s") then
-                     element madsrdf:TitleElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-                else if ($s/@code eq "k") then
-                     element madsrdf:GenreFormElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-                else if ($s/@code eq "d") then
-                     element madsrdf:TemporalElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-                else if ($s/@code eq "f") then
-                     element madsrdf:TemporalElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-                else
-                    element madsrdf:TitleElement {
-                        element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                     }
-        }
+          element madsrdf:Authority {
+            element madsrdf:authoritativeLabel{ fn:string($aLabel)},
+            element madsrdf:elementList {
+        	   attribute rdf:parseType {"Collection"},
+                for $s in $d/marcxml:subfield
+                return
+                    if ($s/@code eq "a") then
+                         element madsrdf:MainTitleElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+                    else if ($s/@code eq "p") then
+                         element madsrdf:PartNameElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+                    else if ($s/@code eq "l") then
+                         element madsrdf:LanguageElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+                    else if ($s/@code eq "s") then
+                         element madsrdf:TitleElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+                    else if ($s/@code eq "k") then
+                         element madsrdf:GenreFormElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+                    else if ($s/@code eq "d") then
+                         element madsrdf:TemporalElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+                    else if ($s/@code eq "f") then
+                         element madsrdf:TemporalElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+                    else
+                        element madsrdf:TitleElement {
+                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
+                         }
+            }
         }
         }
     return
     
         element bf:Work {
-                element bf:label {$aLabel},        
-	  		    element bf:title {$aLabel},
-	  		  $title-nonsort,
-              $elementList,              
-             element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
-             $ut-local-id,
-              $translationOf
+                   element bf:label {$aLabel},        
+	  		       element bf:title {$aLabel},
+	  		       $title-nonsort,
+                   $elementList,              
+                   element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
+                   $ut-local-id,
+                   $translationOf
             }                    
 };
 

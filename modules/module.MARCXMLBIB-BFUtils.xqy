@@ -524,8 +524,8 @@ declare variable $marc2bfutils:lang-xwalk:=
       <iso6392>den</iso6392>
    </language>
    <language language-name="German" iso6391="de" xmllang="de">
-      <iso6392>deu</iso6392>
       <iso6392>ger</iso6392>
+      <iso6392>deu</iso6392>      
    </language>
    <language language-name="Dogrib" iso6391="" xmllang="dgr">
       <iso6392>dgr</iso6392>
@@ -624,8 +624,8 @@ declare variable $marc2bfutils:lang-xwalk:=
       <iso6392>fon</iso6392>
    </language>
    <language language-name="French" iso6391="fr" xmllang="fr">
-      <iso6392>fra</iso6392>
       <iso6392>fre</iso6392>
+      <iso6392>fra</iso6392>      
    </language>
    <language language-name="French, Middle (ca.1400-1600)" iso6391="" xmllang="frm">
       <iso6392>frm</iso6392>
@@ -661,8 +661,8 @@ declare variable $marc2bfutils:lang-xwalk:=
       <iso6392>gem</iso6392>
    </language>
    <language language-name="Georgian" iso6391="ka" xmllang="ka">
-      <iso6392>kat</iso6392>
       <iso6392>geo</iso6392>
+      <iso6392>kat</iso6392>      
    </language>
    <language language-name="Geez" iso6391="" xmllang="gez">
       <iso6392>gez</iso6392>
@@ -2796,12 +2796,34 @@ return
 		}
 		
 };
+(: This function matches the carrier text to the varable containing the carrier code, returning the code for building a uri
+:)
 declare function marc2bfutils:generate-carrier-code($carrier-text as xs:string) as xs:string {
  fn:string( $marc2bfutils:carriers/term[aL=$carrier-text]/@code)			
 };
+(: This function matches the content text to the varable containing the content code, returning the code for building a uri
+:)
 declare function marc2bfutils:generate-content-code($content-text as xs:string) as xs:string {
  fn:string( $marc2bfutils:content-types/term[aL=$content-text]/@code)			
 };
+(: This function matches the mediatype text to the varable containing the mediatype code, returning the code for building a uri
+:)
 declare function marc2bfutils:generate-mediatype-code($media-text as xs:string) as xs:string {
  fn:string( $marc2bfutils:media-types/term[aL=$media-text]/@code)			
+};
+(: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
+adapted from marcslim2modsutils.xsl
+:)
+declare function marc2bfutils:chopPunctuation( $str as xs:string,
+    $punc as xs:string){
+let $len:=fn:string-length($str)
+return	if ($len=0) then
+			()
+	else if (fn:contains($punc, fn:substring($str,$len,1) )) then
+			marc2bfutils:chopPunctuation(fn:substring($str,1,$len - 1),$punc)
+	else if (fn:not($str)) then
+			()
+	else
+		$str
+
 };
