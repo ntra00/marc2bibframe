@@ -44,15 +44,17 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-03-06-T12:00:00";
+declare variable $mbshared:last-edit :="2014-03-13-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
 <rules>
 <rule status="on" id="1" label="isbn" category="instance-splitting">New instances on secondary unique ISBNs</rule>
-<rule status="on" id="1" label="issn" category="instance-splitting">New instances on secondary unique ISSNs</rule>
-<rule status="on" id="1" label="260" category="instance-splitting">New instances on multiple 260s</rule>
-<rule status="on" id="1" label="250" category="instance-splitting">New instances on multiple 250s</rule>
+<rule status="on" id="2" label="issn" category="instance-splitting">New instances on secondary unique ISSNs</rule>
+<rule status="on" id="3" label="260" category="instance-splitting">New instances on multiple 260s</rule>
+<rule status="on" id="4" label="250" category="instance-splitting">New instances on multiple 250s</rule>
+<rule status="on" id="5" label="246" category="instance-node">246 domain is instance</rule>
+<rule status="on" id="6" label="247" category="instance-node">247 domain is instance</rule>
 </rules>
 );
 
@@ -160,15 +162,15 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicKey"					      tag="240" sfcodes="r"			 	    > Key </node>
          <node domain="work"		property="formDesignation"			     tag="130" sfcodes="k"      >Form subheading from title</node>         
          <node domain="work"		property="formDesignation"			     tag="240" sfcodes="k"      >Form subheading from title</node>         
-         
+         <node domain="work"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
          <node domain="work"				property="musicMediumNote"				tag="382" sfcodes="adp"		    	> Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="130" sfcodes="m"				    > Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="730" sfcodes="m"			     	> Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="240" sfcodes="m"			     	> Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="243" sfcodes="m"	     			> Music medium note </node>
          <node domain="instance"		property="dimensions"					    tag="300" sfcodes="c"			     	>Physical Size</node>
-         <node domain="work"				property="duration"					      tag="306" sfcodes="a"			     	>Playing time</node>
-         <node domain="work"				property="frequencyNote"					tag="310" sfcodes="ab"					>Issue frequency</node>
+         <node domain="work"				property="duration"					    tag="306" sfcodes="a"			     	>Playing time</node>
+         <node domain="work"				property="frequencyNote"				tag="310" sfcodes="ab"					>Issue frequency</node>
          <node domain="work"				property="frequencyNote"				tag="321" sfcodes="ab"					>Issue frequency</node>
          <node domain="arrangement"			property="materialPart"			        tag="351" sfcodes="3"					>material Organization</node>
          <node domain="arrangement"			property="materialOrganization"			tag="351" sfcodes="a"					>material Organization</node>
@@ -187,9 +189,11 @@ declare variable $mbshared:simple-properties:= (
          <node domain="contentcategory"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>-->
          <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
-         <node domain="work"				property="originDate"					tag="046" sfcodes="kl"					>Date of origin</node>
-         <node domain="work"				property="formDesignation"				tag="130" sfcodes="k"						>Form Designation</node>
-         <node domain="work"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
+         <node domain="work"				property="originDate"					tag="046" sfcodes="kl" stringjoin="-"					>Date of origin</node>
+
+         <node domain="instance"				property="formDesignation"				tag="245" sfcodes="h"						>Form Designation</node>
+         <node domain="instance"				property="formDesignation"				tag="245" sfcodes="k"						>Form Designation</node>
+         
          <node domain="work"				property="musicNumber"       			tag="130" sfcodes="n"						>Music Number</node>
          <node domain="work"				property="musicNumber"					tag="730" sfcodes="n"						>Music Number</node>
          <node domain="work"				property="musicVersion"					tag="130" sfcodes="o"						>Music Version</node>
@@ -205,13 +209,13 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
          <node domain="work"				property="contentsNote"					  tag="520" sfcodes="a" ind2=" "	>Contents Note</node>
          <node domain="work"				property="temporalCoverageNote"		tag="513" sfcodes="b"						>Period Covered Note</node>
-         <node domain="event"			property="eventDate"					    tag="518" sfcodes="d"						>Event Date</node>
+         <node domain="event"			    property="eventDate"					    tag="518" sfcodes="d"						>Event Date</node>
          <node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>
          <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
          <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
          <node domain="work"				property="otherPhysicalFormat"		tag="530"                 			>Additional Physical Form Available Note </node>         
-         <node domain="findingAid"				property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>
-         <node domain="work"		    property="awardNote"			    		tag="586" sfcodes="3a"					>Awards Note</node>
+         <node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>
+         <node domain="work"		        property="awardNote"			    		tag="586" sfcodes="3a"					>Awards Note</node>
          <node domain="instance"		property="philatelicDataNote"			tag="258" sfcodes="ab"					>Philatelic data note</node>
          <node domain="instance"		property="illustrationNote"				tag="300" sfcodes="b"			      >Illustrative content note</node>
          <node domain="instance"		property="aspectRatio"				    tag="345" sfcodes="a"			      >Aspect Ratio</node>
@@ -2865,7 +2869,7 @@ declare function mbshared:get-title(
      let $title := fn:normalize-space($title)
      
      let $element-name :=
-            if ($d/@tag eq "246" or $d/@tag eq "247") then 
+            if (fn:matches(fn:string($d/@tag),"(246|247|242)" )) then 
                 "bf:titleVariation" 
             else  if ($d/@tag = "222" ) then
                 "bf:keyTitle" 
@@ -2873,7 +2877,7 @@ declare function mbshared:get-title(
                 "bf:abbreviatedTitle"
             else if ($domain="work") then
                 "bf:workTitle"
-            else
+            else (:245:)
                 "bf:instanceTitle"
                 
        let $lang-attribute := if ($d/@tag = "242" and $d/marcxml:subfield[@code = "y"] ne "" ) then                            
@@ -2887,15 +2891,13 @@ declare function mbshared:get-title(
               else  (:246 :)        
                 if ($d/@ind2=" "  and $d/marcxml:subfield[@code = "i"]) then
                     fn:string($d/marcxml:subfield[@code = "i"])
-                 else  if ($d/@ind2="0") then "Title portion"
-                 else if ($d/@ind2="1") then "Parallel title"
-                 else if ($d/@ind2="2") then "Distinctive title"
-                 else if ($d/@ind2="3") then "Other title"
-                 else if ($d/@ind2="4") then "Cover title"
-                 else if ($d/@ind2="5") then "Added title page title"
-                 else if ($d/@ind2="6") then "Caption title"
-                 else if ($d/@ind2="7") then "Running title"
-                 else if ($d/@ind2="8") then "Spine title"    
+                 else  if ($d/@ind2="0") then "portion"
+                 else if ($d/@ind2="1") then "parallel"
+                 else if ($d/@ind2="2") then "distinctive"                 
+                 else if ($d/@ind2="4") then "cover"                 
+                 else if ($d/@ind2="6") then "caption"
+                 else if ($d/@ind2="7") then "running"
+                 else if ($d/@ind2="8") then "spine"    
                  else ()
             else
                 ()
@@ -2955,7 +2957,7 @@ return
 :
 :   if there's only one subfield code in sfcodes, it looks for all those subfields (repeatables)
 :   if there's a string of subfields, it does a stringjoin of all, but still creates a sequence in $text
-:
+:   @stringjoin could be on node; else " "
 :   @param  $d        element is the MARCXML tag
 :   @param  $domain       element is the domain for this element to sit in. is this needed?
 :                           maybe needed for building related works??
@@ -2976,11 +2978,12 @@ declare function mbshared:generate-simple-property(
     return 
       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
         let $text:= if (fn:string-length($return-codes) > 1) then 
-                    element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)]," "))}
-                else
-                    for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
-                        return element wrap{fn:string($s)}
-                         
+        let $stringjoin:= if ($node/@stringjoin) then fn:string($node/@stringjoin) else " "
+                return            element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
+      else
+            for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
+                return element wrap{fn:string($s)}
+                 
        return
            for $i in $text
                      return element {fn:concat("bf:",fn:string($node/@property))} {	               
