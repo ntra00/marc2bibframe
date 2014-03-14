@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-03-13-T16:00:00";
+declare variable $mbshared:last-edit :="2014-03-14-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -213,7 +213,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>
          <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
          <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
-         <node domain="work"				property="otherPhysicalFormat"		tag="530"                 			>Additional Physical Form Available Note </node>         
+         <!--<node domain="instance"				property="otherPhysicalFormat"		tag="530"                 			>Additional Physical Form Available Note </node>-->         
          <node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>
          <node domain="work"		        property="awardNote"			    		tag="586" sfcodes="3a"					>Awards Note</node>
          <node domain="instance"		property="philatelicDataNote"			tag="258" sfcodes="ab"					>Philatelic data note</node>
@@ -253,7 +253,6 @@ declare variable $mbshared:relationships :=
 		    <type tag="773" property="containedIn">hasConstituent</type>
 		         <type tag="774" property="hasPart">has Part</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
-		    <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
 		   
 		   <type tag="777" property="issuedWith">issuedWith</type>
 		   <!--???the generic preceeding and succeeding may not be here -->
@@ -290,6 +289,7 @@ declare variable $mbshared:relationships :=
 	  	<instance-relateds>
 	  	  (:<type tag="6d30"  property="subject">isSubjectOf</type>:)
 	  	  <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>	  	  
+	  	  <type tag="530" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
 	  	</instance-relateds>
 	</relationships>
 );
@@ -357,10 +357,11 @@ declare function mbshared:generate-instance-from260(
             for $t in $titles
             return mbshared:get-title($t,"instance") 
     
+    (: moved to Work 2014-03-14
     let $names := 
         for $datafield in $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
         return mbshared:get-name($datafield)
-        
+        :)
         
     let $edition := 
      for $e in $d/../marcxml:datafield[@tag eq "250"][1]
@@ -436,25 +437,7 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
   let $instance-types:= 
         for $i in fn:distinct-values($instance-types)
                 return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
-    (: let $instance-type := 
-                if ($instance-type) then 
-                   element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$instance-type)}}                  
-                else ():)
-          
-      (:instance subclasses are tactile, manuscript, modes of issuance
-      Replaces instanceType:)
-      
-   (: let $instanceType :=         
-        if ( fn:count($physBookData) gt 0 ) then
-            "PhysicalBook"
-        else if ( fn:count($physMapData) gt 0 ) then
-            "PhysicalMap"
-        else if ( fn:count($physSerialData) gt 0 ) then
-            "Serial"
-        else if ( fn:count($physResourceData) > 0 ) then
-            "PhysicalResource"
-        else 
-            "":)
+   
 let $issuance:=
            	if (fn:matches($leader7,"(a|c|d|m)")) 		then "monographic"
            	else if ($leader7="b") 						then "continuing"
@@ -491,7 +474,7 @@ let $issuance:=
                 fn:concat(fn:string($i/marcxml:subfield[@code="a"])," ",  $b)
                 )
         }
-    
+   let $instance-relateds := mbshared:related-works($d/ancestor::marcxml:record,$workID,"instance") 
   let $instance-simples:= (:all but identifiers:)
  	  for $i in $d/../marcxml:datafield[fn:not(fn:matches(@tag,"^0[1-9]")) ] 
  	       return mbshared:generate-simple-property($i,"instance")
@@ -500,7 +483,7 @@ let $issuance:=
         element bf:Instance {        
            $instance-types,                            
             $instance-title,            
-            $names,
+          (:  $names,:)
             $edition,
             $publication,                       
             $physMapData,
@@ -2002,12 +1985,11 @@ declare function mbshared:generate-work(
         return mbshared:get-uniformTitle($d)
               
     let $names := 
-        for $d in (
-                    $marcxml/marcxml:datafield[@tag eq "100"]|
-                    $marcxml/marcxml:datafield[@tag eq "110"]|
-                    $marcxml/marcxml:datafield[@tag eq "111"]
-                    )
-        return mbshared:get-name($d)
+        (for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
+                return mbshared:get-name($d),         
+        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
+            return mbshared:get-name($d)
+         )
         
     let $titles := 
         <titles>
