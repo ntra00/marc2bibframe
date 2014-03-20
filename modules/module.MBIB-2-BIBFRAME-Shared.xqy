@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-03-14-T16:00:00";
+declare variable $mbshared:last-edit :="2014-03-20-T12:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -99,6 +99,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="classification"		property="classificationEdition"   tag="082" sfcodes=""	         	>classificationEdition</node>
          <node domain="classification"		property="classificationEdition"   tag="083" sfcodes=""	         	>classificationEdition</node>
          <node domain="title"		property="titleQualifier"			tag="210" sfcodes="b"          >title qualifier</node>
+         <node domain="title"		property="titleQualifier"			tag="222" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
@@ -619,10 +620,17 @@ declare function mbshared:generate-identifiers(
       let $identifiers:=         
              $mbshared:simple-properties//node[@domain=$domain][@group="identifiers"]
     let $bfIdentifiers := 
-         for $id in $identifiers[fn:not(@ind1)][@domain=$domain] (:all but 024 and 028:)                        	 
+         (:for $id in $identifiers[fn:not(@ind1)][@domain=$domain] (\:all but 024 and 028:\)                        	 
                	return
-               	for $this-tag in $marcxml/marcxml:datafield[@tag eq $id/@tag] (:for each matching marc datafield:)          		
-                			(:if contains subprops, build class for $a else just prop w/$a:)
+               	for $this-tag in $marcxml/marcxml:datafield[@tag eq $id/@tag] :)
+               	(:for each matching marc datafield:)          		
+         
+         (:invert the for loops for speed: 2014-03-20 :)
+         	for $this-tag in $marcxml/marcxml:datafield
+         	return 
+                for $id in $identifiers[fn:not(@ind1)][@domain=$domain][@tag=$this-tag/@tag] (:all but 024 and 028:)                        	 
+               	
+                (:if contains subprops, build class for $a else just prop w/$a:)
                 	let $cancels:= for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(m|y|z)")]     
 		                                return mbshared:handle-cancels($this-tag, $sf, fn:string($id/@property))		                                              		        	           
                    	return  (:need to construct blank node if there's no uri or there are qualifiers/assigners:)
@@ -942,7 +950,7 @@ declare function mbshared:generate-physdesc
              (:---337,338:)
              if ($resource="instance") then 
               (  (:-------------337----------------:)
-                     for $d in $marcxml/marcxml:datafield[@tag="337" ]
+              for $d in $marcxml/marcxml:datafield[@tag="337" ]
                 let $src:=fn:string($d/marcxml:subfield[@code="2"])
                 
                 return
@@ -1980,21 +1988,25 @@ declare function mbshared:generate-work(
         
     let $mainType := "Work"
     
-    let $uniformTitle := 
+    let $uniformTitle := (:work title can be from 245 if no 240/130:)
+        if (fn:not($marcxml/marcxml:datafield[fn:matches(@tag,"(130|240)")])) then
+        for $d in ($marcxml/marcxml:datafield[@tag eq "245"])
+            return mbshared:get-uniformTitle($d)
+        else
         for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
-        return mbshared:get-uniformTitle($d)
+            return mbshared:get-uniformTitle($d)
               
     let $names := 
-        (for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
-                return mbshared:get-name($d),         
-        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
+        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
+                return mbshared:get-name($d)         
+    let $addl-names:= for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
             return mbshared:get-name($d)
-         )
+         
         
     let $titles := 
         <titles>
             {
-    	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(245|243|247)")]
+    	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(243|247)")]
     	       return mbshared:get-title($t, "work")
             }
         </titles>
@@ -2255,6 +2267,7 @@ declare function mbshared:generate-work(
                 (),
             $titles/bf:*,        
             $names,
+            $addl-names,
             $work-simples,
               $aud521,
          
@@ -2895,7 +2908,7 @@ declare function mbshared:get-title(
              } (:end Title:)
              
     return 
-        ( element bf:title {  $lang-attribute, $title },
+        ((: element bf:title {  $lang-attribute, $title },:)
      
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
             $constructed-title,
@@ -2912,23 +2925,23 @@ declare function mbshared:get-title(
 :   @return bf:translationOf
 :)
 declare function mbshared:generate-translationOf (    $d as element(marcxml:datafield)
-    ) as element(bf:translationOf)
+    ) as element( bf:translationOf)
     
 {
   let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:not(fn:matches(@code,"(0|6|8|l)") ) ]," "))    
-    
-return
-            element bf:translationOf {
-               element bf:Work {
+  return    element bf:translationOf {     
+            element bf:Work {
                 (:element bf:authorizedAccessPoint{$label},:)                
                 element bf:title {$aLabel},
                 mbshared:generate-titleNonsort($d,$aLabel,"bf:title") ,                                    
-                element madsrdf:authoritativeLabel{$aLabel},
+                element bf:authorizedAccessPoint {$aLabel},
                 if ($d/../marcxml:datafield[@tag="100"]) then
                     element bf:creator{fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
                 else ()
-                }
+             }
        }
+       
+               
 };
 
 (:~
@@ -3073,7 +3086,7 @@ declare function mbshared:get-uniformTitle(
                         }
                         
     else ()
-    let $elementList := 
+    (:let $elementList := 
         element bf:hasAuthority {
           element madsrdf:Authority {
             element madsrdf:authoritativeLabel{ fn:string($aLabel)},
@@ -3115,14 +3128,12 @@ declare function mbshared:get-uniformTitle(
                          }
             }
         }
-        }
+        }:)
     return
     
         element bf:Work {
-                   element bf:label {$aLabel},        
-	  		       element bf:title {$aLabel},
-	  		       $title-nonsort,
-                   $elementList,              
+                   element bf:label {$aLabel},        	  		    
+	  		       $title-nonsort,                      
                    element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
                    $ut-local-id,
                    $translationOf
