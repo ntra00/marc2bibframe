@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-03-20-T12:00:00";
+declare variable $mbshared:last-edit :="2014-03-21-T13:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -2934,10 +2934,11 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
   let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:not(fn:matches(@code,"(0|6|8|l)") ) ]," "))    
   return    element bf:translationOf {     
             element bf:Work {
-                (:element bf:authorizedAccessPoint{$label},:)                
+                (:element bf:authorizedAccessPoint{$label}, :)               
                 element bf:title {$aLabel},
                 mbshared:generate-titleNonsort($d,$aLabel,"bf:title") ,                                    
                 element bf:authorizedAccessPoint {$aLabel},
+                element madsrdf:authoritativeLabel {$aLabel},
                 if ($d/../marcxml:datafield[@tag="100"]) then
                     element bf:creator{fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
                 else ()
@@ -3135,7 +3136,8 @@ declare function mbshared:get-uniformTitle(
     return
     
         element bf:Work {
-                   element bf:label {$aLabel},        	  		    
+                   element bf:label {$aLabel},
+                     element madsrdf:authoritativeLabel{ fn:string($aLabel)},
 	  		       $title-nonsort,                      
                    element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
                    $ut-local-id,
