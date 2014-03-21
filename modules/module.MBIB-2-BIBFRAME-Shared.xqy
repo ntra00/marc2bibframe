@@ -239,7 +239,7 @@ declare variable $mbshared:relationships :=
 (
     <relationships>
         <!-- Work to Work relationships -->
-        <work-relateds all-tags="()">
+        <work-relateds all-tags="(700|710|711|720|740|760|762|765|767|770|772|773|775|777|780|785|533|534|787|630|400|410|411|430|440|490|800|810|811|830|730|490|510)">
             <type tag="(700|710|711|720)" ind2="2" property="contains">isIncludedIn</type>            
             <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>
@@ -287,7 +287,7 @@ declare variable $mbshared:relationships :=
         <type tag="510" property="describedIn">isReferencedBy</type>
         -->
         <!-- Instance to Work relationships (none!) -->
-	  	<instance-relateds>
+	  	<instance-relateds all-tags="(776|530)">
 	  	  (:<type tag="6d30"  property="subject">isSubjectOf</type>:)
 	  	  <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>	  	  
 	  	  <type tag="530" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
@@ -1896,15 +1896,18 @@ declare function mbshared:related-works
         $resource as xs:string
     ) as element ()*  
 { 
-
+    
     let $relateds:= 
         if ($resource="instance") then 
             $mbshared:relationships/instance-relateds
         else 
             $mbshared:relationships/work-relateds
-
+    
+    let $relationship-source-tags:=$marcxml/marcxml:datafield[fn:matches(@tag,$relateds/@all-tags)]
+    
     let $relatedWorks :=     
-        for $type in $relateds/type
+        for $d in $relationship-source-tags
+        for $type in $relateds/type[@tag=$d/@tag]
         	return 
             if (fn:matches($type/@tag,"740")) then (: title is in $a , @ind2 needs attention:)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][@ind2=$type/@ind2]		
@@ -1934,8 +1937,8 @@ declare function mbshared:related-works
                 for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t" or @code="s"]]		
 			   	return mbshared:generate-related-work($d,$type)
 				
-    return $relatedWorks
-				
+    return (:($relatedWorks, element related-tags {$relationship-source-tags}):)
+				$relatedWorks
 };
 (:~
 :   This is the function that generates an xml:lang attribute from the script and language
@@ -2988,13 +2991,13 @@ declare function mbshared:generate-simple-property(
                                 let $s:=fn:lower-case(fn:normalize-space($i))
                                 return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}
 
-                         else if (fn:starts-with($text,"(OCoLC)")) then
+                         else if (fn:starts-with($i,"(OCoLC)")) then
   	                             let $s :=  marc2bfutils:clean-string(fn:replace($i, "\(OCoLC\)", ""))
            	                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
                          else if (fn:contains(fn:string($node/@property),"lccn")) then
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($i," ",""))       }                         
                          else
-                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),$text)}
+                                 attribute rdf:resource{fn:concat(fn:string($node/@uri),$i)}
              	             }
         
      else (:no matching nodes for this datafield:)
