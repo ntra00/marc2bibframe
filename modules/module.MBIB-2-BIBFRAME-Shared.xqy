@@ -781,12 +781,13 @@ let $id024-028:=
 :   @return  element() either bf:systemNumber or bf:hasAuthority with uri
 :)
 
-declare function mbshared:handle-system-number( $sys-num   ) 
+declare function mbshared:handle-system-number( $sys-num as element(marcxml:subfield)  ) 
 {
+
  if (fn:starts-with(fn:normalize-space($sys-num),"(DE-588")) then
          let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
          return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
-  else   if ( fn:contains(fn:string($sys-num), "(OCoLC)" ) ) then
+  else   if ( fn:matches(fn:normalize-space($sys-num), "$\(OCoLC\)" ) ) then
 	      let $iStr :=  marc2bfutils:clean-string(fn:replace($sys-num, "\(OCoLC\)", ""))                
 	      return       element bf:systemNumber {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"(^ocm|^ocn)","")) }}
 else 	                      
@@ -2995,40 +2996,47 @@ declare function mbshared:generate-simple-property(
 {
 
   for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1][ fn:not(@ind2) or @ind2=$d/@ind2]
-    let $return-codes:=
- 			if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
+    let $return-codes:=	if ($node/@sfcodes) then fn:string($node/@sfcodes)	else "a"
     let $startwith:=fn:string($node/@startwith) 
  
     return 
       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
         let $text:= if (fn:string-length($return-codes) > 1) then 
-        let $stringjoin:= if ($node/@stringjoin) then fn:string($node/@stringjoin) else " "
-                return            element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
-      else
-            for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
-                return element wrap{fn:string($s)}
+                        let $stringjoin:= if ($node/@stringjoin) then fn:string($node/@stringjoin) else " "
+                        return   element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
+                    else
+                        for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
+                            return element wrap{fn:string($s)}
                  
        return
            for $i in $text
-                     return element {fn:concat("bf:",fn:string($node/@property))} {	               
-                         if (fn:not($node/@uri)) then
+                     return element {fn:concat("bf:",fn:string($node/@property))} {
+                                (:for identifiers, if it's oclc and there's an oclc id (035a) return attribute/uri, else return bf:Id:)
+                         if (fn:string($node/@group)="identifiers") then
+                                if (fn:starts-with($i,"\(OCoLC\)") and fn:contains($node/@uri,"worldcat") ) then
+                                    let $s :=  marc2bfutils:clean-string(fn:replace($i, "\(OCoLC\)", ""))
+                                    return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
+                                else
+                                     element bf:Identifier {
+                                                element bf:identifierValue {fn:normalize-space(fn:concat($startwith,  $i) )},
+                                                element bf:identifierScheme {fn:string($node/@property)}
+                                                }
+                        
+                         (:non-identifiers:)
+                         else if (fn:not($node/@uri)) then 
                               fn:normalize-space(fn:concat($startwith,  $i) )    	                
+                         (:nodes with uris: :)
                          else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then                         
                                 let $s:=fn:lower-case(fn:normalize-space($i))
-                                return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}
-
-                         else if (fn:starts-with($i,"(OCoLC)")) then
-  	                             let $s :=  marc2bfutils:clean-string(fn:replace($i, "\(OCoLC\)", ""))
-           	                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
+                                return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}                         
                          else if (fn:contains(fn:string($node/@property),"lccn")) then
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($i," ",""))       }                         
-                         else
+                         else 
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),$i)}
              	             }
         
      else (:no matching nodes for this datafield:)
-        ()
-       
+        ()      
    
 };
 (:~
