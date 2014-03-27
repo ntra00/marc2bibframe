@@ -123,8 +123,8 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
         (: ntra changed this to an inline element from constructed, so I control the namespaces added.
        
         :)
-        
-        <rdf:RDF
+      
+      <rdf:RDF
             xmlns:rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
             xmlns:rdfs          = "http://www.w3.org/2000/01/rdf-schema#"
             xmlns:bf            = "http://bibframe.org/vocab/"
@@ -134,7 +134,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             >
 
         {
-        (:attribute dcterms:modified {$rdfxml/dcterms:modified[1]},:)
+     
             $rdfxml/@*,
             for $w in    $resources/self::bf:Work
                 order by $w/@rdf:about
@@ -151,10 +151,9 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             $resources/self::bf:Review,
             $resources/self::bf:TableOfContents,
             $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding|HeldMaterial|HeldItem|Summary|Review|TableOfContents)"))]
-            
+          
             }
         </rdf:RDF>
-
 };
 
 

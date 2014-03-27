@@ -296,6 +296,58 @@ declare variable $mbshared:relationships :=
 );
 
 (:~
+:   This is the function generates an annotation from 520 u
+:
+:   @param  $marcxml       element is the MARCXML record   
+:   @return bf:*           hasAnnotation element
+:)
+declare function mbshared:generate-abstract-annotation(
+    $marcxml as element(marcxml:record)   ,
+    $workID as xs:string
+    ) as element (bf:hasAnnotation) 
+{
+for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]]
+    
+        let $abstract-type:=
+            if ($d/@ind1="") then "Summary" (:Summary:)
+            else if ($d/@ind1="0") then "Summary"(:Content Description:) 
+            else if ($d/@ind1="1") then "Review"
+            else if ($d/@ind1="2") then "Summary" (:Scope and Content:)
+            else if ($d/@ind1="3") then "Summary" (:Abstract:)
+            else if ($d/@ind1="4") then "Summary" (:Content advice:)
+            else                        "Summary"
+       
+        return (:link direction is  reversed in nested2flat module, hasAnnotation becomes reviewOf, summaryOf:)
+            element bf:hasAnnotation {
+                element {fn:concat("bf:", $abstract-type)} {
+                    element rdf:type {
+                        attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , fn:replace($abstract-type, " ", "") ) }
+                    },
+                       
+                    element bf:label { $abstract-type},
+                        
+                    if (fn:string($d/marcxml:subfield[@code="c"][1]) ne "") then
+                        for $sf in $d/marcxml:subfield[@code="c"]
+                          return element bf:annotationAssertedBy { fn:string($sf) }
+                    else
+                        element bf:annotationAssertedBy { 
+                            attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc" }
+                        },
+                        (:??? annotationbody  and literal aren't right:)
+                    for $sf in $d/marcxml:subfield[@code="u"]
+                        return element bf:annotationBody { attribute rdf:resource {fn:string($sf)} },
+                                                                
+                    let $property-name:= 
+                        if  ($abstract-type="Summary") then "bf:summaryOf" 
+                         else   if  ($abstract-type="Review") then "bf:reviewOf"
+                         else "bf:annotates"
+                    return element {$property-name} {
+                        attribute rdf:resource {$workID}
+                    }
+                }
+            }
+        };
+(:~
 :   This is the function generates administrative metadata about the record
 :
 :   @param  $marcxml       element is the MARCXML record   
@@ -497,6 +549,10 @@ let $issuance:=
                 attribute rdf:resource {$workID}
                 }, 
             $biblink,
+           (: element bf:test {
+              for $i in $d/../marcxml:datafield[fn:not(fn:matches(@tag,"^0[1-9]")) ] 
+ 	       return mbshared:generate-simple-property($i,"work") 	
+            },:)
             $holdings
         }
 };
@@ -1991,14 +2047,16 @@ declare function mbshared:generate-work(
         
     let $mainType := "Work"
     
-    let $uniformTitle := (:work title can be from 245 if no 240/130:)
-        if (fn:not($marcxml/marcxml:datafield[fn:matches(@tag,"(130|240)")])) then
-        for $d in ($marcxml/marcxml:datafield[@tag eq "245"])
+    let $uniformTitle := (:work title can be from 245 if no 240/130:)    
+       for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
+            return mbshared:get-uniformTitle($d)
+      (: if (fn:not($marcxml/marcxml:datafield[fn:matches(@tag,"(130|240)")])) then
+          for $d in ($marcxml/marcxml:datafield[@tag eq "245"])
             return mbshared:get-uniformTitle($d)
         else
-        for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
+            for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
             return mbshared:get-uniformTitle($d)
-              
+              :)
     let $names := 
         for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
                 return mbshared:get-name($d)         
@@ -2009,7 +2067,7 @@ declare function mbshared:generate-work(
     let $titles := 
         <titles>
             {
-    	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(243|247)")]
+    	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(243|245|247)")]
     	       return mbshared:get-title($t, "work")
             }
         </titles>
@@ -2121,46 +2179,10 @@ declare function mbshared:generate-work(
             return mbshared:generate-simple-property($d,"work")
 	
     let $abstract-annotation:= 
-        for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] 
-        let $abstract-type:=
-            if ($d/@ind1="") then "Summary" (:Summary:)
-            else if ($d/@ind1="0") then "Summary"(:Content Description:) 
-            else if ($d/@ind1="1") then "Review"
-            else if ($d/@ind1="2") then "Summary" (:Scope and Content:)
-            else if ($d/@ind1="3") then "Summary" (:Abstract:)
-            else if ($d/@ind1="4") then "Summary" (:Content advice:)
-            else                        "Summary"
-       
-        return (:link direction is  reversed in nested2flat module, hasAnnotation becomes reviewOf, summaryOf:)
-            element bf:hasAnnotation {
-                element {fn:concat("bf:", $abstract-type)} {
-                    element rdf:type {
-                        attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" , fn:replace($abstract-type, " ", "") ) }
-                    },
-                       
-                    element bf:label { $abstract-type},
-                        
-                    if (fn:string($d/marcxml:subfield[@code="c"][1]) ne "") then
-                        for $sf in $d/marcxml:subfield[@code="c"]
-                          return element bf:annotationAssertedBy { fn:string($sf) }
-                    else
-                        element bf:annotationAssertedBy { 
-                            attribute rdf:resource {"http://id.loc.gov/vocabulary/organizations/dlc" }
-                        },
-                        (:??? annotationbody  and literal aren't right:)
-                    for $sf in $d/marcxml:subfield[@code="u"]
-                        return element bf:annotationBody { attribute rdf:resource {fn:string($sf)} },
-                        
-                    (:element cnt:chars { fn:string-join($d/marcxml:subfield[fn:matches(@code,"(3|a|b)") ],"") },:)
-                    
-                    let $property-name:= if  ($abstract-type="Summary") then "bf:summaryOf" 
-                    else   if  ($abstract-type="Review") then "bf:reviewOf"
-                    else "bf:annotates"
-                    return element {$property-name} {
-                        attribute rdf:resource {$workID}
-                    }
-                }
-            }
+        if    ($marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] ) then
+         mbshared:generate-abstract-annotation($marcxml,$workID)
+            else ()
+    
 	let $work-identifiers := mbshared:generate-identifiers($marcxml,"work")
 	
 	let $work-classes := mbshared:generate-classification($marcxml,"work")
@@ -2268,6 +2290,7 @@ declare function mbshared:generate-work(
                 $uniformTitle/*
             else
                 (),
+                
             $titles/bf:*,        
             $names,
             $addl-names,
@@ -2292,7 +2315,8 @@ declare function mbshared:generate-work(
            
             for $i in $instances 
                 return element  bf:hasInstance{$i},
-             $instancesfrom856            
+             $instancesfrom856
+             
         }
         
 };
@@ -2911,7 +2935,7 @@ declare function mbshared:get-title(
              } (:end Title:)
              
     return 
-        ((: element bf:title {  $lang-attribute, $title },:)
+        ( element bf:title {  $lang-attribute, $title },
      
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
             $constructed-title,
@@ -2937,8 +2961,9 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
                 (:element bf:authorizedAccessPoint{$label}, :)               
                 element bf:title {$aLabel},
                 mbshared:generate-titleNonsort($d,$aLabel,"bf:title") ,                                    
+                element madsrdf:authoritativeLabel{$aLabel},                               
                 element bf:authorizedAccessPoint {$aLabel},
-                element madsrdf:authoritativeLabel {$aLabel},
+                
                 if ($d/../marcxml:datafield[@tag="100"]) then
                     element bf:creator{fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
                 else ()
@@ -3090,7 +3115,7 @@ declare function mbshared:get-uniformTitle(
                         }
                         
     else ()
-    (:let $elementList := 
+    let $elementList := 
         element bf:hasAuthority {
           element madsrdf:Authority {
             element madsrdf:authoritativeLabel{ fn:string($aLabel)},
@@ -3132,7 +3157,7 @@ declare function mbshared:get-uniformTitle(
                          }
             }
         }
-        }:)
+        }
     return
     
         element bf:Work {
@@ -3140,6 +3165,7 @@ declare function mbshared:get-uniformTitle(
                      element madsrdf:authoritativeLabel{ fn:string($aLabel)},
 	  		       $title-nonsort,                      
                    element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
+                   $elementList,
                    $ut-local-id,
                    $translationOf
             }                    
