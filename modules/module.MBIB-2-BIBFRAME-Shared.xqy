@@ -369,9 +369,14 @@ declare function mbshared:generate-admin-metadata(
                 fn:concat($biblink,    ".marcxml.xml")                 
             }
         }
-      let $edited:=fn:concat(fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),1,4),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),5,2),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),7,2),"T",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),9,2),":",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),11,2))
+      let $edited:= if ($marcxml/marcxml:controlfield[@tag="005"]) then
+                             fn:concat(fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),1,4),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),5,2),"-",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),7,2),"T",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),9,2),":",fn:substring(($marcxml/marcxml:controlfield[@tag="005"]),11,2))
+                        else
+                            ()
       let $changed:= (  element bf:generationProcess {fn:concat("DLC transform-tool:",$mbshared:last-edit)},
-                        element bf:changeDate {$edited}
+                        if ($edited) then
+                            element bf:changeDate {$edited}
+                        else ()
                       )
       let $cataloging-meta:=
             for $d in $marcxml/marcxml:datafield[@tag="040"]
@@ -3020,15 +3025,18 @@ declare function mbshared:generate-simple-property(
                                      element bf:Identifier {
                                                 element bf:identifierValue {fn:normalize-space(fn:concat($startwith,  $i) )},
                                                 element bf:identifierScheme {fn:string($node/@property)}
-                                                }
-                        
+                                                }                        
                          (:non-identifiers:)
                          else if (fn:not($node/@uri)) then 
                               fn:normalize-space(fn:concat($startwith,  $i) )    	                
                          (:nodes with uris: :)
                          else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then                         
                                 let $s:=fn:lower-case(fn:normalize-space($i))
-                                return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}                         
+                                 return 
+                                    if (fn:string-length($s)  lt 10 and fn:not(fn:contains($s, " "))) then
+                                        attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}
+                                    else
+                                        element bf:Organization {element bf:label {$s}}
                          else if (fn:contains(fn:string($node/@property),"lccn")) then
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($i," ",""))       }                         
                          else 
