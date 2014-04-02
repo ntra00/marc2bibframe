@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "1.0-ml";
 
 (:
 :   Module Name: MARC/XML BIB 2 BIBFRAME RDF using MarkLogic
@@ -49,6 +49,9 @@ declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
+declare namespace log           =  "info:lc/marc2bibframe/logging#";
+declare namespace mlerror       =  "http://marklogic.com/xdmp/error";
+
 declare option xdmp:output "indent-untyped=yes" ; 
 
 (:~
@@ -64,9 +67,23 @@ declare variable $baseuri as xs:string := xdmp:get-request-field("baseuri","http
 declare variable $marcxmluri as xs:string := xdmp:get-request-field("marcxmluri","");
 
 (:~
-:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
+:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON, log
 :)
 declare variable $serialization as xs:string := xdmp:get-request-field("serialization","rdfxml");
+
+(:~
+:   If set to "true" will write log file to directory.
+:)
+declare variable $writelog as xs:string := xdmp:get-request-field("writelog","false");
+
+(:~
+:   Directory for log files.  MUST end with a slash.
+:)
+declare variable $logdir as xs:string := xdmp:get-request-field("logdir","");
+
+let $startDT := fn:current-dateTime()
+let $logfilename := fn:replace(fn:substring-before(xs:string($startDT), "."), "-|:", "")
+let $logfilename := fn:concat($logdir, $logfilename, '.log.xml')
 
 let $marcxml := 
     xdmp:document-get(
@@ -78,16 +95,65 @@ let $marcxml :=
        
 let $marcxml := $marcxml//marcxml:record
 
-let $resources :=
+let $result :=
     for $r in $marcxml
     let $controlnum := xs:string($r/marcxml:controlfield[@tag eq "001"][1])
     let $httpuri := fn:concat($baseuri , $controlnum)
-    let $bibframe :=  marcbib2bibframe:marcbib2bibframe($r,$httpuri)
-    return $bibframe/child::node()[fn:name()]
-    
+    let $r :=  
+        try {
+            let $rdf := marcbib2bibframe:marcbib2bibframe($r,$httpuri)
+            let $o := $rdf/child::node()[fn:name()]
+            let $logmsg := 
+                element log:success {
+                    attribute uri {$httpuri},
+                    attribute datetime { fn:current-dateTime() }
+                }
+            return 
+                element result {
+                    element logmsg {$logmsg},
+                    element rdf {$o}
+                }
+        } catch ($e) {
+            (: ML provides the full stack, but for brevity only take the spawning error. :)
+            let $stack1 := $e/mlerror:stack/mlerror:frame[1]
+            let $vars := 
+                for $v in $stack1/mlerror:variables/mlerror:variable
+                return
+                    element log:error-variable {
+                        element log:error-name { xs:string($v/mlerror:name) },
+                        element log:error-value { xs:string($v/mlerror:value) }
+                    }
+            let $logmsg := 
+                element log:error {
+                    attribute uri {$httpuri},
+                    attribute datetime { fn:current-dateTime() },
+                    element log:error-details {
+                        (: ML appears to be the actual err:* code in mlerror:name :)
+                        element log:error-enginecode { xs:string($e/mlerror:code) },
+                        element log:error-xcode { xs:string($e/mlerror:name) },
+                        element log:error-msg { xs:string($e/mlerror:message) },
+                        element log:error-description { xs:string($e/mlerror:format-string) },
+                        element log:error-expression { xs:string($e/mlerror:expr) },
+                        element log:error-file { xs:string($stack1/mlerror:uri) },
+                        element log:error-line { xs:string($stack1/mlerror:line) },
+                        element log:error-column { xs:string($stack1/mlerror:column) },
+                        element log:error-operation { xs:string($stack1/mlerror:operation) }    
+                    },
+                    element log:offending-record {
+                        $r
+                    }
+                }
+            return
+                element result {
+                    element logmsg {$logmsg}
+                }
+        }
+    return 
+        $r
+        
 let $rdfxml-raw := 
         element rdf:RDF {
-            $resources
+            $result//rdf/child::node()[fn:name()]
         }
         
 let $rdfxml := 
@@ -95,16 +161,58 @@ let $rdfxml :=
         RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
     else
         $rdfxml-raw 
-        
+
+let $endDT := fn:current-dateTime()
+let $log := 
+    element log:log {
+        attribute engine {"MarkLogic"},
+        attribute start {$startDT},
+        attribute end {$endDT},
+        attribute source {$marcxmluri},
+        attribute total-submitted { fn:count($marcxml) },
+        attribute total-success { fn:count($marcxml) - fn:count($result//logmsg/log:error) },
+        attribute total-error { fn:count($result//logmsg/log:error) },
+        $result//logmsg/log:*
+    }
+
+(: This might be a problem if run in a modules database. :)
+let $logwritten := 
+    if ($writelog eq "true") then
+        xdmp:save($logfilename, $log,
+            <options xmlns="xdmp:save">
+                <indent>yes</indent>
+                <method>xml</method>
+                <output-encoding>utf-8</output-encoding>
+            </options>
+        )
+    else
+        ()
+
+(:
+    For now, not injecting notice about an error into the JSON outputs.
+    There are a couple of ways to do it (one is a hack, the other is the right way)
+    but 1) will it break anything and 2) is there a need?
+:)
 let $response :=  
     if ($serialization eq "ntriples") then 
-        rdfxml2nt:rdfxml2ntriples($rdfxml)
+        if (fn:count($result//logmsg/log:error) > 0) then
+            fn:concat("# Errors encountered.  View 'log' for details.", fn:codepoints-to-string(10), rdfxml2nt:rdfxml2ntriples($rdfxml))
+        else
+            rdfxml2nt:rdfxml2ntriples($rdfxml)
     else if ($serialization eq "json") then 
         rdfxml2json:rdfxml2json($rdfxml)
     else if ($serialization eq "exhibitJSON") then
         bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON($rdfxml, $baseuri)
+    else if ($serialization eq "log") then 
+        $log
     else
-        $rdfxml
+        if (fn:count($result//logmsg/log:error) > 0) then
+            element rdf:RDF {
+                comment {"Errors encountered.  View 'log' for details."},
+                $rdfxml/*
+            }
+        else 
+            $rdfxml
 
 return $response
 
