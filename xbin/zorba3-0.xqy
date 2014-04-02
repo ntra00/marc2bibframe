@@ -56,6 +56,11 @@ declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
 
 declare namespace an = "http://zorba.io/annotations";
 declare namespace httpexpath = "http://expath.org/ns/http-client";
+declare namespace output = "http://www.w3.org/2010/xslt-xquery-serialization";
+
+declare namespace log           = "info:lc/marc2bibframe/logging#";
+declare namespace err           = "http://www.w3.org/2005/xqt-errors";
+declare namespace zerror        = "http://zorba.io/errors";
 
 (:~
 :   This variable is for the base uri for your Authorites/Concepts.
@@ -70,7 +75,7 @@ declare variable $baseuri as xs:string external;
 declare variable $marcxmluri as xs:string external;
 
 (:~
-:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
+:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON, log
 :)
 declare variable $serialization as xs:string external;
 
@@ -78,6 +83,16 @@ declare variable $serialization as xs:string external;
 :   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
 :)
 declare variable $resolveLabelsWithID as xs:string external := "false";
+
+(:~
+:   If set to "true" will write log file to directory.
+:)
+declare variable $writelog as xs:string external := "false";
+
+(:~
+:   Directory for log files.  MUST end with a slash.
+:)
+declare variable $logdir as xs:string external := "";
 
 (:~
 Performs an http get but does not follow redirects
@@ -188,6 +203,10 @@ declare %an:sequential function local:resolve-labels(
     return <rdf:RDF>{$resources}</rdf:RDF>
 };
 
+let $startDT := fn:current-dateTime()
+let $logfilename := fn:replace(fn:substring-before(xs:string($startDT), "."), "-|:", "")
+let $logfilename := fn:concat($logdir, $logfilename, '.log.xml')
+
 let $marcxml := 
     if ( fn:starts-with($marcxmluri, "http://" ) or fn:starts-with($marcxmluri, "https://" ) ) then
         let $json := http:get($marcxmluri)
@@ -201,16 +220,54 @@ let $marcxml :=
         return $mxml
 let $marcxml := $marcxml//marcxml:record
 
-let $resources :=
+let $result :=
     for $r in $marcxml
     let $controlnum := xs:string($r/marcxml:controlfield[@tag eq "001"][1])
     let $httpuri := fn:concat($baseuri , $controlnum)
-    let $bibframe :=  marcbib2bibframe:marcbib2bibframe($r,$httpuri)
-    return $bibframe/child::node()[fn:name()]
+    let $r :=  
+        try {
+            let $rdf := marcbib2bibframe:marcbib2bibframe($r,$httpuri)
+            let $o := $rdf/child::node()[fn:name()]
+            let $logmsg := 
+                element log:success {
+                    attribute uri {$httpuri},
+                    attribute datetime { fn:current-dateTime() }
+                }
+            return 
+                element result {
+                    element logmsg {$logmsg},
+                    element rdf {$o}
+                }
+        } catch * {
+            (: Could get entire stack trace from Zorba, but omitting for now. :)
+            let $stack1 := $zerror:stack-trace
+            let $logmsg := 
+                element log:error {
+                    attribute uri {$httpuri},
+                    attribute datetime { fn:current-dateTime() },
+                    element log:error-details {
+                        element log:error-xcode { xs:string($err:code) },
+                        element log:error-description { xs:string($err:description) },
+                        element log:error-file { xs:string($err:module) },
+                        element log:error-line { xs:string($err:line-number) },
+                        element log:error-column { xs:string($err:column-number) }
+                        (: element log:error-stack { $stack1 } :)
+                    },
+                    element log:offending-record {
+                        $r
+                    }
+                }
+            return
+                element result {
+                    element logmsg {$logmsg}
+                }
+        }
+    return 
+        $r
     
 let $rdfxml-raw := 
         element rdf:RDF {
-            $resources
+            $result//rdf/child::node()[fn:name()]
         }
         
 let $rdfxml := 
@@ -224,15 +281,56 @@ let $rdfxml :=
     else
         $rdfxml-raw 
         
+let $endDT := fn:current-dateTime()
+let $log := 
+    element log:log {
+        attribute engine {"MarkLogic"},
+        attribute start {$startDT},
+        attribute end {$endDT},
+        attribute source {$marcxmluri},
+        attribute total-submitted { fn:count($marcxml) },
+        attribute total-success { fn:count($marcxml) - fn:count($result//logmsg/log:error) },
+        attribute total-error { fn:count($result//logmsg/log:error) },
+        $result//logmsg/log:*
+    }
+    
+let $logwritten := 
+    if ($writelog eq "true") then
+        file:write-text($logfilename, serialize($log,
+            <output:serialization-parameters>
+                <output:indent value="yes"/>
+                <output:method value="xml"/>
+                <output:omit-xml-declaration value="no"/>
+            </output:serialization-parameters>)
+        )
+    else
+        ()
+
+(:
+    For now, not injecting notice about an error into the JSON outputs.
+    There are a couple of ways to do it (one is a hack, the other is the right way)
+    but 1) will it break anything and 2) is there a need?
+:)
 let $response :=  
     if ($serialization eq "ntriples") then 
-        rdfxml2nt:rdfxml2ntriples($rdfxml)
+        if (fn:count($result//logmsg/log:error) > 0) then
+            fn:concat("# Errors encountered.  View 'log' for details.", fn:codepoints-to-string(10), rdfxml2nt:rdfxml2ntriples($rdfxml))
+        else
+            rdfxml2nt:rdfxml2ntriples($rdfxml)
     else if ($serialization eq "json") then 
         rdfxml2json:rdfxml2json($rdfxml)
     else if ($serialization eq "exhibitJSON") then
         bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON($rdfxml, $baseuri)
+    else if ($serialization eq "log") then 
+        $log
     else
-        $rdfxml
-
+        if (fn:count($result//logmsg/log:error) > 0) then
+            element rdf:RDF {
+                comment {"Errors encountered.  View 'log' for details."},
+                $rdfxml/*
+            }
+        else 
+            $rdfxml
+            
 return $response
 
