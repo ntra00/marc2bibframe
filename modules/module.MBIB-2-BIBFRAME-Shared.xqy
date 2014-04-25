@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-04-25-T13:00:00";
+declare variable $mbshared:last-edit :="2014-04-25-T15:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -57,7 +57,7 @@ declare variable $mbshared:transform-rules :=(
 <rule status="on" id="6" label="247" category="instance-node">247 domain is instance</rule>
 </rules>
 );
-declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|520|522|524|525|530|541|546|555)");
+declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|520|522|524|525|541|546|555)");
 (:"(500|501|502|504|505|506|507|508|510|511|513|514|515|516|518|520|521|522|524|525|526|530|533|534|535|536|538|540|541|542|544|545|546|547|550|552|555|556|561|562|563|565|567|580|581|583|584|585|586|588|59X)":)
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
@@ -216,7 +216,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>
          <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
          <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
-         <!--<node domain="instance"				property="otherPhysicalFormat"		tag="530"                 			>Additional Physical Form Available Note </node>-->         
+                  
          <node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>
          <node domain="work"		        property="awardNote"			    		tag="586" sfcodes="3a"					>Awards Note</node>
          <node domain="instance"		property="philatelicDataNote"			tag="258" sfcodes="ab"					>Philatelic data note</node>
@@ -290,9 +290,9 @@ declare variable $mbshared:relationships :=
         -->
         <!-- Instance to Work relationships (none!) -->
 	  	<instance-relateds all-tags="(776|530)">
-	  	  (:<type tag="6d30"  property="subject">isSubjectOf</type>:)
+	  	  <!--<type tag="6d30"  property="subject">isSubjectOf</type>-->
 	  	  <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>	  	  
-	  	  <type tag="530" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
+	  	  <!--<type tag="530" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>-->
 	  	</instance-relateds>
 	</relationships>
 );
@@ -2992,7 +2992,11 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
                 element bf:authorizedAccessPoint {$aLabel},
                 
                 if ($d/../marcxml:datafield[@tag="100"]) then
-                    element bf:creator{fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
+                    element bf:creator{ 
+                            element bf:Agent {
+                                element bf:label {fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
+                            }
+                    }                    
                 else ()
              }
        }
