@@ -25,7 +25,7 @@ xquery version "1.0";
 :   @since January 14, 2014
 :   @version 1.0
 :)
-
+ 
 module namespace mbshared  = 'info:lc/id-modules/mbib2bibframeshared#';
 
 (: MODULES :)
@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-03-21-T13:00:00";
+declare variable $mbshared:last-edit :="2014-04-25-T13:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -57,6 +57,8 @@ declare variable $mbshared:transform-rules :=(
 <rule status="on" id="6" label="247" category="instance-node">247 domain is instance</rule>
 </rules>
 );
+declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|520|522|524|525|530|541|546|555)");
+(:"(500|501|502|504|505|506|507|508|510|511|513|514|515|516|518|520|521|522|524|525|526|530|533|534|535|536|538|540|541|542|544|545|546|547|550|552|555|556|561|562|563|565|567|580|581|583|584|585|586|588|59X)":)
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $mbshared:simple-properties:= (
@@ -517,7 +519,8 @@ let $issuance:=
             mbshared:generate-identifiers($d/ancestor::marcxml:record,"instance")    
         )    
     
-    (:let $notes := mbshared:generate-notes($d/ancestor::marcxml:record,"instance"):)
+    let $general-notes := mbshared:generate-500notes($d/ancestor::marcxml:record)
+    
     (:337, 338::)
     let $physdesc := mbshared:generate-physdesc($d/ancestor::marcxml:record,"instance")
   
@@ -547,6 +550,7 @@ let $issuance:=
             $physMapData,
           $issuance,
             $instance-simples,
+            $general-notes,
             $i504,             
             $instance-identifiers,               
             $physdesc,
@@ -1684,6 +1688,23 @@ let $isbn-sets:=
             for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1]
      	       return mbshared:generate-instance-from260($i, $workID)   
     )
+};
+(:~
+:   This is the function generates general notes for all marc notes not in vocabulary
+: 
+:   @param  $marcxml        element is the MARCXML  
+:   @return bf:note as element()?
+:)
+declare function mbshared:generate-500notes(
+ $marcxml as element(marcxml:record)
+   
+    ) as element ()*
+{
+
+for $marc-note in $marcxml/marcxml:datafield[fn:starts-with(@tag, "5") and fn:not(fn:matches(@tag,$mbshared:named-notes))]
+ 			let $note-text:= fn:string-join($marc-note/marcxml:subfield[@code="3" or @code="a"]," ")
+			return element bf:note {$note-text}
+
 };
 (:~
 :   This is the function generates a nonsort version of titles using private language tags
