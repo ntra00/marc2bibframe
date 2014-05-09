@@ -1728,7 +1728,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="sz">
-			<aL>other (Audio Carrier)</aL>
+			<aL>other audio Carrier</aL>
 			<scopeNote>MARC 007/01: z (Sound recording)</scopeNote>
 			<memberOf>RDACarriers</memberOf>
 			<memberOf>AudioCarriers</memberOf>
@@ -1792,7 +1792,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="cz">
-			<aL>other (Computer Carrier)</aL>
+			<aL>other computer carrier</aL>
 			<scopeNote>MARC 007/01: z (Electronic resource)</scopeNote>
 			<memberOf>RDACarriers</memberOf>
 			<memberOf>ComputerCarriers</memberOf>
@@ -1863,7 +1863,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="hz">
-			<aL>other (Microform Carrier)</aL>
+			<aL>other microform carrier</aL>
 			<scopeNote>MARC 007/01: z (Microform)</scopeNote>
 			<memberOf>RDACarriers</memberOf>
 			<memberOf>MicroformCarriers</memberOf>
@@ -1878,7 +1878,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="pz">
-			<aL>other (Microscopic Carrier)</aL>
+			<aL>other microscopic carrier</aL>
 			<scopeNote>MARC 007/01: no code</scopeNote>
 			<memberOf>RDACarriers</memberOf>
 			<memberOf>MicroscopicCarriers</memberOf>
@@ -1949,7 +1949,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="mz">
-			<aL>other (Projected-image Carrier)</aL>
+			<aL>other projected-image carrier</aL>
 			<scopeNote>MARC 007/01: z (Motion picture)</scopeNote>
 			<scopeNote>MARC 007/01: z (Projected graphic)</scopeNote>
 			<memberOf>RDACarriers</memberOf>
@@ -1972,7 +1972,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="ez">
-			<aL>other (Stereographic Carrier)</aL>
+			<aL>other stereographic Carrier</aL>
 			<scopeNote>MARC 007/01: no code</scopeNote>
 			<memberOf>RDACarriers</memberOf>
 			<memberOf>StereographicCarriers</memberOf>
@@ -2022,7 +2022,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="nz">
-			<aL>other (Unmediated carrier)</aL>
+			<aL>other unmediated carrier</aL>
 			<scopeNote>MARC 007/01: no code</scopeNote>
 			<memberOf>RDACarriers</memberOf>
 			<memberOf>UnmediatedCarriers</memberOf>
@@ -2058,7 +2058,7 @@ declare variable $marc2bfutils:carriers := (
 			<subClassOf></subClassOf>
 		</term>
 		<term code="vz">
-			<aL>other (Video Carrier)</aL>
+			<aL>other video carrier</aL>
 			<scopeNote>MARC 007/01: z (Videorecording)</scopeNote>
 			<memberOf>RDACarriers</memberOf>
 			<memberOf>VideoCarriers</memberOf>
@@ -2804,12 +2804,14 @@ declare function marc2bfutils:generate-carrier-code($carrier-text as xs:string) 
 (: This function matches the content text to the varable containing the content code, returning the code for building a uri
 :)
 declare function marc2bfutils:generate-content-code($content-text as xs:string) as xs:string {
- fn:string( $marc2bfutils:content-types/term[aL=$content-text]/@code)			
+ fn:string( $marc2bfutils:media-types/term[aL=$content-text]/@code)
+ 			
 };
 (: This function matches the mediatype text to the varable containing the mediatype code, returning the code for building a uri
 :)
 declare function marc2bfutils:generate-mediatype-code($media-text as xs:string) as xs:string {
- fn:string( $marc2bfutils:media-types/term[aL=$media-text]/@code)			
+ fn:string( $marc2bfutils:media-types/term[aL=$media-text]/@code)
+ 
 };
 (: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
 adapted from marcslim2modsutils.xsl
