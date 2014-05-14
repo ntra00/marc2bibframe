@@ -177,9 +177,280 @@ declare variable $marc2bfutils:classes := (
     <property name="classificationUdc" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c" level="property"/>	
 </vocab>
 );
-
+declare variable $marc2bfutils:role-xwalk:=
+(
+<relators> 
+   <term  uri="http://id.loc.gov/vocabulary/relators/abr" roletext="Abridger"            rolecode="abr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/act" roletext="Actor" rolecode="act"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/adp" roletext="Adapter"            rolecode="adp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rcp" roletext="Addressee"            rolecode="rcp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/anl" roletext="Analyst"            rolecode="anl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/anm" roletext="Animator"            rolecode="anm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ann" roletext="Annotator"            rolecode="ann"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/apl" roletext="Appellant"            rolecode="apl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ape" roletext="Appellee"            rolecode="ape"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/app" roletext="Applicant"            rolecode="app"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/arc" roletext="Architect"            rolecode="arc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/arr" roletext="Arranger"            rolecode="arr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/acp" roletext="Art copyist"            rolecode="acp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/adi" roletext="Art director"            rolecode="adi"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/art" roletext="Artist"            rolecode="art"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ard" roletext="Artistic director"            rolecode="ard"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/asg" roletext="Assignee"            rolecode="asg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/asn" roletext="Associated name"            rolecode="asn"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/att" roletext="Attributed name"            rolecode="att"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/auc" roletext="Auctioneer"            rolecode="auc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/aut" roletext="Author"            rolecode="aut"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/aqt"            roletext="Author in quotations or text&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;abstracts"            rolecode="aqt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/aft"            roletext="Author of afterword, colophon, etc."            rolecode="aft"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/aud" roletext="Author of dialog"            rolecode="aud"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/aui"            roletext="Author of introduction, etc."            rolecode="aui"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ato" roletext="Autographer"            rolecode="ato"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ant"            roletext="Bibliographic antecedent"            rolecode="ant"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/bnd" roletext="Binder"            rolecode="bnd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/bdd" roletext="Binding designer"            rolecode="bdd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/blw" roletext="Blurb writer"            rolecode="blw"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/bkd" roletext="Book designer"            rolecode="bkd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/bkp" roletext="Book producer"            rolecode="bkp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/bjd" roletext="Bookjacket designer"            rolecode="bjd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/bpd" roletext="Bookplate designer"            rolecode="bpd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/bsl" roletext="Bookseller"            rolecode="bsl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/brl" roletext="Braille embosser"            rolecode="brl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/brd" roletext="Broadcaster"            rolecode="brd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cll" roletext="Calligrapher"            rolecode="cll"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ctg" roletext="Cartographer"            rolecode="ctg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cas" roletext="Caster"            rolecode="cas"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cns" roletext="Censor"            rolecode="cns"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/chr" roletext="Choreographer"            rolecode="chr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cng" roletext="Cinematographer"            rolecode="cng"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cli" roletext="Client"            rolecode="cli"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cor" roletext="Collection registrar"            rolecode="cor"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/col" roletext="Collector"            rolecode="col"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/clt" roletext="Collotyper"            rolecode="clt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/clr" roletext="Colorist"            rolecode="clr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cmm" roletext="Commentator"            rolecode="cmm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cwt"            roletext="Commentator for written text"            rolecode="cwt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/com" roletext="Compiler"            rolecode="com"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cpl" roletext="Complainant"            rolecode="cpl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cpt"            roletext="Complainant-appellant"            rolecode="cpt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cpe" roletext="Complainant-appellee"            rolecode="cpe"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cmp" roletext="Composer"            rolecode="cmp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cmt" roletext="Compositor"            rolecode="cmt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ccp" roletext="Conceptor"            rolecode="ccp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cnd" roletext="Conductor"            rolecode="cnd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/con" roletext="Conservator"            rolecode="con"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/csl" roletext="Consultant"            rolecode="csl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/csp"            roletext="Consultant to a project"            rolecode="csp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cos" roletext="Contestant"            rolecode="cos"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cot" roletext="Contestant-appellant"            rolecode="cot"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/coe" roletext="Contestant-appellee"            rolecode="coe"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cts" roletext="Contestee"            rolecode="cts"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ctt" roletext="Contestee-appellant"            rolecode="ctt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cte" roletext="Contestee-appellee"            rolecode="cte"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ctr" roletext="Contractor"            rolecode="ctr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ctb" roletext="Contributor"            rolecode="ctb"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cpc" roletext="Copyright claimant"            rolecode="cpc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cph" roletext="Copyright holder"            rolecode="cph"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/crr" roletext="Corrector"            rolecode="crr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/crp" roletext="Correspondent"            rolecode="crp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cst" roletext="Costume designer"            rolecode="cst"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cou" roletext="Court governed"            rolecode="cou"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/crt" roletext="Court reporter"            rolecode="crt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cov" roletext="Cover designer"            rolecode="cov"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cre" roletext="Creator"            rolecode="cre"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/cur" roletext="Curator"            rolecode="cur"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dnc" roletext="Dancer"            rolecode="dnc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dtc" roletext="Data contributor"            rolecode="dtc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dtm" roletext="Data manager"            rolecode="dtm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dte" roletext="Dedicatee"            rolecode="dte"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dto" roletext="Dedicator"            rolecode="dto"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dfd" roletext="Defendant"            rolecode="dfd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dft" roletext="Defendant-appellant"            rolecode="dft"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dfe" roletext="Defendant-appellee"            rolecode="dfe"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dgg"            roletext="Degree granting institution"            rolecode="dgg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dgs" roletext="Degree supervisor"            rolecode="dgs"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dln" roletext="Delineator"            rolecode="dln"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dpc" roletext="Depicted"            rolecode="dpc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dpt" roletext="Depositor"            rolecode="dpt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dsr" roletext="Designer"            rolecode="dsr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/drt" roletext="Director"            rolecode="drt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dis" roletext="Dissertant"            rolecode="dis"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dbp" roletext="Distribution place"            rolecode="dbp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dst" roletext="Distributor"            rolecode="dst"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dnr" roletext="Donor" rolecode="dnr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/drm" roletext="Draftsman"            rolecode="drm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/dub" roletext="Dubious author"            rolecode="dub"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/edt" roletext="Editor"            rolecode="edt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/edc"            roletext="Editor of compilation"            rolecode="edc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/edm"            roletext="Editor of moving image work"            rolecode="edm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/elg" roletext="Electrician"            rolecode="elg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/elt" roletext="Electrotyper"            rolecode="elt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/enj"            roletext="Enacting jurisdiction"            rolecode="enj"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/eng" roletext="Engineer"            rolecode="eng"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/egr" roletext="Engraver"            rolecode="egr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/etr" roletext="Etcher"            rolecode="etr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/evp" roletext="Event place"            rolecode="evp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/exp" roletext="Expert"            rolecode="exp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fac" roletext="Facsimilist"            rolecode="fac"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fld" roletext="Field director"            rolecode="fld"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fds" roletext="Film distributor"            rolecode="fds"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fmd" roletext="Film director"            rolecode="fmd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/flm" roletext="Film editor"            rolecode="flm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fmp" roletext="Film producer"            rolecode="fmp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fmk" roletext="Filmmaker"            rolecode="fmk"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fpy" roletext="First party"            rolecode="fpy"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/frg" roletext="Forger"            rolecode="frg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fmo" roletext="Former owner"            rolecode="fmo"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/fnd" roletext="Funder"            rolecode="fnd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/gis" roletext="Geographic information specialist"            rolecode="gis"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/hnr" roletext="Honoree"            rolecode="hnr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/hst" roletext="Host" rolecode="hst"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/his" roletext="Host institution"            rolecode="his"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ilu" roletext="Illuminator"            rolecode="ilu"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ill" roletext="Illustrator"            rolecode="ill"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ins" roletext="Inscriber"            rolecode="ins"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/itr" roletext="Instrumentalist"            rolecode="itr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ive" roletext="Interviewee"            rolecode="ive"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ivr" roletext="Interviewer"            rolecode="ivr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/inv" roletext="Inventor"            rolecode="inv"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/isb" roletext="Issuing body"            rolecode="isb"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/jud" roletext="Judge" rolecode="jud"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/jug"            roletext="Jurisdiction governed"            rolecode="jug"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lbr" roletext="Laboratory"            rolecode="lbr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ldr" roletext="Laboratory director"            rolecode="ldr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lsa" roletext="Landscape architect"            rolecode="lsa"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/led" roletext="Lead" rolecode="led"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/len" roletext="Lender"            rolecode="len"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lil" roletext="Libelant"            rolecode="lil"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lit" roletext="Libelant-appellant"            rolecode="lit"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lie" roletext="Libelant-appellee"            rolecode="lie"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lel" roletext="Libelee"            rolecode="lel"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/let" roletext="Libelee-appellant"            rolecode="let"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lee" roletext="Libelee-appellee"            rolecode="lee"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lbt" roletext="Librettist"            rolecode="lbt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lse" roletext="Licensee"            rolecode="lse"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lso" roletext="Licensor"            rolecode="lso"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lgd" roletext="Lighting designer"            rolecode="lgd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ltg" roletext="Lithographer"            rolecode="ltg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/lyr" roletext="Lyricist"            rolecode="lyr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mfp" roletext="Manufacture place"            rolecode="mfp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mfr" roletext="Manufacturer"            rolecode="mfr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mrb" roletext="Marbler"            rolecode="mrb"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mrk" roletext="Markup editor"            rolecode="mrk"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/med" roletext="Medium"            rolecode="med"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mdc" roletext="Metadata contact"            rolecode="mdc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mte" roletext="Metal-engraver"            rolecode="mte"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mtk" roletext="Minute taker"            rolecode="mtk"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mod" roletext="Moderator"            rolecode="mod"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mon" roletext="Monitor"            rolecode="mon"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mcp" roletext="Music copyist"            rolecode="mcp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/msd" roletext="Musical director"            rolecode="msd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/mus" roletext="Musician"            rolecode="mus"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/nrt" roletext="Narrator"            rolecode="nrt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/osp" roletext="Onscreen presenter"            rolecode="osp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/opn" roletext="Opponent"            rolecode="opn"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/orm" roletext="Organizer"            rolecode="orm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/org" roletext="Originator"            rolecode="org"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/oth" roletext="Other" rolecode="oth"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/own" roletext="Owner" rolecode="own"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pan" roletext="Panelist"            rolecode="pan"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ppm" roletext="Papermaker"            rolecode="ppm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pta" roletext="Patent applicant"            rolecode="pta"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pth" roletext="Patent holder"            rolecode="pth"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pat" roletext="Patron"            rolecode="pat"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prf" roletext="Performer"            rolecode="prf"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pma" roletext="Permitting agency"            rolecode="pma"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pht" roletext="Photographer"            rolecode="pht"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ptf" roletext="Plaintiff"            rolecode="ptf"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ptt" roletext="Plaintiff-appellant"            rolecode="ptt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pte" roletext="Plaintiff-appellee"            rolecode="pte"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/plt" roletext="Platemaker"            rolecode="plt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pra" roletext="Praeses"            rolecode="pra"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pre" roletext="Presenter"            rolecode="pre"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prt" roletext="Printer"            rolecode="prt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pop" roletext="Printer of plates"            rolecode="pop"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prm" roletext="Printmaker"            rolecode="prm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prc" roletext="Process contact"            rolecode="prc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pro" roletext="Producer"            rolecode="pro"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prn" roletext="Production company"            rolecode="prn"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prs" roletext="Production designer"            rolecode="prs"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pmn" roletext="Production manager"            rolecode="pmn"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prd" roletext="Production personnel"            rolecode="prd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prp" roletext="Production place"            rolecode="prp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prg" roletext="Programmer"            rolecode="prg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pdr" roletext="Project director"            rolecode="pdr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pfr" roletext="Proofreader"            rolecode="pfr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/prv" roletext="Provider"            rolecode="prv"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pup" roletext="Publication place"            rolecode="pup"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pbl" roletext="Publisher"            rolecode="pbl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/pbd" roletext="Publishing director"            rolecode="pbd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ppt" roletext="Puppeteer"            rolecode="ppt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rdd" roletext="Radio director"            rolecode="rdd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rpc" roletext="Radio producer"            rolecode="rpc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rce" roletext="Recording engineer"            rolecode="rce"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rcd" roletext="Recordist"            rolecode="rcd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/red" roletext="Redaktor"            rolecode="red"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ren" roletext="Renderer"            rolecode="ren"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rpt" roletext="Reporter"            rolecode="rpt"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rps" roletext="Repository"            rolecode="rps"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rth" roletext="Research team head"            rolecode="rth"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rtm" roletext="Research team member"            rolecode="rtm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/res" roletext="Researcher"            rolecode="res"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rsp" roletext="Respondent"            rolecode="rsp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rst" roletext="Respondent-appellant"            rolecode="rst"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rse" roletext="Respondent-appellee"            rolecode="rse"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rpy" roletext="Responsible party"            rolecode="rpy"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rsg" roletext="Restager"            rolecode="rsg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rsr" roletext="Restorationist"            rolecode="rsr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rev" roletext="Reviewer"            rolecode="rev"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/rbr" roletext="Rubricator"            rolecode="rbr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sce" roletext="Scenarist"            rolecode="sce"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sad" roletext="Scientific advisor"            rolecode="sad"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/aus" roletext="Screenwriter"            rolecode="aus"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/scr" roletext="Scribe"            rolecode="scr"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/scl" roletext="Sculptor"            rolecode="scl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/spy" roletext="Second party"            rolecode="spy"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sec" roletext="Secretary"            rolecode="sec"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sll" roletext="Seller"            rolecode="sll"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/std" roletext="Set designer"            rolecode="std"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/stg" roletext="Setting"            rolecode="stg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sgn" roletext="Signer"            rolecode="sgn"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sng" roletext="Singer"            rolecode="sng"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sds" roletext="Sound designer"            rolecode="sds"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/spk" roletext="Speaker"            rolecode="spk"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/spn" roletext="Sponsor"            rolecode="spn"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sgd" roletext="Stage director"            rolecode="sgd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/stm" roletext="Stage manager"            rolecode="stm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/stn" roletext="Standards body"            rolecode="stn"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/str" roletext="Stereotyper"            rolecode="str"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/stl" roletext="Storyteller"            rolecode="stl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/sht" roletext="Supporting host"            rolecode="sht"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/srv" roletext="Surveyor"            rolecode="srv"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/tch" roletext="Teacher"            rolecode="tch"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/tcd" roletext="Technical director"            rolecode="tcd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/tld" roletext="Television director"            rolecode="tld"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/tlp" roletext="Television producer"            rolecode="tlp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/ths" roletext="Thesis advisor"            rolecode="ths"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/trc" roletext="Transcriber"            rolecode="trc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/trl" roletext="Translator"            rolecode="trl"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/tyd" roletext="Type designer"            rolecode="tyd"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/tyg" roletext="Typographer"            rolecode="tyg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/uvp" roletext="University place"            rolecode="uvp"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/vdg" roletext="Videographer"            rolecode="vdg"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/vac" roletext="Voice actor"            rolecode="vac"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wit" roletext="Witness"            rolecode="wit"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wde" roletext="Wood engraver"            rolecode="wde"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wdc" roletext="Woodcutter"            rolecode="wdc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wam" roletext="writer of accompanying material"            rolecode="wam"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wac" roletext="Writer of added commentary"            rolecode="wac"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wat" roletext="Writer of added text"            rolecode="wat"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wal" roletext="Writer of added lyrics"            rolecode="wal"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wst" roletext="writer of supplementary textual content"            rolecode="wst"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/win" roletext="Writer of introduction"            rolecode="win"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/wpr" roletext="Writer of preface"            rolecode="wpr"/>
+</relators>
+);
 declare variable $marc2bfutils:lang-xwalk:=
-
 (
 
 <xml-langs edited="January 11, 2013">
@@ -2812,6 +3083,12 @@ declare function marc2bfutils:generate-content-code($content-text as xs:string) 
 declare function marc2bfutils:generate-mediatype-code($media-text as xs:string) as xs:string {
  fn:string( $marc2bfutils:media-types/term[aL=$media-text]/@code)
  
+};
+(: This function matches the carrier text to the varable containing the carrier code, returning the code for building a uri
+:)
+declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:string {
+ let $role:= marc2bfutils:chopPunctuation(marc2bfutils:clean-string($role-text),".")
+ return fn:string( $marc2bfutils:role-xwalk//term[@roletext=$role]/@rolecode)			
 };
 (: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
 adapted from marcslim2modsutils.xsl

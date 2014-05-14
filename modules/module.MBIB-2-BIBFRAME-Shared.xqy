@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-14-T14:00:00";
+declare variable $mbshared:last-edit :="2014-05-14-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -424,20 +424,7 @@ declare function mbshared:generate-instance-from260(
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|247|222|242|210)")]
             for $t in $titles
             return mbshared:get-title($t,"instance") 
-    
-    (: moved to Work 2014-03-14
-    let $names := 
-        for $datafield in $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
-        return mbshared:get-name($datafield)
-        :)
-        
-    (:let $edition := 
-     for $e in $d/../marcxml:datafield[@tag eq "250"][1]
-        
-        return (element bf:edition {marc2bfutils:clean-string($e/marcxml:subfield[@code="a"])},        
-                if ($e/marcxml:subfield[@code="b"]) then element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
-                else ()
-                ):)
+       
     let $edition-instances:= 
     for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
         return 
@@ -2319,7 +2306,7 @@ declare function mbshared:generate-work(
                 
             $titles/bf:*,        
             $names,            
-            $addl-names,            
+            $addl-names,  
             $work-simples,
             $aud521,         
             $langs,
@@ -2587,8 +2574,12 @@ declare function mbshared:get-name(
     $d as element(marcxml:datafield)     
     ) as element()
 {
-    let $relatorCode := marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1])) 
-    
+    let $relatorCode := 
+        if ($d/marcxml:subfield[@code = "4"]!="") then
+            marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1]))
+        else 
+            marc2bfutils:generate-role-code(fn:string($d/marcxml:subfield[@code = "e"][1]))
+      
     let $label := if ($d/@tag!='534') then
     	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q'] , ' ')    	
     	else 
@@ -2599,37 +2590,7 @@ declare function mbshared:get-name(
     let $elementList := if ($d/@tag!='534') then
       element bf:hasAuthority{
          element madsrdf:Authority {
-         element madsrdf:authoritativeLabel {$aLabel} (: ,
-            element madsrdf:elementList {
-            	attribute rdf:parseType {"Collection"},
-                for $s in $d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q']
-                return
-                    if ($s/@code eq "a") then
-                         element madsrdf:NameElement {
-                            element madsrdf:elementValue {fn:string($s)}
-                         }
-                    else if ($s/@code eq "b") then
-                         element madsrdf:PartNameElement {
-                            element madsrdf:elementValue {fn:string($s)}
-                         }
-                    else if ($s/@code eq "c") then
-                         element madsrdf:TermsOfAddressNameElement {
-                            element madsrdf:elementValue {fn:string($s)}
-                         }
-                    else if ($s/@code eq "d") then
-                         element madsrdf:DateNameElement {
-                            element madsrdf:elementValue {fn:string($s)}
-                         }
-                    else if ($s/@code eq "q") then
-                         element madsrdf:FullNameElement {
-                            element madsrdf:elementValue {fn:string($s)}
-                         }
-                    else 
-                        element madsrdf:NameElement {
-                            element madsrdf:elementValue {fn:string($s)}
-                         }
-               }
-               :)
+         element madsrdf:authoritativeLabel {$aLabel}
             }   
         }
     else () (: 534 $a is not parsed:)
@@ -2691,7 +2652,7 @@ declare function mbshared:get-name(
                 if ($d/@tag!='534') then element bf:authorizedAccessPoint {$aLabel} else (),
                 mbshared:generate-880-label($d,"name"),
                 $elementList,                          
-                 $system-number,
+                 $system-number,                 
                  $bio-links
                  
             }
