@@ -46,6 +46,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
  
 (:~
 :   This is the function that generates a notated music work resource.
+:   For now, just call the main function.
 :
 :   @param  $marcxml        element is the MARCXML  
 :   @return bf:* as element()
@@ -54,11 +55,25 @@ declare function music:generate-notatedmusic-work(
     $marcxml as element(marcxml:record),
     $workID as xs:string
     ) as element ()  {
+    mbshared:generate-work(  $marcxml,    $workID    )
+}; 
+ 
+(:~
+:   This is the function that generates a notated music work resource.
+:
+:   @param  $marcxml        element is the MARCXML  
+:   @return bf:* as element()
+:)
+
+(:declare function music:generate-notatedmusic-work(
+    $marcxml as element(marcxml:record),
+    $workID as xs:string
+    ) as element ()  {
     let $instances := mbshared:generate-instances($marcxml, $workID)
    
     let $types := mbshared:get-resourceTypes($marcxml)
         
-    let $mainType := "Work" (:NotatedMusic?:)
+    let $mainType := "Work" 
     let $biblink:=fn:concat(                  
                     $workID,
                     fn:normalize-space(fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))                   
@@ -85,4 +100,4 @@ declare function music:generate-notatedmusic-work(
             for $i in $instances 
                 return element  bf:hasInstance{$i}
          }
-};
+};:)
