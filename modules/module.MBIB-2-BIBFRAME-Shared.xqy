@@ -388,7 +388,8 @@ let $leader18:=fn:substring($marcxml/marcxml:leader,19,1)
                 return mbshared:generate-simple-property($d,"annotation")
                 ,
                 if ($leader18="a") then element bf:descriptionConvention { "AACR2"} 
-                else if ($leader18="i") then element  bf:descriptionConvention { "ISBD"}
+                else if ($leader18=" ") then element  bf:descriptionConvention { "non-ISBD"}
+                else if ($leader18="c" or $leader18="i") then element  bf:descriptionConvention { "ISBD"}
                 else ()
                 )
                 
@@ -3297,10 +3298,14 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
              return
                    element bf:classification {
                                element bf:Classification {                        
-                                 	if ( $this-tag/marcxml:subfield[@code="2"] ) then
+                                 	if ($this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
                                  	       element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
+                                 	else if ($this-tag[@ind1="0"]  ) then  
+                                 	      element bf:classificationScheme {"SUDOC"}
+                                 	else if ($this-tag[@ind1="1"]  ) then  
+                                 	      element bf:classificationScheme {"Government of Canada classification"}
                                  	  else (),
-                                 	  element bf:classificationNumber {  fn:string($this-tag/marcxml:subfield[@code="z"])},
+                                 	element bf:classificationNumber {  fn:string($this-tag/marcxml:subfield[@code="z"])},
 					 		        element bf:classificationStatus  {"canceled/invalid"}
 					 		}
 					}
@@ -3341,6 +3346,13 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                      		             attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])),"/about")}
                      		    else element bf:Classification {
                                         element bf:classificationNumber {fn:string($cl)},
+                                if ($this-tag[@tag="086"] and $this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
+                                 	       element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
+                                 	else if ($this-tag[@tag="086"] and $this-tag[@ind1="0"]  ) then  
+                                 	      element bf:classificationScheme {"SUDOC"}
+                                 	else if ($this-tag[@tag="086"] and $this-tag[@ind1="1"]  ) then  
+                                 	      element bf:classificationScheme {"Government of Canada classification"}
+                                 	  else 
                                         element bf:classificationScheme {fn:string($classes[@level="property"][fn:contains(@tag,$this-tag/@tag)]/@name)}                                        
                                         }
                                  }

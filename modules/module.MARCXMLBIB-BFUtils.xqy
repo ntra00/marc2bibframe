@@ -171,7 +171,7 @@ declare variable $marc2bfutils:classes := (
     <property name="classificationStatus" label="status of classification" domain="Work" marc="if 086/z then status=canceled/invalid" tag="if "  sfcodes="z then status=canceled/invalid"/>
     <property name="classificationLcc" label="LCC Classification" domain="Work" marc="050,051,055,070,071--/a" tag="(050|051|055||070|071)" sfcodes="a" level="property"/>
     <property name="classificationNlm" label="NLM Classification" domain="Work" marc="060,061--/a" tag="(060|061)" sfcodes="a" level="property"/>
-    <property name="classification" label="classification" domain="Work" marc="084,086--/a" tag="(084|086)" ind1="," ind2="0" sfcodes="a" level="property"/>
+    <property name="classification" label="classification" domain="Work" marc="084,086--/a" tag="(084|086)" ind1=" " sfcodes="a" level="property"/>
     <property name="classificationDdc" label="DDC Classification" domain="Work" marc="083--/a'hyphen'c" tag="083" sfcodes="a'hyphen'c" level="property"/> 
     <property name="classificationDdc" label="DDC Classification" domain="Work" marc="082--/a" tag="082" sfcodes="a" level="property"/>	
     <property name="classificationUdc" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c" level="property"/>	
