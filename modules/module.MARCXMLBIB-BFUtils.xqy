@@ -74,9 +74,9 @@ declare variable $marc2bfutils:resourceTypes := (
         <type leader6="o">MixedMaterial</type>
         <type leader6="p">MixedMaterial</type>
         <type cf007="o">MixedMaterial</type>
-        <type leader6="r"></type>
-        <type sf336a="(three-dimensional form|tactile three-dimensional form|three-dimensional moving image| cartographic three dimensional form|cartographic tactile three dimensional form)"></type>
-        <type sf336b="(tdf|tcf|tcm|crf|crn )"></type>
+        <type leader6="r">ThreeDimensionalObject</type>
+        <type sf336a="(three-dimensional form|tactile three-dimensional form|three-dimensional moving image| cartographic three dimensional form|cartographic tactile three dimensional form)">ThreeDimensionalObject</type>
+        <type sf336b="(tdf|tcf|tcm|crf|crn )">ThreeDimensionalObject</type>
         <type leader6="t">Text</type>        
         <type cf007="f">Tactile</type>
         <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Dataset</type>
@@ -177,9 +177,13 @@ declare variable $marc2bfutils:classes := (
     <property name="classificationUdc" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c" level="property"/>	
 </vocab>
 );
+(:
+relators crosswalk
+@source  http://id.loc.gov/vocabulary/relators 
+@since 2014-05-14
+:)
 declare variable $marc2bfutils:role-xwalk:=
-(
-<relators> 
+(<relators> 
    <term  uri="http://id.loc.gov/vocabulary/relators/abr" roletext="Abridger"            rolecode="abr"/>
    <term  uri="http://id.loc.gov/vocabulary/relators/act" roletext="Actor" rolecode="act"/>
    <term  uri="http://id.loc.gov/vocabulary/relators/adp" roletext="Adapter"            rolecode="adp"/>
@@ -281,8 +285,8 @@ declare variable $marc2bfutils:role-xwalk:=
    <term  uri="http://id.loc.gov/vocabulary/relators/drm" roletext="Draftsman"            rolecode="drm"/>
    <term  uri="http://id.loc.gov/vocabulary/relators/dub" roletext="Dubious author"            rolecode="dub"/>
    <term  uri="http://id.loc.gov/vocabulary/relators/edt" roletext="Editor"            rolecode="edt"/>
-   <term  uri="http://id.loc.gov/vocabulary/relators/edc"            roletext="Editor of compilation"            rolecode="edc"/>
-   <term  uri="http://id.loc.gov/vocabulary/relators/edm"            roletext="Editor of moving image work"            rolecode="edm"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/edc" roletext="Editor of compilation"            rolecode="edc"/>
+   <term  uri="http://id.loc.gov/vocabulary/relators/edm" roletext="Editor of moving image work"            rolecode="edm"/>
    <term  uri="http://id.loc.gov/vocabulary/relators/elg" roletext="Electrician"            rolecode="elg"/>
    <term  uri="http://id.loc.gov/vocabulary/relators/elt" roletext="Electrotyper"            rolecode="elt"/>
    <term  uri="http://id.loc.gov/vocabulary/relators/enj"            roletext="Enacting jurisdiction"            rolecode="enj"/>
@@ -450,6 +454,10 @@ declare variable $marc2bfutils:role-xwalk:=
    <term  uri="http://id.loc.gov/vocabulary/relators/wpr" roletext="Writer of preface"            rolecode="wpr"/>
 </relators>
 );
+(:
+@since January 11, 2013
+@source  http://www.loc.gov/standards/iso639-2/php/code_list.php
+:)
 declare variable $marc2bfutils:lang-xwalk:=
 (
 
