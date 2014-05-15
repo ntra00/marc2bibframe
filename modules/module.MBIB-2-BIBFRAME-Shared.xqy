@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-14-T17:00:00";
+declare variable $mbshared:last-edit :="2014-05-15-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -58,7 +58,7 @@ declare variable $mbshared:transform-rules :=(
 </rules>
 );
 declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|520|522|524|525|541|546|555)");
-(:"(500|501|502|504|505|506|507|508|510|511|513|514|515|516|518|520|521|522|524|525|526|530|533|534|535|536|538|540|541|542|544|545|546|547|550|552|555|556|561|562|563|565|567|580|581|583|584|585|586|588|59X)":)
+(:"(500|501|502|504|505|506|507|508|510|511|513|514|515|516|518|520|521|522|524|525|526|530|533|534|535|536|538|540|541|542|544|545|546|547|550|552|555|556|562|563|565|567|580|581|583|584|585|586|588|59X)":)
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $mbshared:simple-properties:= (
@@ -215,8 +215,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>
          <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
          <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
-                  
-         <node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>
+<node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>                  
+         <node domain="helditem"			property="custodialHistory"			tag="561"	 sfcodes="a"                 >Copy specific custodial history</node>
          <node domain="work"		        property="awardNote"			    		tag="586" sfcodes="3a"					>Awards Note</node>
          <node domain="instance"    	property="copyrightDate"		  tag="264" sfcodes="c" ind2="4">Copyright Date</node>
          <node domain="instance"		property="philatelicDataNote"			tag="258" sfcodes="ab"					>Philatelic data note</node>
@@ -1464,6 +1464,7 @@ let $holdings:=$marcxml//hld:holdings
 let $heldBy:= if ($marcxml/marcxml:datafield[@tag="852"]/marcxml:subfield[@code="a"]) then
                     fn:string($marcxml/marcxml:datafield[@tag="852"][1]/marcxml:subfield[@code="a"])
                 else ""
+let $custodialHistory:=mbshared:generate-simple-property($marcxml/marcxml:datafield[@tag="561"], "helditem")
 for $hold in $holdings/hld:holding
     let $elm :=  
         if (  $hold/hld:volumes/hld:volume[2]) then "HeldMaterial" else "HeldItem"
@@ -1526,6 +1527,8 @@ for $hold in $holdings/hld:holding
             element bf:HeldItem {            
             $item-set/bf:HeldItem/@rdf:about,        
              $summary-set, $item-set//bf:HeldItem/*[fn:not(fn:local-name()='label')],
+             $custodialHistory,
+             element bf:test {$marcxml/marcxml:datafield[@tag="561"]},
              if ($heldBy!="") then element bf:heldBy {element bf:Organization {element bf:label {$heldBy}}} else ()
             }
             }
@@ -2307,7 +2310,7 @@ declare function mbshared:generate-work(
                 
             $titles/bf:*,        
             $names,            
-            $addl-names,  
+            $addl-names,      
             $work-simples,
             $aud521,         
             $langs,
