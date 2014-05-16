@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-15-T17:00:00";
+declare variable $mbshared:last-edit :="2014-05-16-T12:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -212,7 +212,7 @@ declare variable $mbshared:simple-properties:= (
          <!--<node domain="work"				property="contentsNote"					  tag="520" sfcodes="a" ind2=" "	>Contents Note</node>-->
          <node domain="work"				property="temporalCoverageNote"		tag="513" sfcodes="b"						>Period Covered Note</node>
          <node domain="event"			    property="eventDate"					    tag="518" sfcodes="d"						>Event Date</node>
-         <node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>
+         <!--<node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>-->
          <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
          <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
 <node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>                  
@@ -229,7 +229,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="performerNote"					tag="511" startwith="Cast: " 		>Participant or Performer Note </node>
          <node domain="instance"		property="preferredCitation"			tag="524"				                >Preferred Citation of Described Materials Note</node>
          <node domain="instance"		property="immediateAcquisition"		tag="541" sfcodes="cad"					>Immediate Source of Acquisition Note</node>
-         <node domain="instance"		property="languageNote"					  tag="546" sfcodes="3a"					>Language Note</node>
+         <node domain="instance"		property="languageNote"					  tag="546" sfcodes="3a"				>Language Note</node>
          <node domain="instance"		property="notation"					      tag="546" sfcodes="b"				    >Language Notation(script)</node>
          
   </properties>
@@ -1776,7 +1776,50 @@ return
 				}
 			}
 };
-
+(:033 events
+@since 2014-05-16
+example bib 11785748
+@param $d as datafield 033
+:)
+declare function mbshared:generate-event
+    (
+        $d as element(marcxml:datafield) 
+    )
+{ 
+    let $dates:= element bf:eventDate { if ($d/@ind1="2") then (:range:)
+                    fn:string-join($d/marcxml:subfield[@code="a"]," - ")                        
+                 else if ($d/@ind1="1") then (:multiple consecutive dates:)
+                    fn:string-join($d/marcxml:subfield[@code="a"],", ")
+                    else fn:concat(fn:string($d/marcxml:subfield[@code="a"]), "^^xsd:date")
+                 }
+    let $placesCodes:=
+        for $s in $d/marcxml:subfield[@code="b"]
+            let $subcode:=if ($s/following-sibling::marcxml:subfield[@code="c"]) then
+                            fn:normalize-space(fn:string($s/following-sibling::marcxml:subfield[@code="c"][1]))
+                            else ()
+           let $base:=fn:concat("http://id.loc.gov/authorities/classification/G", fn:normalize-space(fn:string($s)))
+           let $uri:= if ($subcode) then
+                            fn:concat($base,".", $subcode)
+                        else $base
+                        
+            return (: this in not really right; the g class is not a place :)
+                element bf:eventPlace {          attribute rdf:resource {$uri}
+                                }
+      let $placesStrings:=
+        for $s in $d/marcxml:subfield[@code="p"]
+            return (: this in not really right; the g class is not a place :)
+                element bf:eventPlace { element bf:Place{  element bf:label {fn:string($d/marcxml:subfield[@code="p"]) },
+                                if ($d/marcxml:subfield[@code="0"]) then
+                                    element bf:system-number {fn:string($d/marcxml:subfield[@code="0"]) }
+                                else ()
+                                }                             
+                        }
+return element bf:event {
+            $dates,
+            $placesCodes,
+            $placesStrings
+        }
+};
 (:555 finding aids note may be related work link or a simple property
 sample bib 14923309
 consider linking 555 w/856 on $u!
@@ -2055,6 +2098,30 @@ declare function mbshared:generate-work(
     $workID as xs:string
     ) as element () 
 { (:2013-05-01 ntra moved instances inside work;  :)
+     
+let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
+let $leader:=fn:string($marcxml/marcxml:leader)
+let $leader6:=fn:substring($leader,7,1)
+let $leader7:=fn:substring($leader,8,1)
+let $leader19:=fn:substring($leader,20,1)
+
+let $typeOf008:=
+			if ($leader6="a") then
+					if (fn:matches($leader7,"(a|c|d|m)")) then
+						"BK"
+					else if (fn:matches($leader7,"(b|i|s)")) then
+						"SE"
+					else ()					
+					
+			else
+				if ($leader6="t") then "BK" 
+				else if ($leader6="p") then "MM"
+				else if ($leader6="m") then "CF"
+				else if (fn:matches($leader6,"(e|f|s)")) then "MP"
+				else if (fn:matches($leader6,"(g|k|o|r)")) then "VM"
+				else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
+				else ()
+				
     let $instances := mbshared:generate-instances($marcxml, $workID)
     let $instancesfrom856:=
      if ( $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]) then         
@@ -2069,14 +2136,7 @@ declare function mbshared:generate-work(
     
     let $uniformTitle := (:work title can be from 245 if no 240/130:)    
        for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
-            return mbshared:get-uniformTitle($d)
-      (: if (fn:not($marcxml/marcxml:datafield[fn:matches(@tag,"(130|240)")])) then
-          for $d in ($marcxml/marcxml:datafield[@tag eq "245"])
-            return mbshared:get-uniformTitle($d)
-        else
-            for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
-            return mbshared:get-uniformTitle($d)
-              :)
+            return mbshared:get-uniformTitle($d)     
     let $names := 
         for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
                 return mbshared:get-name($d)         
@@ -2085,12 +2145,10 @@ declare function mbshared:generate-work(
          
         
     let $titles := 
-        <titles>
-            {
+        <titles>{
     	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(243|245|247)")]
     	       return mbshared:get-title($t, "work")
-            }
-        </titles>
+            }</titles>
         
         
     (: Let's create an authoritativeLabel for this :)
@@ -2126,12 +2184,9 @@ declare function mbshared:generate-work(
                     $al/@xml:lang,                   
                     $combinedLabel
                 }
-        
-    let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
-    let $leader:=fn:string($marcxml/marcxml:leader)
-    let $leader7:=fn:substring($leader,8,1)
-	let $leader19:=fn:substring($leader,20,1)
-
+   
+   let $events:= for $d in $marcxml/marcxml:datafield[@tag="033"]
+                    return mbshared:generate-event($d)
     
     (: 
         Here's a thought. If this Work *isn't* English *and* it does 
@@ -2139,14 +2194,14 @@ declare function mbshared:generate-work(
         lexical value of the language code and append it to the 
         authoritativeLabel, thereby creating a type of expression.
     :)
-        
+                    
    let $langs := mbshared:get-languages ($marcxml)
    let $dissertation:= 
    	    for $diss in $marcxml/marcxml:datafield[@tag="502"]
       		return mbshared:generate-dissertation($diss)
     let $audience := fn:substring($cf008, 23, 1)
     let $audience := 
-        if ($audience ne "") then
+        if ($audience ne "" and fn:matches($typeOf008, "(BK|CF|MU|V)")) then
             let $aud := fn:string($marc2bfutils:targetAudiences/type[@cf008-22 eq $audience]) 
             return
                 if (
@@ -2310,14 +2365,15 @@ declare function mbshared:generate-work(
                 
             $titles/bf:*,        
             $names,            
-            $addl-names,      
+            $addl-names,
+            $events,
             $work-simples,
             $aud521,         
             $langs,
             $findaids,
             $abstract,
             $abstract-annotation,
-            $audience,           
+            $audience,         
             $genre,       
             $cartography,
             $subjects,
@@ -2392,6 +2448,7 @@ declare function mbshared:get-subject(
                     element bf:authorizedAccessPoint {fn:string($madsrdf/madsrdf:authoritativeLabel)},
                     element bf:label { fn:string($madsrdf/madsrdf:authoritativeLabel) },
                     element bf:hasAuthority {
+                                
                         element madsrdf:Authority {
                             element rdf:type {
                                 attribute rdf:resource { 
