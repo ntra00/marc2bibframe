@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-16-T12:00:00";
+declare variable $mbshared:last-edit :="2014-05-19-T12:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -3371,13 +3371,16 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
 					}
                  ,
                      
-        for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
+        for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|052|055|070|080|082|083|084|086)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
-                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055)"))) then
+                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|052|055)"))) then
                 			fn:string($cl)
                 		else (:050 has non-class stuff in it: :)
-                  			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
+                  			let $strip := if ( fn:matches($this-tag/@tag,"052")) then
+                  			                   fn:concat("G",fn:replace(fn:string($cl), "(\s+|\.).+$", ""))
+                  		                   else
+                      		                   fn:replace(fn:string($cl), "(\s+|\.).+$", "")
                   			let $subclassCode := fn:replace($strip, "\d", "")			
                   			return                   		            
         			            
