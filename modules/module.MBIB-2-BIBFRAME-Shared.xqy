@@ -2288,20 +2288,20 @@ let $typeOf008:=
                         for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
                         let $elname:=
                             if ($subfield/@code="g") then "bf:note" 
-                            else if ($subfield/@code="r") then "bf:creator" 
+                            else if ($subfield/@code="r") then "bf:contributor" 
                             else if ($subfield/@code="u") then "rdf:resource" 
                             else "bf:note" 
                         let $sfdata := fn:replace(fn:string($subfield), " --", "")
                         return
                             if ($elname eq "rdf:resource") then
                                 element {$elname} { attribute rdf:resource {$sfdata} }
-                            else if ($elname eq "bf:creator") then
+                            else if ($elname eq "bf:contributor") then
                                 if ( fn:contains($sfdata, ";") ) then
                                     (: we have multiples :)
                                     for $c in fn:tokenize($sfdata, ";")
-                                    return mbshared:get-name-fromSOR($c,"bf:creator")
+                                    return mbshared:get-name-fromSOR($c,"bf:contributor")
                                 else
-                                    mbshared:get-name-fromSOR($sfdata,"bf:creator")
+                                    mbshared:get-name-fromSOR($sfdata,"bf:contributor")
                             else
                                 element {$elname} {$sfdata}
                     }
