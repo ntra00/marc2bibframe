@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-19-T12:00:00";
+declare variable $mbshared:last-edit :="2014-05-19-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -892,7 +892,15 @@ declare function mbshared:generate-publication
 	               "bf:distribution"
 	           else
 	                "bf:publication"
-	            
+	        let $date-value:= if ($d/marcxml:subfield[@code="c"][$x]) then
+	                                           marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])
+                                 else if   ($x gt 1 and $d/marcxml:subfield[@code="c"][$x - 1]) then
+                                            marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x - 1])
+                                 else ()   
+	        let $date-property:= if ($date-value ne "" and  fn:starts-with($date-value,"c")) then
+	                                           "bf:copyrightDate"
+	                             else if ($date-value ne "") then  "bf:providerDate"
+	                             else ()    
                             
 	        return 
 	            element {$propname} {
@@ -919,11 +927,17 @@ declare function mbshared:generate-publication
 	                         mbshared:generate-880-label($d,"place") )
 	                          
 	                    else (),
-	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
+	                    
+	                    if ($date-value ne "") then
+	                       element {$date-property} {$date-value}
+	                    else ()
+	                    (:if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (\:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:\)
 	                        element bf:copyrightDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])}
 	                    else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
 	                        element bf:providerDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])}                 
+	                    	                   	                   
 	                    else ()
+	                    :)
 	                }
 		}   
 		(:there is no $b:)
@@ -2307,9 +2321,9 @@ let $typeOf008:=
                     }
                 return 
                     element part {
-                        element bf:authorizedAccessPoint {
+                      (:  element bf:authorizedAccessPoint {
                             fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
-                        },
+                        },:)
                         element bf:title {$t},                                   
                         $details/*                                 
                     }
