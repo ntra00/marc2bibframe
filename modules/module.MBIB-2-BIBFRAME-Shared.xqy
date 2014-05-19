@@ -1828,10 +1828,11 @@ declare function mbshared:generate-event
                                 else ()
                                 }                             
                         }
-return element bf:event {
+return element bf:event {element bf:Event {
             $dates,
             $placesCodes,
             $placesStrings
+            }
         }
 };
 (:555 finding aids note may be related work link or a simple property
