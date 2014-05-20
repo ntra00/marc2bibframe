@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-19-T17:00:00";
+declare variable $mbshared:last-edit :="2014-05-20-T10:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -892,15 +892,7 @@ declare function mbshared:generate-publication
 	               "bf:distribution"
 	           else
 	                "bf:publication"
-	        let $date-value:= if ($d/marcxml:subfield[@code="c"][$x]) then
-	                                           marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])
-                                 else if   ($x gt 1 and $d/marcxml:subfield[@code="c"][$x - 1]) then
-                                            marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x - 1])
-                                 else ()   
-	        let $date-property:= if ($date-value ne "" and  fn:starts-with($date-value,"c")) then
-	                                           "bf:copyrightDate"
-	                             else if ($date-value ne "") then  "bf:providerDate"
-	                             else ()    
+	            
                             
 	        return 
 	            element {$propname} {
@@ -927,17 +919,11 @@ declare function mbshared:generate-publication
 	                         mbshared:generate-880-label($d,"place") )
 	                          
 	                    else (),
-	                    
-	                    if ($date-value ne "") then
-	                       element {$date-property} {$date-value}
-	                    else ()
-	                    (:if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (\:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:\)
+	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
 	                        element bf:copyrightDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])}
 	                    else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
 	                        element bf:providerDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])}                 
-	                    	                   	                   
 	                    else ()
-	                    :)
 	                }
 		}   
 		(:there is no $b:)
@@ -1828,11 +1814,10 @@ declare function mbshared:generate-event
                                 else ()
                                 }                             
                         }
-return element bf:event {element bf:Event {
+return element bf:event {
             $dates,
             $placesCodes,
             $placesStrings
-            }
         }
 };
 (:555 finding aids note may be related work link or a simple property
@@ -2303,28 +2288,28 @@ let $typeOf008:=
                         for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
                         let $elname:=
                             if ($subfield/@code="g") then "bf:note" 
-                            else if ($subfield/@code="r") then "bf:contributor" 
+                            else if ($subfield/@code="r") then "bf:creator" 
                             else if ($subfield/@code="u") then "rdf:resource" 
                             else "bf:note" 
                         let $sfdata := fn:replace(fn:string($subfield), " --", "")
                         return
                             if ($elname eq "rdf:resource") then
                                 element {$elname} { attribute rdf:resource {$sfdata} }
-                            else if ($elname eq "bf:contributor") then
+                            else if ($elname eq "bf:creator") then
                                 if ( fn:contains($sfdata, ";") ) then
                                     (: we have multiples :)
                                     for $c in fn:tokenize($sfdata, ";")
-                                    return mbshared:get-name-fromSOR($c,"bf:contributor")
+                                    return mbshared:get-name-fromSOR($c,"bf:creator")
                                 else
-                                    mbshared:get-name-fromSOR($sfdata,"bf:contributor")
+                                    mbshared:get-name-fromSOR($sfdata,"bf:creator")
                             else
                                 element {$elname} {$sfdata}
                     }
                 return 
                     element part {
-                      (:  element bf:authorizedAccessPoint {
+                        element bf:authorizedAccessPoint {
                             fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
-                        },:)
+                        },
                         element bf:title {$t},                                   
                         $details/*                                 
                     }
@@ -2996,12 +2981,14 @@ declare function mbshared:get-title(
              } (:end Title:)
              
     return 
-        ( element bf:title {  $lang-attribute, $title },
-     
+        ( element bf:title {  $lang-attribute, $title },     
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
             $constructed-title,
             mbshared:generate-titleNonsort($d,$title, $element-name),       
-            mbshared:generate-880-label($d,"title")
+            mbshared:generate-880-label($d,"title"),
+            if ($d/marcxml:subfield[@code="0"]) then
+               mbshared:handle-system-number(fn:string($d/marcxml:subfield[@code="0"]))
+           else ()
         )
 };
 (:~
@@ -3386,16 +3373,13 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
 					}
                  ,
                      
-        for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|052|055|070|080|082|083|084|086)")]                            
+        for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
-                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|052|055)"))) then
+                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055)"))) then
                 			fn:string($cl)
                 		else (:050 has non-class stuff in it: :)
-                  			let $strip := if ( fn:matches($this-tag/@tag,"052")) then
-                  			                   fn:concat("G",fn:replace(fn:string($cl), "(\s+|\.).+$", ""))
-                  		                   else
-                      		                   fn:replace(fn:string($cl), "(\s+|\.).+$", "")
+                  			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
                   			let $subclassCode := fn:replace($strip, "\d", "")			
                   			return                   		            
         			            
