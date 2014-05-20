@@ -387,9 +387,9 @@ let $leader18:=fn:substring($marcxml/marcxml:leader,19,1)
             (for $d in $marcxml/marcxml:datafield[@tag="040"]
                 return mbshared:generate-simple-property($d,"annotation")
                 ,
-                if ($leader18="a") then element bf:descriptionConvention { "AACR2"} 
-                else if ($leader18=" ") then element  bf:descriptionConvention { "non-ISBD"}
-                else if ($leader18="c" or $leader18="i") then element  bf:descriptionConvention { "ISBD"}
+                if ($leader18="a") then element bf:descriptionConventions { "AACR2"} 
+                else if ($leader18=" ") then element  bf:descriptionConventions { "non-ISBD"}
+                else if ($leader18="c" or $leader18="i") then element  bf:descriptionConventions { "ISBD"}
                 else ()
                 )
                 
@@ -1814,10 +1814,11 @@ declare function mbshared:generate-event
                                 else ()
                                 }                             
                         }
-return element bf:event {
+return element bf:event { element bf:Event {
             $dates,
             $placesCodes,
             $placesStrings
+            }
         }
 };
 (:555 finding aids note may be related work link or a simple property
@@ -2986,9 +2987,8 @@ declare function mbshared:get-title(
             $constructed-title,
             mbshared:generate-titleNonsort($d,$title, $element-name),       
             mbshared:generate-880-label($d,"title"),
-            if ($d/marcxml:subfield[@code="0"]) then
-               mbshared:handle-system-number(fn:string($d/marcxml:subfield[@code="0"]))
-           else ()
+              for $sys-num in $d/marcxml:subfield[@code="0"] 
+                     return mbshared:handle-system-number($sys-num)  
         )
 };
 (:~
