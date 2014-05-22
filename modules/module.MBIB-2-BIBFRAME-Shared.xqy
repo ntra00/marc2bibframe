@@ -189,7 +189,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="contentcategory"				property="contentCategory"				tag="730" sfcodes="h"						>Nature of content</node>
          <node domain="contentcategory"				property="contentCategory"				tag="700" sfcodes="h"						>Nature of content</node>
          <node domain="contentcategory"				property="contentCategory"				tag="710" sfcodes="h"						>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>-->
+         <node domain="contentcategory"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>
          <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="046" sfcodes="kl" stringjoin="-"					>Date of origin</node>
