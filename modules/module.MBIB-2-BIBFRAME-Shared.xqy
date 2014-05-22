@@ -1188,11 +1188,13 @@ let $v-test:=
                 ""
             (:else fn:replace($carrier,"\)",""):)
     (:9781555631185 (v. 4. print):)
-    let $i-title := 
+    let $i-title :=  (:this already exists in the output?:)
         if ($d/marcxml:datafield[@tag = "245"]) then
             mbshared:get-title($d/marcxml:datafield[@tag = "245"], "instance")
         else
             ()
+            
+            
     let $extent-title :=
         if ($volume ne "") then
             for $t in $i-title
@@ -1200,6 +1202,7 @@ let $v-test:=
                 element bf:title {
                     $t/@*,
                     fn:normalize-space(fn:concat(xs:string($t), " (", $volume, ")"))
+                    
                 }
         else if ($physicalForm ne "") then
             for $t in $i-title
@@ -1216,7 +1219,7 @@ let $v-test:=
                     fn:normalize-space(fn:concat(xs:string($t), " (", $carrier, ")"))
                 }
         else 
-            $i-title
+           ()
             
         
     let $clean-isbn:= 
@@ -1258,7 +1261,8 @@ let $v-test:=
         		$isbn,
         		(: See extent-title above :)
         		(: if ($volume) then element bf:title{ $volume} else (), :)
-        		$extent-title,
+        	    $extent-title,
+        	
         		(:for $t in $extent-title
         		return 
                     element bf:label { 
@@ -3023,7 +3027,7 @@ declare function mbshared:get-title(
              } (:end Title:)
              
     return 
-        ( element bf:title {  $lang-attribute, $title },     
+        ( element bf:title {  $lang-attribute, $title },  
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
             $constructed-title,
             mbshared:generate-titleNonsort($d,$title, $element-name),       
