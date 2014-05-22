@@ -2635,7 +2635,8 @@ declare function marc2bfutils:clean-name-string(
     ) as xs:string
 { 
 	if (fn:exists($s)) then
-	    let $s:= fn:replace($s,",$","","i")    	    
+	    let $s:= fn:replace($s,",$","","i")
+	    let $s:= fn:replace($s,"\[from old catalog\]","","i")
 	    return 	    
 	            $s
 	
@@ -2655,6 +2656,9 @@ declare function marc2bfutils:clean-title-string(
     ) as xs:string
 {
 	let $s:= fn:replace($s,"from old catalog","","i")
+	let $s:= fn:replace($s,"\[sound recording\]","","i")
+	let $s:= fn:replace($s,"\[microform\]","","i")
+	
     let $s := fn:replace($s, "([\[\]]+)", "")
     let $s := fn:replace($s, " :", "")
      
