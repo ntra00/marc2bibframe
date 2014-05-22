@@ -1700,12 +1700,12 @@ declare function mbshared:generate-titleNonsort(
 {
 if (fn:matches($d/@tag,"(222|242|243|245|440|240)" ) and fn:number($d/@ind2) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
-                element bf:title {attribute xml:lang {"und-x-bfsort"},
+                element bf:title {attribute xml:lang {"und-ZZ-x-bfsort"},
                        fn:substring($title, fn:number($d/@ind2)+1)
                              }
 else if (fn:matches($d/@tag,"(130|630)" ) and fn:number($d/@ind1) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
-                element bf:title {attribute xml:lang {"en-US-bf"},
+                element bf:title {attribute xml:lang {"und-ZZ-x-bfsort"},
                         fn:substring($title, fn:number($d/@ind1)+1)
                              }
 
