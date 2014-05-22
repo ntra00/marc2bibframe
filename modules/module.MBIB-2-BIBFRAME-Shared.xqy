@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-20-T10:00:00";
+declare variable $mbshared:last-edit :="2014-05-22-T10:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -1700,7 +1700,7 @@ declare function mbshared:generate-titleNonsort(
 {
 if (fn:matches($d/@tag,"(222|242|243|245|440|240)" ) and fn:number($d/@ind2) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
-                element bf:title {attribute xml:lang {"en-US-bf"},
+                element bf:title {attribute xml:lang {"und-x-bfsort"},
                        fn:substring($title, fn:number($d/@ind2)+1)
                              }
 else if (fn:matches($d/@tag,"(130|630)" ) and fn:number($d/@ind1) gt 0 ) then
