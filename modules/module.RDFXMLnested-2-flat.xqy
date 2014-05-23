@@ -269,24 +269,29 @@ declare function RDFXMLnested2flat:insertInverses($resources as element()*)
 {
     
     let $targets := fn:string-join($RDFXMLnested2flat:inverses/inverse/@targetResource, " ")
-    let $remove-props := fn:concat(
+    (:nate: this won't work because bf:tableOfContents is part of bf:tableOfContentsFor, etc:)
+  (:  let $remove-props := fn:concat(
             fn:string-join($RDFXMLnested2flat:inverses/inverse/replace/@enterOnTarget, " "),
             " ",
             fn:string-join($RDFXMLnested2flat:inverses/inverse/replace/@lookForOnSource, " ")
+        ):)
+    let $remove-props := fn:concat(    
+            fn:string-join($RDFXMLnested2flat:inverses/inverse/replace/@enterOnTarget, "|"),
+            "|",
+            fn:string-join($RDFXMLnested2flat:inverses/inverse/replace/@lookForOnSource, "|")    
         )
-        
     let $modified-targets :=
         for $r in $resources
-        let $uri := xs:string($r/@rdf:about)
-        let $n := xs:string(fn:name($r))
-        let $lookFors := $RDFXMLnested2flat:inverses/inverse[@targetResource = $n]
+           let $uri := xs:string($r/@rdf:about)
+           let $n := xs:string(fn:name($r))
+           let $lookFors := $RDFXMLnested2flat:inverses/inverse[@targetResource = $n]
         where fn:contains($targets, $n)
         return
             element {fn:name($r)} { 
                 $r/@*,
                 
-                $r/*[fn:not( fn:contains($remove-props, fn:name()) )],
-                
+                $r/*[fn:not( fn:matches( fn:name(),$remove-props ))],                
+                     
                 for $lf in $lookFors
                 let $replace := $lf/replace
                 let $related-resources := $resources[fn:name() = $lf/@sourceResource and child::node()[fn:name() = $replace/@lookForOnSource and xs:string(@rdf:resource) eq $uri]]
@@ -314,11 +319,12 @@ declare function RDFXMLnested2flat:insertInverses($resources as element()*)
         where fn:not(fn:contains($targets, $n))
         return
             element {fn:name($r)} { 
-                $r/@*,
-                $r/*[fn:not( fn:contains($remove-props, fn:name()) )]
+                $r/@*,                
+                $r/*[fn:not( fn:matches( fn:name(),$remove-props ))]               
             }
 
-    return ($modified-targets, $unmodified-resources)  
+    return ($modified-targets, $unmodified-resources)
+  
 
 };
 
