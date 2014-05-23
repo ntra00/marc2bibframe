@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-22-T10:00:00";
+declare variable $mbshared:last-edit :="2014-05-23-T14:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -55,6 +55,7 @@ declare variable $mbshared:transform-rules :=(
 <rule status="on" id="4" label="250" category="instance-splitting">New instances on multiple 250s</rule>
 <rule status="on" id="5" label="246" category="instance-node">246 domain is instance</rule>
 <rule status="on" id="6" label="247" category="instance-node">247 domain is instance</rule>
+<!--<rule status="on" id="7" label="856" category="instance-splitting">New instances on multiple856s that are resources (ind2=0)</rule>???-->
 </rules>
 );
 declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|520|522|524|525|541|546|555)");
@@ -1378,7 +1379,7 @@ declare function mbshared:generate-instance-from856(
                     			if ($d/marcxml:subfield[@code="3"]) then fn:normalize-space(fn:string($d/marcxml:subfield[@code="3"]))
                     			else "Electronic Resource"
                     		},                    		
-               		        mbshared:handle-856u($d)           		        ,
+               		        mbshared:handle-856u($d)           		       ,
 	                    element bf:instanceOf {
 	                        attribute rdf:resource {$workID}
 	                  	},                    		
@@ -1392,6 +1393,7 @@ declare function mbshared:generate-instance-from856(
                   return   element bf:hasAnnotation {                   
                                  
             	 	element {$property-name}{
+            	 	
             	 	 if (fn:string($d/marcxml:subfield[@code="3"]) ne "" or $type) then
                  	 	 element bf:label {
                          		if (fn:string($d/marcxml:subfield[@code="3"]) ne "") then                        		
@@ -1411,6 +1413,7 @@ declare function mbshared:generate-instance-from856(
 	                    		                 fn:normalize-space(fn:string($u))
 	                    		                }
 	                    		},
+	                    		
 	                    for $s in $d/marcxml:subfield[@code="z"]
                     		  return element bf:copyNote {fn:string($s)},
 	                    $annotates
@@ -1531,8 +1534,7 @@ for $hold in $holdings/hld:holding
             element bf:HeldItem {            
             $item-set/bf:HeldItem/@rdf:about,        
              $summary-set, $item-set//bf:HeldItem/*[fn:not(fn:local-name()='label')],
-             $custodialHistory,
-             element bf:test {$marcxml/marcxml:datafield[@tag="561"]},
+             $custodialHistory,             
              if ($heldBy!="") then element bf:heldBy {element bf:Organization {element bf:label {$heldBy}}} else ()
             }
             }
@@ -1585,6 +1587,7 @@ let $hld:= if ($marcxml//hld:holdings) then mbshared:generate-holdings-from-hld(
 	        		element {$element } {$value}
 	        		(:else 
 	        		element {$element } {fn:normalize-space(fn:string-join($class/../marcxml:subfield[fn:matches(@code, "(a|b|c)")]," "))}:)
+let $custodialHistory:=mbshared:generate-simple-property($marcxml/marcxml:datafield[@tag="561"], "helditem")
 let $d852:= 
     if ($marcxml/marcxml:datafield[@tag="852"]) then
         for $d in $marcxml/marcxml:datafield[@tag="852"]
@@ -1596,7 +1599,7 @@ let $d852:=
             if ($d/marcxml:subfield[fn:matches(@code,"(k|h|l|i|m|t)")]) then 
                     element bf:shelfMark{fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")}
             else (),
-            mbshared:handle-856u($d),
+                    mbshared:handle-856u($d) 		      ,
             
             for $s in $d/marcxml:subfield[@code="z"] return element  bf:copyNote{fn:string($s)},
             for $s in $d/../marcxml:datafield[fn:matches(@tag,"(051|061|071)")]
@@ -1612,6 +1615,7 @@ return
                    (:this is for matching later:)
                     element bf:label{fn:string($shelfmark[1])},
          	    $shelfmark,
+         	    $custodialHistory,
          	    $d852         	     	
                 }
             }
@@ -1770,7 +1774,7 @@ return
 					
 						if ($extent) then element bf:extent {$extent} else (),
 						if ($coverage) then element bf:temporalCoverageNote {$coverage}  else (),						
-						element bf:carrierCategory {$carrier},
+						if ($carrier!="" ) then	element bf:carrierCategory {element bf:Category {element bf:categoryValue {$carrier}}}   else (),
 						
 						if ($note) then  $note  else ()						
 						
@@ -1845,7 +1849,7 @@ let $property-name := if ($d/@ind1="0") then "bf:findingAid"
             if ($d/marcxml:subfield[@code="u"]) then
                     element bf:hasInstance {
                                 element bf:Instance {
-                                   mbshared:handle-856u($d)
+                                mbshared:handle-856u($d)           		        
                             }
                      }
              else ()
