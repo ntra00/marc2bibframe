@@ -589,19 +589,7 @@ declare function mbshared:generate-880-label
 	
 	let $scr := fn:tokenize($match/marcxml:subfield[@code="6"],"/")[2]
     let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
-(:        let $script:=
-	       if ($scr="(3" ) then "arab"
-	       else if ($scr="(B" ) then "latn"
-	       else if ($scr="$1"  and $lang="kor" ) then "hang"
-	       else if ($scr="$1"  and $lang="chi" ) then "hani"
-	       else if ($scr="$1"  and $lang="jpn" ) then "jpan"	       
-	       else if ($scr="(N" ) then "cyrl"
-	       else if ($scr="(S" ) then "grek"
-	       else if ($scr="(2" ) then "hebr"
-	       else ()
-	       
-        let $xmllang:= if ($script) then fn:concat($lang,"-",$script) else $lang
-        :)
+
         return 
             if ($node-name="name") then
                 element bf:authorizedAccessPoint {
@@ -619,7 +607,7 @@ declare function mbshared:generate-880-label
                     else
                         "(t|f|k|m|n|p|s)"
                 return
-                    element bf:authorizedAccessPoint {
+                    element bf:titleValue {
                         attribute xml:lang {$xmllang},                                                   
                         marc2bfutils:clean-title-string(fn:replace(fn:string-join($match/marcxml:subfield[fn:matches(@code,$subfs)] ," "),"^(.+)/$","$1"))
                     }
@@ -2092,7 +2080,7 @@ let $xml-lang:=
 	       else if ($scr="(N" ) then "cyrl"
 	       else if ($scr="(S" ) then "grek"
 	       else if ($scr="(2" ) then "hebr"
-	       else ()
+	       else ""
 	    return   
             if ($script) then fn:concat($xml-lang,"-",$script) else $xml-lang
         };
@@ -2334,7 +2322,8 @@ let $typeOf008:=
               
                 let $details := 
                     element details {
-                    (://for the set of subfields after this $t, up until there's a new $t:)
+                    (://for the set of subfields after this $t, up until there's a new $t
+                    problem is, $g precedes $t? :)
                         for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
                         let $elname:=
                             if ($subfield/@code="g") then "bf:note" 
@@ -3026,8 +3015,8 @@ declare function mbshared:get-title(
                  if ($title-type ne "") then                      
                       element bf:titleType {$title-type}                                                      
                  else (),                     
-                     mbshared:generate-simple-property($d,"title")
-                    
+                     mbshared:generate-simple-property($d,"title"),
+                    mbshared:generate-880-label($d,"title")
                 }
              } (:end Title:)
              
@@ -3036,7 +3025,7 @@ declare function mbshared:get-title(
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
             $constructed-title,
             mbshared:generate-titleNonsort($d,$title, $element-name),       
-            mbshared:generate-880-label($d,"title"),
+            (:mbshared:generate-880-label($d,"title"),:)
               for $sys-num in $d/marcxml:subfield[@code="0"] 
                      return mbshared:handle-system-number($sys-num)  
         )
