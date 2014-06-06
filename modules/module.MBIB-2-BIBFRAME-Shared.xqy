@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-05-23-T14:00:00";
+declare variable $mbshared:last-edit :="2014-06-06-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -209,7 +209,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="dissertationNote"				tag="502" sfcodes="a"		                >Dissertation Note</node>
          <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
          <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>        
-         <node domain="work"				property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
+         <node domain="instance"				property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
          <!--<node domain="work"				property="contentsNote"					  tag="520" sfcodes="a" ind2=" "	>Contents Note</node>-->
          <node domain="work"				property="temporalCoverageNote"		tag="513" sfcodes="b"						>Period Covered Note</node>
          <node domain="event"			    property="eventDate"					    tag="518" sfcodes="d"						>Event Date</node>
@@ -2334,6 +2334,7 @@ let $typeOf008:=
               
                 let $details := 
                     element details {
+                    (://for the set of subfields after this $t, up until there's a new $t:)
                         for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
                         let $elname:=
                             if ($subfield/@code="g") then "bf:note" 
@@ -2356,9 +2357,9 @@ let $typeOf008:=
                     }
                 return 
                     element part {
-                        element bf:authorizedAccessPoint {
+                      (:  element bf:authorizedAccessPoint {
                             fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
-                        },
+                        },:)
                         element bf:title {$t},                                   
                         $details/*                                 
                     }
