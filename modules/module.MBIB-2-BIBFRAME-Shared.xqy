@@ -869,7 +869,7 @@ declare function mbshared:generate-26x-pub
 	            for $pub in $d[@tag="261"]/marcxml:subfield[@code="d"][1] |
                     $d[@tag="262"]/marcxml:subfield[@code="c"][1]
 	                 return              
-	                    element bf:providerDate {marc2bfutils:clean-string(fn:string($pub))}	                    	                  
+	                    element bf:providerDate {marc2bfutils:chopPunctuation(fn:string($pub),".")}	                    	                  
 	       }
 	     }
 	};
@@ -948,9 +948,9 @@ declare function mbshared:generate-publication
 	                    for $pl in $d/marcxml:subfield[@code="c"]
 	                    	return 
 	                        if (fn:starts-with($pl,"c")) then				
-				       element bf:providerDate {marc2bfutils:clean-string($pl)}
+				       element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")}
 	                        else 
-				       element bf:copyrightDate {marc2bfutils:clean-string($pl)}		
+				       element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}		
 		      }
 	        }
         (:handle $d,e,f like abc :)
@@ -976,7 +976,7 @@ declare function mbshared:generate-publication
 	                        mbshared:generate-880-label($d,"place") )
 	                    else (),
 	                    if ($d/marcxml:subfield[@code="f"][$x]) then
-	                        element bf:providerDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="f"][$x])}	                                     
+	                        element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="f"][$x],".")}	                                     
 	                    else ()
 	                }
 		}   
@@ -993,7 +993,7 @@ declare function mbshared:generate-publication
                     			mbshared:generate-880-label($d,"place") 
                     		),
                     for $pl in $d/marcxml:subfield[@code="f"]							
-                    	return element bf:providerDate {marc2bfutils:clean-string($pl)}						
+                    	return element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")}						
                 }
             }
     
@@ -1756,7 +1756,7 @@ let $agent:= for  $aa in $d/marcxml:subfield[@code="c"]
 	                      element bf:label {fn:string($aa)}
 	                   }
 	                 }
-let $pubDate:=marc2bfutils:clean-string($d/marcxml:subfield[@code="d"])
+let $pubDate:=marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="d"],".")
 let $extent:= fn:string($d/marcxml:subfield[@code="e"])
 let $coverage:= fn:string($d/marcxml:subfield[@code="m"])
 (:gwu has multiple 533$n:)
@@ -2191,10 +2191,10 @@ let $typeOf008:=
         return $t
     let $hashableNames := 
         (
-            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")][1]/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))], " ")
+            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " ")
             return marc2bfutils:clean-name-string($n),
             
-            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))], " ")
+            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " ")
             return marc2bfutils:clean-name-string($n)
         )
     let $hashableNames := 
