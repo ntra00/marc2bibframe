@@ -2191,10 +2191,10 @@ let $typeOf008:=
         return $t
     let $hashableNames := 
         (
-            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " ")
+            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")][1]/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))], " ")
             return marc2bfutils:clean-name-string($n),
             
-            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " ")
+            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))], " ")
             return marc2bfutils:clean-name-string($n)
         )
     let $hashableNames := 
