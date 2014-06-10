@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-09-T16:00:00";
+declare variable $mbshared:last-edit :="2014-06-10-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -2707,7 +2707,7 @@ declare function mbshared:get-name(
             marc2bfutils:generate-role-code(fn:string($d/marcxml:subfield[@code = "e"][1]))
       
     let $label := if ($d/@tag!='534') then
-    	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q'] , ' ')    	
+    	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , ' ')    	
     	else 
     	fn:string($d/marcxml:subfield[@code='a' ])
     	
