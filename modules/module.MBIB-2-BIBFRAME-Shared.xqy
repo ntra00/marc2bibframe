@@ -2190,12 +2190,16 @@ let $typeOf008:=
         return $t
     let $hashableNames := 
         (
-            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")][1]/marcxml:subfield, " ")
+            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " ")
             return marc2bfutils:clean-name-string($n),
             
             let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " ")
             return marc2bfutils:clean-name-string($n)
         )
+    let $hashableNames := 
+        for $n in $hashableNames
+        order by $n
+        return $n
     let $hashableNames := fn:string-join($hashableNames, " ")
     let $hashableLang := fn:normalize-space(fn:substring(fn:string($marcxml/marcxml:controlfield[@tag='008']), 36, 3))
     let $hashableTypes := fn:concat($mainType, fn:string-join($types, ""))
