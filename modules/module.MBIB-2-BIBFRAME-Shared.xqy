@@ -92,7 +92,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="stockNumber"						tag="037" sfcodes="a"		 group="identifiers"         >stock number for acquisition</node>
          <node domain="instance"	property="reportNumber"						tag="088" sfcodes="a"       	 group="identifiers" >technical report number</node>
          <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
-         <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptiveconventions/"           >Description conventions</node>
+         <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptionConventions/"           >Description conventions</node>
          <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
          
          <node domain="classification"		property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
@@ -388,9 +388,9 @@ let $leader18:=fn:substring($marcxml/marcxml:leader,19,1)
             (for $d in $marcxml/marcxml:datafield[@tag="040"]
                 return mbshared:generate-simple-property($d,"annotation")
                 ,
-                if ($leader18="a") then element bf:descriptionConventions { "AACR2"} 
-                else if ($leader18=" ") then element  bf:descriptionConventions { "non-ISBD"}
-                else if ($leader18="c" or $leader18="i") then element  bf:descriptionConventions { "ISBD"}
+                if ($leader18="a") then element bf:descriptionConventions { attribute rdf:resource {"http://id.loc.gov/vocabulary/descriptionConventions/aacr2"} }
+                else if ($leader18=" ") then element  bf:descriptionConventions { attribute rdf:resource {"http://id.loc.gov/vocabulary/descriptionConventions/nonisbd"} }
+                else if ($leader18="c" or $leader18="i") then element  bf:descriptionConventions { attribute rdf:resource {"http://id.loc.gov/vocabulary/descriptionConventions/isbd"}}
                 else ()
                 )
                 
@@ -930,7 +930,7 @@ declare function mbshared:generate-publication
 	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
 	                        element bf:copyrightDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])}
 	                    else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
-	                        element bf:providerDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])}                 
+	                        element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="c"][$x],".")}                 
 	                    else ()
 	                }
 		}   
