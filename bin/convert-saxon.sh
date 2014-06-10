@@ -1,12 +1,16 @@
 #!/bin/bash
 
-MYDIR=`dirname $0`
+MYDIR=`basename $PWD`
 MYPROG=`basename $0`
 
-SAXON_DIR=$HOME/saxon9he
-SAXON_JAR=$SAXON_DIR/saxon9he.jar
-SERIALIZATION=rdfxml
-BASEURI=http://bibframe.nlm.nih.gov/
+if [ "$MYDIR" == "bin" ]; 
+then
+    MYDIR=".."
+else
+    MYDIR="."
+fi
+
+source $MYDIR/bin/marc2bibframe.conf
 
 function usage {
     echo "Usage: $0 [-s serialization] [-u baseuri] [-j path-to-saxon-jar] marcxml-input-path output-path" 1>&2
@@ -31,7 +35,7 @@ function valid_serialization {
 while getopts "s:u:j:" arg; do
     case $arg in
         s) SERIALIZATION=$OPTARG ;;
-        u) BAsEURI=$OPTARG ;;
+        u) BASEURI=$OPTARG ;;
         j) SAXON_JAR=$OPTARG ;;
         *) usage ;;
     esac
