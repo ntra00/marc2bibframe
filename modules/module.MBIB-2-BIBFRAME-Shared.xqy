@@ -210,10 +210,10 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
          <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>        
          <node domain="instance"				property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
-         <!--<node domain="work"				property="contentsNote"					  tag="520" sfcodes="a" ind2=" "	>Contents Note</node>-->
+         
          <node domain="work"				property="temporalCoverageNote"		tag="513" sfcodes="b"						>Period Covered Note</node>
          <node domain="event"			    property="eventDate"					    tag="518" sfcodes="d"						>Event Date</node>
-         <!--<node domain="work"				property="eventDate"						  tag="033" sfcodes="a"						>Event Date</node>-->
+         
          <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
          <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
 <node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>                  
@@ -1802,12 +1802,13 @@ declare function mbshared:generate-event
         $d as element(marcxml:datafield) 
     )
 { 
-    let $dates:= element bf:eventDate { if ($d/@ind1="2") then (:range:)
-                    fn:string-join($d/marcxml:subfield[@code="a"]," - ")                        
-                 else if ($d/@ind1="1") then (:multiple consecutive dates:)
-                    fn:string-join($d/marcxml:subfield[@code="a"],", ")
-                    else fn:concat(fn:string($d/marcxml:subfield[@code="a"]), "^^xsd:date")
-                 }
+    let $dates:= element bf:eventDate { 
+                    if ($d/@ind1="2") then (:range:)
+                        fn:string-join($d/marcxml:subfield[@code="a"]," - ")                        
+                    else if ($d/@ind1="1") then (:multiple consecutive dates:)
+                        fn:string-join($d/marcxml:subfield[@code="a"],", ")
+                    else (attribute rdf:datatype {"xsd:dateTime"},fn:string($d/marcxml:subfield[@code="a"]))
+                    }
     let $placesCodes:=
         for $s in $d/marcxml:subfield[@code="b"]
             let $subcode:=if ($s/following-sibling::marcxml:subfield[@code="c"]) then
