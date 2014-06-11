@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-10-T16:00:00";
+declare variable $mbshared:last-edit :="2014-06-11-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -686,20 +686,22 @@ declare function mbshared:generate-identifiers(
                                 (:canadian stuff is not  in id:)
                                 or  	$this-tag[@tag="040"][fn:starts-with(fn:normalize-space(fn:string(marcxml:subfield[@code="a"])),'Ca')])
                    	    	    then 
-		                       ( element bf:Identifier{		                          
-		                            element bf:identifierScheme {				 
-		                                fn:string($id/@property)
-		                            },	                            
-		                            element bf:identifierValue { 		                               
-		                                    fn:string($this-tag/marcxml:subfield[@code="a"][1])
-		                            },
-		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
-		                            	return element bf:identifierAssigner { 	fn:string($sub)},		
-		                            for $sub in $this-tag/marcxml:subfield[@code="q" ][$this-tag/@tag!="856"]
-		                            	return element bf:identifierQualifier {fn:string($sub)},
-	                                for $sub in $this-tag[@tag="037"]/marcxml:subfield[@code="c"]
-		                            	return element bf:identifierQualifier {fn:string($sub)}	                          		                           
-	                        	},
+		                          (element {fn:concat("bf:",fn:string($id/@property)) }{		                              
+               		                       element bf:Identifier{		                          
+               		                            element bf:identifierScheme {				 
+               		                                fn:string($id/@property)
+               		                            },	                            
+               		                            element bf:identifierValue { 		                               
+               		                                    fn:string($this-tag/marcxml:subfield[@code="a"][1])
+               		                            },
+               		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
+               		                            	return element bf:identifierAssigner { 	fn:string($sub)},		
+               		                            for $sub in $this-tag/marcxml:subfield[@code="q" ][$this-tag/@tag!="856"]
+               		                            	return element bf:identifierQualifier {fn:string($sub)},
+               	                                for $sub in $this-tag[@tag="037"]/marcxml:subfield[@code="c"]
+               		                            	return element bf:identifierQualifier {fn:string($sub)}	                          		                           
+               	                        	}
+               	                       },
 	                        	$cancels	                        			                              
 		                        )
 	                    	else 	(: not    @code,"(b|q|2) :)                
@@ -1809,6 +1811,8 @@ declare function mbshared:generate-event
                         fn:string-join($d/marcxml:subfield[@code="a"],", ")
                     else (attribute rdf:datatype {"xsd:dateTime"},fn:string($d/marcxml:subfield[@code="a"]))
                     }
+                    
+                    
     let $placesCodes:=
         for $s in $d/marcxml:subfield[@code="b"]
             let $subcode:=if ($s/following-sibling::marcxml:subfield[@code="c"]) then
