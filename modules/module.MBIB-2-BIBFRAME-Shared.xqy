@@ -76,7 +76,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="ean"					 			tag="024" sfcodes="a,z,d" ind1="3" group="identifiers" comment="(sep by -)"	>International Article Identifier (EAN)</node>
          <node domain="instance" 	property="sici"				   				tag="024" sfcodes="a"   ind1="4" group="identifiers">Serial Item and Contribution Identifier</node>
          <node domain="instance" 	property="$2"					   			tag="024" sfcodes="a"   ind1="7" group="identifiers">contents of $2</node> 
-   <!--        <node domain="instance" 	property="$2"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>-->
+           <node domain="instance" 	property="unspecified"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		       group="identifiers"   >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		       group="identifiers"   >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a"		       group="identifiers" >Standard Technical Report Number</node>
@@ -748,7 +748,7 @@ let $id024-028:=
         			                         else
         			                            fn:string($this-tag/marcxml:subfield[@code="a"])
         			                           
-	                                return 
+	                                 return 
 	                                   element {$property-name} {
 	                                    element bf:Identifier{
        	                                    element bf:identifierScheme {$scheme},
