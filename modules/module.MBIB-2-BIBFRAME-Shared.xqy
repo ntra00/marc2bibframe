@@ -641,10 +641,17 @@ declare function mbshared:generate-880-label
                             }
                         }
                     }
-            else 
-                element { fn:concat("bf:",$node-name)} {
-                    fn:string($match/marcxml:subfield[@code="a"])					
-				}				
+                    else if ($node-name="responsibilityStatement") then
+                         for $sf in $match/marcxml:subfield[@code="c"]
+                             return
+                                 element bf:responsibilityStatement {                      
+                                     attribute xml:lang {$xmllang},   			
+                                     marc2bfutils:clean-string(fn:string($sf))
+                                 }                        
+                        else 
+                            element { fn:concat("bf:",$node-name)} {  attribute xml:lang {$xmllang} ,
+                                fn:string($match/marcxml:subfield[@code="a"])					
+                			}				
 	else ()
 	
 };
@@ -1086,9 +1093,11 @@ declare function mbshared:generate-physdesc
                         else ()
                         )
                     else  (:no hyphen or it's ind1=1:)
-                        element bf:serialFirstIssue {
+                        (element bf:serialFirstIssue {
                             fn:normalize-space( $subelement)
                         },
+                         mbshared:generate-880-label($issuedate,"serialFirstIssue")                           
+                        ),
                         for $d in $marcxml/marcxml:datafield[@tag="351"]                              
                              return                             
                                  element bf:arrangement {		                                    
@@ -1208,7 +1217,7 @@ let $v-test:=
             mbshared:get-title($d/marcxml:datafield[@tag = "245"], "instance")
         else
             ()
-            
+      let $resp-statement880:= mbshared:generate-880-label($d/marcxml:datafield[@tag = "245"][marcxml:subfield[@code="c"]],"responsibilityStatement")      
             
     let $extent-title :=
         if ($volume ne "") then
@@ -1277,7 +1286,7 @@ let $v-test:=
         		(: See extent-title above :)
         		(: if ($volume) then element bf:title{ $volume} else (), :)
         	    $extent-title,
-        	
+        	$resp-statement880,
         		(:for $t in $extent-title
         		return 
                     element bf:label { 
@@ -1703,7 +1712,9 @@ declare function mbshared:generate-500notes(
 for $marc-note in $marcxml/marcxml:datafield[fn:starts-with(@tag, "5") and fn:not(fn:matches(@tag,$mbshared:named-notes))]
         return if ($marc-note[@tag !='504']) then
  			        let $note-text:= fn:string-join($marc-note/marcxml:subfield[@code="3" or @code="a"]," ")
-			         return element bf:note {$note-text}
+			         return (element bf:note {$note-text},
+			                 mbshared:generate-880-label($marc-note,"note")
+			                 )
                 else ()
 };
 (:~
