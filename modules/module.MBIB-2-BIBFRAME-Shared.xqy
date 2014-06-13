@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-11-T11:00:00";
+declare variable $mbshared:last-edit :="2014-06-13-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -76,6 +76,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="ean"					 			tag="024" sfcodes="a,z,d" ind1="3" group="identifiers" comment="(sep by -)"	>International Article Identifier (EAN)</node>
          <node domain="instance" 	property="sici"				   				tag="024" sfcodes="a"   ind1="4" group="identifiers">Serial Item and Contribution Identifier</node>
          <node domain="instance" 	property="$2"					   			tag="024" sfcodes="a"   ind1="7" group="identifiers">contents of $2</node> 
+   <!--        <node domain="instance" 	property="$2"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>-->
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		       group="identifiers"   >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		       group="identifiers"   >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a"		       group="identifiers" >Standard Technical Report Number</node>
@@ -719,7 +720,9 @@ let $id024-028:=
                             let $scheme:=   	       	  	
                                 if ($this-tag/@ind1="7") then (:use the contents of $2 for the name: :)
                                     fn:string($this-tag[@ind1=$this-id/@ind1]/marcxml:subfield[@code="2"])
-                                else (:use the $id name:)
+                                else if ($this-tag/@ind1="8") then 
+                                    "unspecified"
+                                else            (:use the $id name:)
                                     fn:string($this-id[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1]/@property)
                             let $property-name:= 
                                                 (:unmatched scheme in $2:)
@@ -731,12 +734,13 @@ let $id024-028:=
                                                      return element {$property-name} { mbshared:handle-cancels($this-tag, $sf, $scheme)} 
                                 (:if  024 has a c, it's qualified, needs a class  else just prop w/$a:)
                             return
-                                if ( $this-tag/marcxml:subfield[fn:matches(@code,"a")] and (fn:contains(fn:string($this-tag/marcxml:subfield[@code="c"]), "(") or 
-                                        $this-tag/marcxml:subfield[@code="q"] or 
-        			                     $this-tag/marcxml:subfield[@code="b" or
-        			                     $this-tag/marcxml:subfield[@code="2"] ] 
-        			                  )        			                    
-        			                     or fn:not($this-tag/@uri)
+                                if ( ($this-tag/marcxml:subfield[@code="a"] and 
+                                        ( fn:contains(fn:string($this-tag/marcxml:subfield[@code="c"]), "(") or 
+                                            $this-tag/marcxml:subfield[@code="q" or @code="b" or @code="2"]  
+        			                     )
+        			                 )   or
+        			                     fn:not($this-id/@uri) or
+        			                    $scheme="unspecified"
         			                 ) then	
         			                 let $value:=
         			                     if ($this-tag/marcxml:subfield[@code="d"]) then 
