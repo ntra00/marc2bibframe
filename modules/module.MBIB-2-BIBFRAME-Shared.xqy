@@ -426,8 +426,10 @@ declare function mbshared:generate-instance-from260(
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|247|222|242|210)")]
             for $t in $titles
-            return mbshared:get-title($t,"instance") 
-       
+            return mbshared:get-title($t,"instance")
+            
+    let $resp-statement880:= mbshared:generate-880-label($d/../marcxml:datafield[@tag = "245"][marcxml:subfield[@code="c"]],"responsibilityStatement")
+   
     let $edition-instances:= 
     for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
         return 
@@ -542,7 +544,8 @@ let $issuance:=
     return 
         element bf:Instance {        
            $instance-types,                            
-            $instance-title,                      
+            $instance-title,
+            $resp-statement880,
             $publication,                       
             $physMapData,
           $issuance,
@@ -1217,7 +1220,7 @@ let $v-test:=
             mbshared:get-title($d/marcxml:datafield[@tag = "245"], "instance")
         else
             ()
-      let $resp-statement880:= mbshared:generate-880-label($d/marcxml:datafield[@tag = "245"][marcxml:subfield[@code="c"]],"responsibilityStatement")      
+            
             
     let $extent-title :=
         if ($volume ne "") then
@@ -1286,7 +1289,7 @@ let $v-test:=
         		(: See extent-title above :)
         		(: if ($volume) then element bf:title{ $volume} else (), :)
         	    $extent-title,
-        	$resp-statement880,
+    
         		(:for $t in $extent-title
         		return 
                     element bf:label { 
