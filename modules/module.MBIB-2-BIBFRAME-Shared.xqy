@@ -576,7 +576,7 @@ let $issuance:=
 :)
 declare function mbshared:generate-880-label
     (
-        $d as element(marcxml:datafield), 
+        $d as element(marcxml:datafield)*, 
         $node-name as xs:string
     ) as element ()*
 {
