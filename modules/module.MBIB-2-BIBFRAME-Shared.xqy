@@ -102,6 +102,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="classification"		property="classificationAssigner"   tag="083" sfcodes=""	uri="http://id.loc.gov/vocabulary/organizations/"         	>various orgs assigner</node>
          <node domain="classification"		property="classificationEdition"   tag="082" sfcodes=""	         	>classificationEdition</node>
          <node domain="classification"		property="classificationEdition"   tag="083" sfcodes=""	         	>classificationEdition</node>
+         <node domain="classification"		property="classificationLcc"   tag="052" sfcodes="ab"	stringjoin="."  uri="http://id.loc.gov/authorities/classification/G"	>geo class</node>
          <node domain="title"		property="titleQualifier"			tag="210" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="titleQualifier"			tag="222" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
@@ -244,7 +245,7 @@ declare variable $mbshared:relationships :=
     <relationships>
         <!-- Work to Work relationships -->
         <work-relateds all-tags="(400|410|411|430|440|490|510|533|534|630|700|710|711|730|740|760|762|765|767|770|772|773|774|775|777|780|785|787|800|810|811|830)">
-            <type tag="(700|710|711|730)" ind2="2" property="contains">isIncludedIn</type>            
+            <type tag="(700|710|711|730)" ind2="2" property="hasPart">isIncludedIn</type>            
             <type tag="(700|710|711|730)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>            
 		    <type tag="740" property="partOf"  ind2="2">hasPart</type>
@@ -2403,7 +2404,7 @@ let $typeOf008:=
 		return						
                 for $item in $set
                 return
-	                    element bf:contains {   
+	                    element bf:hasPart {   
 	                        element bf:Work {	                            
 	                            $item/*
 	                        }																								
@@ -3444,8 +3445,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     element  bf:classificationNlm{                            			
                         attribute rdf:resource {fn:concat( "http://nlm.example.org/classification/",fn:normalize-space($class))
                         }
-                    },        		
-             for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"086")][marcxml:subfield[@code="z"]]
+                    },
+            for $this-tag in $marcxml/marcxml:datafield[@tag="052"] return mbshared:generate-simple-property($this-tag ,"classification")     ,
+           for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"086")][marcxml:subfield[@code="z"]]
              return
                    element bf:classification {
                                element bf:Classification {                        
@@ -3477,7 +3479,21 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
         			                fn:string($strip)
         			            else (:invalid content in sfa:)
         			                () 
-        	                
+        	  for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
+                for $cl in $this-tag/marcxml:subfield[@code="a"]           
+                	let $valid:=
+                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055)"))) then
+                			fn:string($cl)
+                		else (:050 has non-class stuff in it: :)
+                  			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
+                  			let $subclassCode := fn:replace($strip, "\d", "")			
+                  			return                   		            
+        			            
+        			            if ( mbshared:validate-lcc($subclassCode))        			              
+        			                 then   								  
+        			                fn:string($strip)
+        			            else (:invalid content in sfa:)
+        			                ()                 
         return 
             if ( $valid and
                 fn:count($this-tag/marcxml:subfield)=1 and 
@@ -3559,8 +3575,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
          								   else ()
          							
                                  else (),
-         						 for $d in $this-tag[@tag="083"] return mbshared:generate-simple-property($d,"classification")
-                            
+         						 for $d in $this-tag[@tag="083"] return mbshared:generate-simple-property($d,"classification")                           
                     }
             }
      else ()
