@@ -243,9 +243,9 @@ declare variable $mbshared:relationships :=
 (
     <relationships>
         <!-- Work to Work relationships -->
-        <work-relateds all-tags="(400|410|411|430|440|490|510|533|534|630|700|710|711|720|730|740|760|762|765|767|770|772|773|774|775|777|780|785|787|800|810|811|830)">
-            <type tag="(700|710|711|720)" ind2="2" property="hasPart">isIncludedIn</type>            
-            <type tag="(700|710|711|720)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
+        <work-relateds all-tags="(400|410|411|430|440|490|510|533|534|630|700|710|711|730|740|760|762|765|767|770|772|773|774|775|777|780|785|787|800|810|811|830)">
+            <type tag="(700|710|711|730)" ind2="2" property="contains">isIncludedIn</type>            
+            <type tag="(700|710|711|730)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>            
 		    <type tag="740" property="partOf"  ind2="2">hasPart</type>
 		    <type tag="760" property="subseriesOf">hasParts</type>	
@@ -2068,25 +2068,21 @@ declare function mbshared:related-works
             (:for $type in $relateds/type[@tag=$d/@tag]:)            
         	 (:return:)
         	 
-            if ($marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|772)")]) then (: title is in $a , @ind2 needs attention:)
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|772)")]
-                    for $type in $relateds/type[@tag=$d/tag][fn:string(@ind2)=fn:string($d/@ind2)]                
-                        return mbshared:generate-related-work($d,$type, $workID)     	                 
-     	    else if ($marcxml/marcxml:datafield[@tag="533"]) then
-     	      for $d in $marcxml/marcxml:datafield[@tag="533"]
+            if ($marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]) then (: title is in $a , @ind2 needs attention:)
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]                    
+                    for $type in $relateds/type[@tag=$d/@tag][@ind2=$d/@ind2] 
+                        return mbshared:generate-related-work($d,$type, $workID)   
+                        
+     	    else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]) then
+     	      for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]
      	          for $type in $relateds/type[@tag=$d/@tag]                		
 			         return mbshared:generate-related-reproduction($d,$type)                                         
 			         
-            else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")][marcxml:subfield[@code="t"]] ) then            (:@ind2:)
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")][marcxml:subfield[@code="t"]]                            
+            else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")][marcxml:subfield[@code="t"]] ) then            (:@ind2:)
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")][marcxml:subfield[@code="t"]]                    
                     for $type in $relateds/type[@tag=$d/@tag][@ind2=$d/@ind2] 
                         return mbshared:generate-related-work($d,$type, $workID)
-                
-            (:else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(780|785)")] ) then       
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")][fn:string(@ind2)="2"]
-                    for $type in $relateds[@tag=$d/@tag][@ind2=$d/@ind2] 
-                    return mbshared:generate-related-work($d,$type, $workID)
-            :)        
+                        
             else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")]) then
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")][marcxml:subfield[@code="a"]]
                     for $type in $relateds/type[@tag=$d/@tag]                     	
