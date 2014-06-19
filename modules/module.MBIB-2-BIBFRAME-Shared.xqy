@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-19-T11:00:00";
+declare variable $mbshared:last-edit :="2014-06-19-T13:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -446,7 +446,7 @@ declare function mbshared:generate-instance-from260(
                 }
             }
             )
-                
+    let $edition-880:= mbshared:generate-880-label($d/../marcxml:datafield[@tag = "250"][marcxml:subfield[@code="a"]],"edition")                
     let $publication:= 
             if (fn:matches($d/@tag, "(260|264)")) then mbshared:generate-publication($d)
             else if (fn:matches($d/@tag, "(261|262)")) then mbshared:generate-26x-pub($d)
@@ -547,7 +547,8 @@ let $issuance:=
            $instance-types,                            
             $instance-title,
             $resp-statement880,
-            $publication,                       
+            $publication,   
+            $edition-880,
             $physMapData,
           $issuance,
             $instance-simples,
