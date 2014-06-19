@@ -2070,11 +2070,11 @@ declare function mbshared:related-works
             (:for $type in $relateds/type[@tag=$d/@tag]:)            
         	 (:return:)
         	 
-            if ($marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]) then (: title is in $a , @ind2 needs attention:)
+            if ($marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]) then (: title is in $a , @ind2 needs attention:)                
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]                    
                     for $type in $relateds/type[@tag=$d/@tag][@ind2=$d/@ind2] 
                         return mbshared:generate-related-work($d,$type, $workID)   
-                        
+                
      	    else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]) then
      	      for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]
      	          for $type in $relateds/type[@tag=$d/@tag]                		
@@ -3018,7 +3018,7 @@ declare function mbshared:get-title(
         ) 
 {
     
-    let $title := fn:replace(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|b|h|k|n|p|s)")] ," "),"^(.+)/$","$1")
+    let $title := fn:replace(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|b|k|n|p|s)")] ," "),"^(.+)/$","$1")
     let $title := 
         if (fn:ends-with($title, ".")) then
             fn:substring($title, 1, fn:string-length($title) - 1 )
@@ -3553,7 +3553,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                      	       element bf:classificationNumber {fn:string($cl)},
                      	       element bf:label {fn:string($cl)},
                       	       if ( $assigner) then 
-                                  	(element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",fn:encode-for-uri($assigner))}}
+                      	         (:assigner is string, not uri:)
+                                  	(:(element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",fn:encode-for-uri($assigner))}}:)
+                                  	(element bf:classificationAssigner {$assigner}
                                   	(: does this work ? can't find example:
                                   	,mbshared:generate-property-from-text($this-tag,"",$assigner,"classification"):)
                                   	)
