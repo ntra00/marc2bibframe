@@ -3105,7 +3105,7 @@ declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:
 (: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
 adapted from marcslim2modsutils.xsl
 :)
-declare function marc2bfutils:chopPunctuation( $str as xs:string,
+declare function marc2bfutils:chopPunctuation( $str as xs:string*,
     $punc as xs:string){
 let $len:=fn:string-length($str)
 return	if ($len=0) then
