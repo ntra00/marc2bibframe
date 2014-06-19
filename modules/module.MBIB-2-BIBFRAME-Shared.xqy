@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-13-T11:00:00";
+declare variable $mbshared:last-edit :="2014-06-19-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -76,7 +76,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="ean"					 			tag="024" sfcodes="a,z,d" ind1="3" group="identifiers" comment="(sep by -)"	>International Article Identifier (EAN)</node>
          <node domain="instance" 	property="sici"				   				tag="024" sfcodes="a"   ind1="4" group="identifiers">Serial Item and Contribution Identifier</node>
          <node domain="instance" 	property="$2"					   			tag="024" sfcodes="a"   ind1="7" group="identifiers">contents of $2</node> 
-           <node domain="instance" 	property="idenditifier"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>
+           <node domain="instance" 	property="identifier"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		       group="identifiers"   >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		       group="identifiers"   >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a"		       group="identifiers" >Standard Technical Report Number</node>
@@ -99,7 +99,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="classification"		property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
          <node domain="classification"		property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
          <node domain="classification"		property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
-         <node domain="classification"		property="classificationAssigner"   tag="083" sfcodes=""	         	>various orgs assiger</node>
+         <node domain="classification"		property="classificationAssigner"   tag="083" sfcodes=""	uri="http://id.loc.gov/vocabulary/organizations/"         	>various orgs assigner</node>
          <node domain="classification"		property="classificationEdition"   tag="082" sfcodes=""	         	>classificationEdition</node>
          <node domain="classification"		property="classificationEdition"   tag="083" sfcodes=""	         	>classificationEdition</node>
          <node domain="title"		property="titleQualifier"			tag="210" sfcodes="b"          >title qualifier</node>
@@ -1086,15 +1086,17 @@ declare function mbshared:generate-physdesc
                 let $subelement:=fn:string($issuedate/marcxml:subfield[@code="a"])
                 return
                     if (   $issuedate/@ind1="0" and fn:contains($subelement,"-") ) then
-                       ( element bf:serialFirstIssue {		
-                            fn:normalize-space( fn:substring-before($subelement,"-"))
-                        },
-                        if ( fn:normalize-space(fn:substring-after($subelement,"-"))!="") then 
-                        element bf:serialLastIssue{		
-                            fn:normalize-space( fn:substring-after($subelement,"-"))
-                        }
-                        else ()
-                        )
+                        let $first:=fn:normalize-space( fn:substring-before($subelement,"-"))
+                        let $last:=fn:normalize-space( fn:substring-after($subelement,"-"))
+                        return (  
+                                if ($first!="") then
+                                    element bf:serialFirstIssue {$first   }
+                                  else (),
+                                        
+                                if ( $last!="") then 
+                                    element bf:serialLastIssue{	$last   }
+                                else ()
+                            )
                     else  (:no hyphen or it's ind1=1:)
                         (element bf:serialFirstIssue {
                             fn:normalize-space( $subelement)
@@ -2065,6 +2067,7 @@ declare function mbshared:related-works
         (:for $tagnum in $relationship-source-tags:)
             (:for $type in $relateds/type[@tag=$d/@tag]:)            
         	 (:return:)
+        	 
             if ($marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|772)")]) then (: title is in $a , @ind2 needs attention:)
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|772)")]
                     for $type in $relateds/type[@tag=$d/tag][fn:string(@ind2)=fn:string($d/@ind2)]                
@@ -2074,15 +2077,16 @@ declare function mbshared:related-works
      	          for $type in $relateds/type[@tag=$d/@tag]                		
 			         return mbshared:generate-related-reproduction($d,$type)                                         
 			         
-            else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][marcxml:subfield[@code="t"]] ) then            (:@ind2:)
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")][fn:string(@ind2)="2"][marcxml:subfield[@code="t"]]
-                    for $type in $relateds[@tag=$d/@tag][@ind2=$d/@ind2] 
-                    return mbshared:generate-related-work($d,$type, $workID)
-            else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(780|785)")] ) then            (:@ind2:)
+            else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")][marcxml:subfield[@code="t"]] ) then            (:@ind2:)
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")][marcxml:subfield[@code="t"]]                            
+                    for $type in $relateds/type[@tag=$d/@tag][@ind2=$d/@ind2] 
+                        return mbshared:generate-related-work($d,$type, $workID)
+                
+            (:else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(780|785)")] ) then       
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720|780|785)")][fn:string(@ind2)="2"]
                     for $type in $relateds[@tag=$d/@tag][@ind2=$d/@ind2] 
                     return mbshared:generate-related-work($d,$type, $workID)
-                    
+            :)        
             else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")]) then
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")][marcxml:subfield[@code="a"]]
                     for $type in $relateds/type[@tag=$d/@tag]                     	
