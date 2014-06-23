@@ -1,16 +1,10 @@
 #!/bin/bash
 
-MYDIR=`basename $PWD`
+
+MYDIR=`dirname $0`
 MYPROG=`basename $0`
 
-if [ "$MYDIR" == "bin" ]; 
-then
-    MYDIR=".."
-else
-    MYDIR="."
-fi
-
-source $MYDIR/bin/marc2bibframe.conf
+source "$MYDIR/marc2bibframe.conf"
 
 function usage {
     echo "Usage: $0 [-s serialization] [-u baseuri] [-j path-to-saxon-jar] marcxml-input-path output-path" 1>&2
@@ -64,5 +58,5 @@ OUTPUT=`readlink -f $2`
 
 # Okay - run the conversion
 
-java -cp $SAXON_JAR net.sf.saxon.Query $MYDIR/xbin/saxon.xqy marcxmluri="$MARCPATH" baseuri="$BASEURI" serialization="$SERIALIZATION" 1>$OUTPUT
+java -cp $SAXON_JAR net.sf.saxon.Query $MYDIR/../xbin/saxon.xqy marcxmluri="$MARCPATH" baseuri="$BASEURI" serialization="$SERIALIZATION" 1>$OUTPUT
 
