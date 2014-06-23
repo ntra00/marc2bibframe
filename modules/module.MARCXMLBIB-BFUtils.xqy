@@ -2604,7 +2604,8 @@ declare function marc2bfutils:clean-string(
 { 
 	if (fn:exists($s)) then
 	    let $s:= fn:replace($s,"from old catalog","","i")
-	    let $s := fn:replace($s, "([\[\];]+)", "")
+	    (:nate removed ; from this one. not sure why we should remove ; from teh middle of a field. Consider Choppunctuation if it's needed?:) 
+	    let $s := fn:replace($s, "([\[\]]+)", "")
 	    let $s := fn:replace($s, " :", "")
 	    let $s := fn:normalize-space($s)
 	    (:if it contains unbalanced parens, delete:)
