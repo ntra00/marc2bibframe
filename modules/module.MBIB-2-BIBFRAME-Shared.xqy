@@ -424,7 +424,7 @@ declare function mbshared:generate-instance-from260(
     $workID as xs:string
     ) as element () 
 {
-     let $biblink:= 
+     let $derivedFrom:= 
         element bf:derivedFrom {
         
         (:    attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}:)
@@ -444,7 +444,7 @@ declare function mbshared:generate-instance-from260(
            element bf:relatedInstance {
                 element bf:Instance {
                    $instance-title,
-                    $biblink    ,            
+                    $derivedFrom    ,            
                     (element bf:edition {marc2bfutils:clean-string($e/marcxml:subfield[@code="a"])},        
                         if ($e/marcxml:subfield[@code="b"]) then element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
                         else ()
@@ -506,8 +506,8 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
                 return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
    
 let $issuance:=
-           	if (fn:matches($leader7,"(a|c|d|m)")) 		then "monographic"
-           	else if ($leader7="b") 						then "continuing"
+           	if (fn:matches($leader7,"(a|c|d|m)")) 		            then "monographic"
+           	else if ($leader7="b") 						            then "continuing"
            	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "multipart monograph"
            	else if ($leader7='m' and $leader19='#') 				then "single unit"
            	else if ($leader7='i') 						           	then "integrating resource"
@@ -566,7 +566,7 @@ let $issuance:=
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
                 }, 
-            $biblink,           
+            $derivedFrom,           
             $holdings
         }
 };
@@ -600,8 +600,8 @@ declare function mbshared:generate-880-label
         let $hit-num:=fn:tokenize($d/marcxml:subfield[@code="6"],"-")[2]			
         let $match:=$d/../marcxml:datafield[@tag="880" and fn:starts-with(marcxml:subfield[@code="6"] , fn:concat($this-tag ,"-", $hit-num ))]
 	
-	let $scr := fn:tokenize($match/marcxml:subfield[@code="6"],"/")[2]
-    let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
+	    let $scr := fn:tokenize($match/marcxml:subfield[@code="6"],"/")[2]
+        let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
 
         return 
             if ($node-name="name") then
@@ -642,7 +642,7 @@ declare function mbshared:generate-880-label
                             }
                         }
                     }
-	else if ($node-name="provider") then 
+	       else if ($node-name="provider") then 
                 for $sf in $match/marcxml:subfield[@code="b"]
                 return
                     element bf:providerName {
@@ -653,17 +653,18 @@ declare function mbshared:generate-880-label
                             }
                         }
                     }
-                    else if ($node-name="responsibilityStatement") then
-                         for $sf in $match/marcxml:subfield[@code="c"]
-                             return
-                                 element bf:responsibilityStatement {                      
-                                     attribute xml:lang {$xmllang},   			
-                                     marc2bfutils:clean-string(fn:string($sf))
-                                 }                        
-                        else 
-                            element { fn:concat("bf:",$node-name)} {  attribute xml:lang {$xmllang} ,
-                                fn:string($match/marcxml:subfield[@code="a"])					
-                			}				
+          else if ($node-name="responsibilityStatement") then
+                 for $sf in $match/marcxml:subfield[@code="c"]
+                     return
+                         element bf:responsibilityStatement {                      
+                             attribute xml:lang {$xmllang},   			
+                             marc2bfutils:clean-string(fn:string($sf))
+                         }                        
+        else 
+            element { fn:concat("bf:",$node-name)} {  attribute xml:lang {$xmllang} ,
+                fn:string($match/marcxml:subfield[@code="a"])					
+            }				
+	(:not 880:)
 	else ()
 	
 };
@@ -685,6 +686,9 @@ declare function mbshared:generate-identifiers(
 { 
       let $identifiers:=         
              $mbshared:simple-properties//node[@domain=$domain][@group="identifiers"]
+      let $taglist:= fn:concat("(",fn:string-join(fn:distinct-values($identifiers//@tag),"|"),")")
+                    
+                    
     let $bfIdentifiers := 
          (:for $id in $identifiers[fn:not(@ind1)][@domain=$domain] (\:all but 024 and 028:\)                        	 
                	return
@@ -692,7 +696,7 @@ declare function mbshared:generate-identifiers(
                	(:for each matching marc datafield:)          		
          
          (:invert the for loops for speed: 2014-03-20 :)
-         	for $this-tag in $marcxml/marcxml:datafield
+         	for $this-tag in $marcxml/marcxml:datafield[fn:matches( $taglist,fn:string(@tag) )]
          	return 
                 for $id in $identifiers[fn:not(@ind1)][@domain=$domain][@tag=$this-tag/@tag] (:all but 024 and 028:)                        	 
                	
@@ -2463,7 +2467,7 @@ let $typeOf008:=
 	                    attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/geographicAreas/", $gac) }	                
                    }
             		
-    let $biblink:= 
+    let $derivedFrom:= 
          element bf:derivedFrom {        
         (:    attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}:)
             attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
@@ -2514,7 +2518,7 @@ let $typeOf008:=
             $work-identifiers,                        
             $complex-notes,
             $work-relateds,      
-            $biblink,
+            $derivedFrom,
             $hashable,
             $admin,
            
@@ -3173,11 +3177,11 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
 : 
 :)
 declare function mbshared:generate-simple-property(
-    $d as element(marcxml:datafield)?,
+    $d as element(marcxml:datafield)*,
     $domain as xs:string
     ) 
 {
-
+(:all the nodes in this domain with this datafield's tag, where there's no @ind1 or it matches the datafield's, and no ind2 or it matches the datafields:)
   for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1][ fn:not(@ind2) or @ind2=$d/@ind2]
     let $return-codes:=	if ($node/@sfcodes) then fn:string($node/@sfcodes)	else "a"
     let $startwith:=fn:string($node/@startwith) 
