@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-23-T11:00:00";
+declare variable $mbshared:last-edit :="2014-06-24-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -369,15 +369,14 @@ declare function mbshared:generate-admin-metadata(
     $workID as xs:string
     ) as element (bf:hasAnnotation) 
 {
-    let $biblink:=fn:concat(
-                    (:"http://id.loc.gov/resources/bibs/",:)
+    (:let $biblink:=fn:concat(                    
                     $workID,
                     fn:normalize-space(fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))                   
-                 )
+                 ):)
     let $derivedFrom := 
         element bf:derivedFrom {
             attribute rdf:resource {
-                fn:concat($biblink,    ".marcxml.xml")                 
+                fn:concat($workID,    ".marcxml.xml")                 
             }
         }
       let $edited:= if ($marcxml/marcxml:controlfield[@tag="005"]) then
@@ -401,14 +400,15 @@ let $leader18:=fn:substring($marcxml/marcxml:leader,19,1)
                 else ()
                 )
                 
-    let $annotates:= element bf:annotates {attribute rdf:resource {$biblink}}
+    let $annotates:= element bf:annotates {attribute rdf:resource {$workID}}
         return
             element bf:hasAnnotation {
                 element bf:Annotation {
                $derivedFrom,
                $cataloging-meta,
-               $changed,            
+               $changed,                          
                $annotates
+               
                 }
             }
 };
@@ -426,8 +426,9 @@ declare function mbshared:generate-instance-from260(
 {
      let $biblink:= 
         element bf:derivedFrom {
-        (:attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($d/../marcxml:controlfield[@tag eq "001"]))}:)
-            attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}
+        
+        (:    attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}:)
+            attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
         }
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|247|222|242|210)")]
@@ -2463,9 +2464,9 @@ let $typeOf008:=
                    }
             		
     let $biblink:= 
-        element bf:derivedFrom {
-            (:attribute rdf:resource{fn:concat("http://id.loc.gov/resources/bibs/",fn:string($marcxml/marcxml:controlfield[@tag eq "001"]))}:)
-            attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($marcxml/marcxml:controlfield[@tag eq "001"])))}
+         element bf:derivedFrom {        
+        (:    attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}:)
+            attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
         }
     
     (:let $schemes := 

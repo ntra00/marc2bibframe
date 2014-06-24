@@ -112,8 +112,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
                         xmlns:rdfs          = "http://www.w3.org/2000/01/rdf-schema#"
                         xmlns:bf            = "http://bibframe.org/vocab/"
                         xmlns:madsrdf       = "http://www.loc.gov/mads/rdf/v1#"
-                        xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"                  
-                        xmlns:dcterms       = "http://purl.org/dc/terms/"
+                        xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"                                        
                         >
                 {                          
                     $work               
