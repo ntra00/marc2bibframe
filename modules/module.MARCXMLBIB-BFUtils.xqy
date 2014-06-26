@@ -83,6 +83,20 @@ declare variable $marc2bfutils:resourceTypes := (
         <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Dataset</type>
     </resourceTypes>
     );
+    (:008-20 for MU type of resource:)
+    declare variable $marc2bfutils:musicFormats:=(
+ 
+    <musicFormats>
+        <term cf008-20="a">Full score</term>
+        <term cf008-20="b">Full score, miniature or study size</term>
+        <term cf008-20="c">Accompaniment reduced for keyboard</term>
+        <term cf008-20="d">Voice score with accompaniment omitted</term>
+        <term cf008-20="e">Condensed score or piano-conductor score</term>
+        <term cf008-20="g">Close score</term>
+        <term cf008-20="h">Chorus score</term>
+        <term cf008-20="i">Condensed score</term>
+    </musicFormats>
+    );
     declare variable $marc2bfutils:instanceTypes := (
     <instanceTypes>
         <type leader6="d">Manuscript</type>
@@ -3103,6 +3117,8 @@ declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:
  let $role:= marc2bfutils:chopPunctuation(marc2bfutils:clean-string($role-text),".")
  return fn:string( $marc2bfutils:role-xwalk//term[@roletext=$role]/@rolecode)			
 };
+			
+
 (: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
 adapted from marcslim2modsutils.xsl
 :)
