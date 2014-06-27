@@ -1642,13 +1642,13 @@ let $d852:=
             for $s in $d/marcxml:subfield[@code="b"] return element bf:subLocation{fn:string($s)},
             
             if ($d/marcxml:subfield[fn:matches(@code,"(k|h|l|i|m|t)")]) then 
-                    element bf:shelfMark{fn:string-join($d/marcxml:subfield[fn:matches(@code,"(h|i|j|k|l|m)")]," ")}
+                    element bf:shelfMark{fn:string-join($d/marcxml:subfield[fn:matches(@code,"(k|h|i|l|m|t)")]," ")}
             else (),
                     mbshared:handle-856u($d) 		      ,
             
             for $s in $d/marcxml:subfield[@code="z"] return element  bf:copyNote{fn:string($s)},
             for $s in $d/../marcxml:datafield[fn:matches(@tag,"(051|061|071)")]
-                return element bf:copyNote {fn:string-join($s/marcxml:subfield[fn:matches(@code,"(a|b|c)")]," ") }
+                return element bf:copyNote {fn:string($s/marcxml:subfield[@code="c"]) }
             )
     else 
     ()
@@ -2243,52 +2243,8 @@ let $typeOf008:=
     	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(243|245|247)")]
     	       return mbshared:get-title($t, "work")
             }</titles>
-        
-    let $hashableTitle := 
-        let $uniform := ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
-        let $primary := $marcxml/marcxml:datafield[@tag eq "245"]
-        let $t := 
-            if ($uniform/marcxml:subfield[fn:not(fn:matches(@code,"(g|h|k|l|m|n|o|p|r|s|0|6|8)"))]) then
-                (: We have a uniform title that contains /only/ a title and a date of work. :)
-                fn:string-join($uniform/marcxml:subfield, " ")
-            else
-                (:  Otherwise, let's just use the 245 for now.  For example, 
-                    we cannot create an uber work for Leaves of Grass. Selections.
-                :)
-                let $tstr := fn:string-join($primary/marcxml:subfield[fn:matches(@code, "a|b")], " ")
-                let $tstr := 
-                    if (fn:number($primary/@ind2) gt 0 ) then
-                        (: Yep, there's a nonfiling marker. :)
-                        fn:substring($tstr, fn:number($primary/@ind2)+1)
-                    else
-                        $tstr
-                return $tstr
-        let $t := marc2bfutils:clean-title-string($t)    
-        return $t
-    let $hashableNames := 
-        (
-            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " ")
-            return marc2bfutils:clean-name-string($n),
-            
-            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " ")
-            return marc2bfutils:clean-name-string($n)
-        )
-    let $hashableNames := 
-        for $n in $hashableNames
-        order by $n
-        return $n
-    let $hashableNames := fn:string-join($hashableNames, " ")
-    let $hashableLang := fn:normalize-space(fn:substring(fn:string($marcxml/marcxml:controlfield[@tag='008']), 36, 3))
-    let $hashableTypes := fn:concat($mainType, fn:string-join($types, ""))
+    let $hashable := mbshared:generate-hashable($marcxml, $mainType, $types)     
     
-    let $hashableStr := fn:concat($hashableNames, " / ", $hashableTitle, " / ", $hashableLang, " / ", $hashableTypes)
-    let $hashableStr := fn:replace($hashableStr, "!|\||@|#|\$|%|\^|\*|\(|\)|\{|\}|\[|\]|:|;|'|&amp;quot;|&amp;|<|>|,|\.|\?|~|`|\+|=|_|\-|/|\\| ", "")
-    let $hashableStr := fn:lower-case($hashableStr)
-    let $hashable := 
-        element bf:authorizedAccessPoint {
-            attribute xml:lang { "x-bf-hashable"},
-            $hashableStr
-        }
     (: Let's create an authoritativeLabel for this :)
     let $aLabel := 
         if ($uniformTitle[bf:workTitle]) then
@@ -2532,6 +2488,68 @@ let $typeOf008:=
              
         }
         
+};
+
+(:~
+:   This function generates a hashable version of the work, using title, name etc.
+:
+:   It generates a bf:authorizedAccessPoint xml:lang="x-bf-hashable" private language
+: 
+
+:   @param  $marcxml        element is the marcxml:datafield  
+:   @return bf:authorizedAccessPoint
+:)
+declare function mbshared:generate-hashable(
+    $marcxml as element(marcxml:record),
+    $mainType as xs:string,
+    $types as item()*
+    ) as element( bf:authorizedAccessPoint)
+{
+let $hashableTitle := 
+        let $uniform := ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
+        let $primary := $marcxml/marcxml:datafield[@tag eq "245"]
+        let $t := 
+            if ($uniform/marcxml:subfield[fn:not(fn:matches(@code,"(g|h|k|l|m|n|o|p|r|s|0|6|8)"))]) then
+                (: We have a uniform title that contains /only/ a title and a date of work. :)
+                fn:string-join($uniform/marcxml:subfield, " ")
+            else
+                (:  Otherwise, let's just use the 245 for now.  For example, 
+                    we cannot create an uber work for Leaves of Grass. Selections.
+                :)
+                let $tstr := fn:string-join($primary/marcxml:subfield[fn:matches(@code, "a|b")], " ")
+                let $tstr := 
+                    if (fn:number($primary/@ind2) gt 0 ) then
+                        (: Yep, there's a nonfiling marker. :)
+                        fn:substring($tstr, fn:number($primary/@ind2)+1)
+                    else
+                        $tstr
+                return $tstr
+        let $t := marc2bfutils:clean-title-string($t)    
+        return $t
+    let $hashableNames := 
+        (
+            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " ")
+            return marc2bfutils:clean-name-string($n),
+            
+            let $n := fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " ")
+            return marc2bfutils:clean-name-string($n)
+        )
+    let $hashableNames := 
+        for $n in $hashableNames
+        order by $n
+        return $n
+    let $hashableNames := fn:string-join($hashableNames, " ")
+    let $hashableLang := fn:normalize-space(fn:substring(fn:string($marcxml/marcxml:controlfield[@tag='008']), 36, 3))
+    let $hashableTypes := fn:concat($mainType, fn:string-join($types, ""))
+    
+    let $hashableStr := fn:concat($hashableNames, " / ", $hashableTitle, " / ", $hashableLang, " / ", $hashableTypes)
+    let $hashableStr := fn:replace($hashableStr, "!|\||@|#|\$|%|\^|\*|\(|\)|\{|\}|\[|\]|:|;|'|&amp;quot;|&amp;|<|>|,|\.|\?|~|`|\+|=|_|\-|/|\\| ", "")
+    let $hashableStr := fn:lower-case($hashableStr)
+return 
+        element bf:authorizedAccessPoint {
+            attribute xml:lang { "x-bf-hashable"},
+            $hashableStr
+        }
 };
 (:~
 :   This function generates a subject.
