@@ -2269,15 +2269,15 @@ let $typeOf008:=
     let $aLabelsWork880 := $titles/bf:authorizedAccessPoint
     let $aLabelsWork880 :=
         for $al in $aLabelsWork880
-        let $lang := $al/@xml:lang 
-        let $n := $names//bf:authorizedAccessPoint[@xml:lang=$lang][1]
-        let $combinedLabel := fn:normalize-space(fn:concat(fn:string($n), " ", fn:string($al)))
-        where $al/@xml:lang
-        return
-            element bf:authorizedAccessPoint {
-                    $al/@xml:lang,                   
-                    $combinedLabel
-                }
+           let $lang := $al/@xml:lang 
+           let $n := $names//bf:authorizedAccessPoint[@xml:lang=$lang][1]
+           let $combinedLabel := fn:normalize-space(fn:concat(fn:string($n), " ", fn:string($al)))
+           where $al/@xml:lang
+           return
+               element bf:authorizedAccessPoint {
+                       $al/@xml:lang,                   
+                       $combinedLabel
+                   }
    
    let $events:= for $d in $marcxml/marcxml:datafield[@tag="033"]
                     return mbshared:generate-event($d)
@@ -2294,7 +2294,7 @@ let $typeOf008:=
    	    for $diss in $marcxml/marcxml:datafield[@tag="502"]
       		return mbshared:generate-dissertation($diss)
     let $audience := fn:substring($cf008, 23, 1)
-    let $audience := 
+    let $audience := (: untorture this!   :)
         if ($audience ne "" and fn:matches($typeOf008, "(BK|CF|MU|V)")) then
             let $aud := fn:string($marc2bfutils:targetAudiences/type[@cf008-22 eq $audience]) 
             return
@@ -2319,10 +2319,10 @@ let $typeOf008:=
         else
             ()
             
-     let $aud521:= if ($marcxml/marcxml:datafield[@tag eq "521"]) then 
+     let $aud521:= 
      			for $tag in $marcxml/marcxml:datafield[@tag eq "521"]
      				return mbshared:get-521audience($tag) 
-     			else ()
+     			
      
     (: Don't be surprised when genre turns into "form" :)
     let $genre := fn:substring($cf008, 24, 1)
@@ -2338,9 +2338,9 @@ let $typeOf008:=
             ()
                         
       let $work3xx := mbshared:generate-physdesc($marcxml,"work") (:336:)
-      let $cartography:=  for $d in $marcxml/marcxml:datafield[@tag="255"] 
-      				          return
-      				          mbshared:generate-simple-property($d,"cartography")      				          
+      let $cartography:=  
+                for $d in $marcxml/marcxml:datafield[@tag="255"] 
+      			   return mbshared:generate-simple-property($d,"cartography")      				          
       				          
 
     let $abstract:= (:contentsNote:)
@@ -2359,65 +2359,17 @@ let $typeOf008:=
  	let $subjects:= 		 
  		for $d in $marcxml/marcxml:datafield[fn:matches(fn:string-join($marc2bfutils:subject-types//@tag," "),fn:string(@tag))]		
         			return mbshared:get-subject($d)
- 	(:let $work-notes := mbshared:generate-notes($marcxml,"work"):)
- 	
+ 	 	
  	let $findaids:= for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"555")]
  	                  return if ($d/marcxml:subfield[@code="u"]) then 	                      
  	                              mbshared:generate-finding-aid-work($d)
  	                              else
  	                              mbshared:generate-simple-property($d,"findingaid")
- 	let $work-relateds := mbshared:related-works($marcxml,$workID,"work")
- 	(:audio ex:12241297:)
+ 	let $work-relateds := mbshared:related-works($marcxml,$workID,"work") 	
  	
- 	let $complex-notes:= 
- 		for $marc-note in $marcxml/marcxml:datafield[@tag eq "505"][@ind2="0"]
- 			let $sub-codes:= fn:distinct-values($marc-note/marcxml:subfield[@code!="t"]/@code)
-			let $return-codes := "gru"			
-			let $set:=
-				for $title in $marc-note/marcxml:subfield[@code="t"]
-				let $t := fn:replace(fn:string($title), " /", "")
-              
-                let $details := 
-                    element details {
-                    (://for the set of subfields after this $t, up until there's a new $t
-                    problem is, $g precedes $t? :)
-                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
-                        let $elname:=
-                            if ($subfield/@code="g") then "bf:note" 
-                            else if ($subfield/@code="r") then "bf:creator" 
-                            else if ($subfield/@code="u") then "rdf:resource" 
-                            else "bf:note" 
-                        let $sfdata := fn:replace(fn:string($subfield), " --", "")
-                        return
-                            if ($elname eq "rdf:resource") then
-                                element {$elname} { attribute rdf:resource {$sfdata} }
-                            else if ($elname eq "bf:creator") then
-                                if ( fn:contains($sfdata, ";") ) then
-                                    (: we have multiples :)
-                                    for $c in fn:tokenize($sfdata, ";")
-                                    return mbshared:get-name-fromSOR($c,"bf:creator")
-                                else
-                                    mbshared:get-name-fromSOR($sfdata,"bf:creator")
-                            else
-                                element {$elname} {$sfdata}
-                    }
-                return 
-                    element part {
-                      (:  element bf:authorizedAccessPoint {
-                            fn:string-join( ($details/bf:creator[1]/bf:*[1]/bf:label, $t), ". " )
-                        },:)
-                        element bf:title {$t},                                   
-                        $details/*                                 
-                    }
-		return						
-                for $item in $set
-                return
-	                    element bf:hasPart {   
-	                        element bf:Work {	                            
-	                            $item/*
-	                        }																								
-		     }
-						
+ 	let $complex-notes:=              
+ 		 for $d in $marcxml/marcxml:datafield[@tag eq "505"][@ind2="0"]
+ 		     return mbshared:generate-complex-notes($d)
  	let $gacs:= 
             for $d in $marcxml/marcxml:datafield[@tag = "043"]/marcxml:subfield[@code="a"]
             (:filter out trailing hyphens:)
@@ -2428,15 +2380,10 @@ let $typeOf008:=
                    }
             		
     let $derivedFrom:= 
-         element bf:derivedFrom {        
-        (:    attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}:)
+         element bf:derivedFrom {           
             attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
         }
-    
-    (:let $schemes := 
-            element madsrdf:isMemberOfMADSScheme {
-                attribute rdf:resource {"http://id.loc.gov/resources/works"}
-            }:)
+   
  	let $work-simples:=
  	  for $d in $marcxml/marcxml:datafield
  	      return mbshared:generate-simple-property($d,"work")
@@ -2489,7 +2436,62 @@ let $typeOf008:=
         }
         
 };
+(:~
+:   This function generates  constituent (hasPart) works from 505
+: 
 
+:   @param  $d        element is the marcxml:datafield  505
+:   @return bf:hasPart*
+:)
+declare function mbshared:generate-complex-notes( 
+  $d as element(marcxml:datafield)   
+    ) as element()*
+{
+
+ 			let $sub-codes:= fn:distinct-values($d/marcxml:subfield[@code!="t"]/@code)
+			let $return-codes := "gru"			
+			let $set:=
+				for $title in $d/marcxml:subfield[@code="t"]
+				let $t := fn:replace(fn:string($title), " /", "")
+              
+                let $details := 
+                    element details {
+                    (://for the set of subfields after this $t, up until there's a new $t
+                    problem is, $g precedes $t? :)
+                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
+                        let $elname:=
+                            if ($subfield/@code="g") then "bf:note" 
+                            else if ($subfield/@code="r") then "bf:creator" 
+                            else if ($subfield/@code="u") then "rdf:resource" 
+                            else "bf:note" 
+                        let $sfdata := fn:replace(fn:string($subfield), " --", "")
+                        return
+                            if ($elname eq "rdf:resource") then
+                                element {$elname} { attribute rdf:resource {$sfdata} }
+                            else if ($elname eq "bf:creator") then
+                                if ( fn:contains($sfdata, ";") ) then
+                                    (: we have multiples :)
+                                    for $c in fn:tokenize($sfdata, ";")
+                                    return mbshared:get-name-fromSOR($c,"bf:creator")
+                                else
+                                    mbshared:get-name-fromSOR($sfdata,"bf:creator")
+                            else
+                                element {$elname} {$sfdata}
+                    }
+                return 
+                    element part {                   
+                        element bf:title {$t},                                   
+                        $details/*                                 
+                    }
+		return						
+                for $item in $set
+                return
+	                    element bf:hasPart {   
+	                        element bf:Work {	                            
+	                            $item/*
+	                        }																								
+		     }
+	};					
 (:~
 :   This function generates a hashable version of the work, using title, name etc.
 :
