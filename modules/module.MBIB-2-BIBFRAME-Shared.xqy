@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-24-T11:00:00";
+declare variable $mbshared:last-edit :="2014-06-27-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -76,7 +76,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="ean"					 			tag="024" sfcodes="a,z,d" ind1="3" group="identifiers" comment="(sep by -)"	>International Article Identifier (EAN)</node>
          <node domain="instance" 	property="sici"				   				tag="024" sfcodes="a"   ind1="4" group="identifiers">Serial Item and Contribution Identifier</node>
          <node domain="instance" 	property="$2"					   			tag="024" sfcodes="a"   ind1="7" group="identifiers">contents of $2</node> 
-           <node domain="instance" 	property="identifier"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>
+         <node domain="instance" 	property="identifier"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		       group="identifiers"   >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		       group="identifiers"   >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a"		       group="identifiers" >Standard Technical Report Number</node>
@@ -114,6 +114,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
          
          <node domain="title"		property="titleValue"					tag="130" sfcodes="a"          >title itself</node>
+         <node domain="title"		property="titleValue"					tag="730" sfcodes="a"          >title itself</node>
          <node domain="title"		property="titleValue"					tag="240" sfcodes="a"          >title itself</node>
          <node domain="title"		property="partNumber"					tag="130" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="240" sfcodes="n"          >part number</node>
@@ -146,11 +147,12 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="o"      >arrangement</node>
          <node domain="work"		property="musicVersion"			     tag="130" sfcodes="s"      >version</node>
          <node domain="work"		property="musicVersion"			     tag="240" sfcodes="s"      >version</node>
-         <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
+         <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="abc"         >title Statement</node>
          
          <node domain="instance"	property="responsibilityStatement"		tag="245" sfcodes="c"         >responsibility Statement</node>
          <node domain="work"	    property="treatySignator"		    	tag="710" sfcodes="g"         >treaty Signator</node>
          <node domain="instance"	property="edition"					      tag="250"        sfcodes="a"	             >Edition</node>
+         
          <node domain="instance"	property="editionResponsibility"	      tag="250" sfcodes="b"        >Edition Responsibility</node>
          <node domain="cartography"	property="cartographicScale"			  tag="255" sfcodes="a"		   >cartographicScale</node>
          <node domain="cartography"	property="cartographicScale"			  tag="034" sfcodes=""		   >cartographicScale</node>
@@ -238,7 +240,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="immediateAcquisition"		tag="541" sfcodes="cad"					>Immediate Source of Acquisition Note</node>
          <node domain="instance"		property="languageNote"					  tag="546" sfcodes="3a"				>Language Note</node>
          <node domain="instance"		property="notation"					      tag="546" sfcodes="b"				    >Language Notation(script)</node>
-         
+         <node domain="related" 	property="edition"					      tag="534"        sfcodes="b"	             >Edition</node>
+         <node domain="related" 	property="note"					      tag="534"        sfcodes="n"	             >Note</node>
   </properties>
 	)	;
 
@@ -1962,7 +1965,7 @@ declare function mbshared:generate-related-work
         else if  (fn:matches($d/@tag,"(440|490|830)")) then
             "(a|n|p|v)"
         else if (fn:matches($d/@tag,"(534)")) then
-            "(t|b|f)"
+            "(t|b|f|k)"
         else if (fn:matches($d/@tag,"(510)")) then
             "(a|b|c)"
         else
@@ -1980,7 +1983,7 @@ declare function mbshared:generate-related-work
         else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|490|800|810|811|510|630|730|740|830)")) ) then
                 mbshared:get-name($d)
         else ()
-        
+    let $related-props:=mbshared:generate-simple-property($d,"related")
         
     let $aLabel := 
         fn:concat(
@@ -2028,7 +2031,7 @@ declare function mbshared:generate-related-work
 	                               element bf:Instance{ 
 	                               element bf:label {$title},
 	                                   element bf:title {$title},
-	                                   element bf:issn {attribute rdf:resource {fn:concat("http://issn.example.org/", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
+	                                   element bf:issn {attribute rdf:resource {fn:concat("urn:issn:", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
 	                              }
 	                       }
 		               else ()		               
@@ -2036,6 +2039,7 @@ declare function mbshared:generate-related-work
      	       (),		            
             mbshared:generate-titleNonsort($d,$title, "bf:title"),            
             $name,
+            $related-props,
             $inverse
 			}
 		}
@@ -2139,7 +2143,7 @@ declare function mbshared:related-works
             
             else if ($marcxml/marcxml:datafield[@tag="534"][marcxml:subfield[@code="f"]]) then 
                 for $type in $relateds/type[@tag=$marcxml/marcxml:datafield/@tag]
-                    for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))][marcxml:subfield[@code="f"]](:	series:)
+                    for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]
 			  	  return mbshared:generate-related-work($d,$type, $workID)            
             else
                 for $type in $relateds/type[@tag=$marcxml/marcxml:datafield/@tag]
@@ -3193,7 +3197,7 @@ declare function mbshared:generate-simple-property(
                         return   element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
                     else
                         for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
-                            return element wrap{fn:string($s)}
+                            return element wrap{ marc2bfutils:clean-string(fn:string($s))}
                  
        return
            for $i in $text
@@ -3315,49 +3319,7 @@ declare function mbshared:get-uniformTitle(
                         }
                         
     else ()
-    let $elementList := 
-        element bf:hasAuthority {
-          element madsrdf:Authority {
-            element madsrdf:authoritativeLabel{ fn:string($aLabel)},
-            element madsrdf:elementList {
-        	   attribute rdf:parseType {"Collection"},
-                for $s in $d/marcxml:subfield
-                return
-                    if ($s/@code eq "a") then
-                         element madsrdf:MainTitleElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-                    else if ($s/@code eq "p") then
-                         element madsrdf:PartNameElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-                    else if ($s/@code eq "l") then
-                         element madsrdf:LanguageElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-                    else if ($s/@code eq "s") then
-                         element madsrdf:TitleElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-                    else if ($s/@code eq "k") then
-                         element madsrdf:GenreFormElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-                    else if ($s/@code eq "d") then
-                         element madsrdf:TemporalElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-                    else if ($s/@code eq "f") then
-                         element madsrdf:TemporalElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-                    else
-                        element madsrdf:TitleElement {
-                            element madsrdf:elementValue {marc2bfutils:clean-title-string(fn:string($s))}
-                         }
-            }
-        }
-        }
+  
     return
     
         element bf:Work {
