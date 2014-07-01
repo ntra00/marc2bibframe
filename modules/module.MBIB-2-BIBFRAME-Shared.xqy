@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-07-01-T13:00:00";
+declare variable $mbshared:last-edit :="2014-07-01-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -1099,12 +1099,23 @@ declare function mbshared:generate-physdesc
                         } 
                      else  (),  
               (:---337, 338 end ---:)
+             (: hyphens may also be inside the range! ex:
+                        (Mar. 21-27, 1996)- no. 30(Apr. 4-9, 1997) :)
               for $issuedate in $marcxml/marcxml:datafield[@tag="362"]
                 let $subelement:=fn:string($issuedate/marcxml:subfield[@code="a"])
                 return
                     if (   $issuedate/@ind1="0" and fn:contains($subelement,"-") ) then
-                        let $first:=fn:normalize-space( fn:substring-before($subelement,"-"))
-                        let $last:=fn:normalize-space( fn:substring-after($subelement,"-"))
+                        let $first:=
+                            if ( fn:matches($subelement,"(.+\(.+-.+)-(.+\(.+\).+)") ) then
+                                    fn:replace($subelement,"(.+\(.+-.+)-(.+\(.+\).+)","$1")
+                               else if (fn:contains($subelement,"-")) then       
+                                    fn:normalize-space( fn:substring-before($subelement,"-"))
+                               else $subelement
+                        let $last:=  if ( fn:matches($subelement,"(.+\(.+-.+)-(.+\(.+\).+)")) then
+                                        fn:replace($subelement,"(.+\(.+-.+)-(.+\(.+\).+)","$2")
+                               else if (fn:contains($subelement,"-")) then          
+                                    fn:normalize-space( fn:substring-after($subelement,"-"))
+                               else ()
                         return (  
                                 if ($first!="") then
                                     element bf:serialFirstIssue {$first   }
