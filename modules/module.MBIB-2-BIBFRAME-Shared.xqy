@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-06-27-T16:00:00";
+declare variable $mbshared:last-edit :="2014-07-01-T13:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -58,7 +58,7 @@ declare variable $mbshared:transform-rules :=(
 <!--<rule status="on" id="7" label="856" category="instance-splitting">New instances on multiple856s that are resources (ind2=0)</rule>???-->
 </rules>
 );
-declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|520|522|524|525|541|546|555)");
+declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|522|524|525|541|546|555)");
 (:"(500|501|502|504|505|506|507|508|510|511|513|514|515|516|518|520|521|522|524|525|526|530|533|534|535|536|538|540|541|542|544|545|546|547|550|552|555|556|562|563|565|567|580|581|583|584|585|586|588|59X)":)
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
@@ -76,7 +76,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="ean"					 			tag="024" sfcodes="a,z,d" ind1="3" group="identifiers" comment="(sep by -)"	>International Article Identifier (EAN)</node>
          <node domain="instance" 	property="sici"				   				tag="024" sfcodes="a"   ind1="4" group="identifiers">Serial Item and Contribution Identifier</node>
          <node domain="instance" 	property="$2"					   			tag="024" sfcodes="a"   ind1="7" group="identifiers">contents of $2</node> 
-         <node domain="instance" 	property="identifier"					   			tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>
+         <node domain="instance" 	property="identifier"					   	tag="024" sfcodes="a"   ind1="8" group="identifiers">unspecified</node>
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		       group="identifiers"   >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		       group="identifiers"   >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a"		       group="identifiers" >Standard Technical Report Number</node>
@@ -2553,9 +2553,7 @@ let $hashableTitle :=
 return 
         element bf:authorizedAccessPoint {
             attribute xml:lang { "x-bf-hashable"},
-            $hashableStr,
-            element bf:names{$hashableNames},
-            element bf:titles{$hashableTitle}
+            $hashableStr
         }
 };
 (:~
