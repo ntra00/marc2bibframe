@@ -2812,7 +2812,8 @@ declare function mbshared:get-name(
 {
     let $relatorCode := 
         if ($d/marcxml:subfield[@code = "4"]!="") then
-            marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1]))
+            (:marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1])):)
+            marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1])),".")
         else 
             marc2bfutils:generate-role-code(fn:string($d/marcxml:subfield[@code = "e"][1]))
       
