@@ -2506,7 +2506,26 @@ declare function mbshared:generate-complex-notes(
 (:~
 :   This function generates a hashable version of the work, using title, name etc.
 :
-:   It generates a bf:authorizedAccessPoint xml:lang="x-bf-hashable" private language
+:   It generates a bf:authorizedAccessPoint xml:lang="x-bf-hashable" private language.
+:
+:   The "hashable" string is an attempt to create an identifier of sorts to help 
+:   establish "sameness" between works (this may be extended to instances in the future).
+:   While there are other ways to do this (load the data into a search system and do
+:   specific field-based queries), this is meant as a way to test out "matching" ideas without 
+:   the overhead of loading into a special system.
+:
+:   The algorithm is as follows:
+:       1) Look for a title - take the 130 or 240 if it exists, otherwise use the 245.
+:       2) Use only select subfields from 130, 240, or 245.  For example, only subfields a and b
+:           used when evaluating the 245.
+:       3) Grab all the names from the 1XX field and the 7XX fields.  Only use a given 7XX field if 
+:           it represents a name (name/title 7XX fields, therefore, are not included)
+:       4) Sort all the names alphabetically to help control for variation in how the data were 
+:           originally entered.
+:       5) Include the langauge from the 008.
+:       6) Include the type of MARC resource (Text, Audio, etc)
+:       7) Concatenate and normalize.  Normalization includes forcing the string to be all lower 
+:           case, removing spaces, and removing all special characters.
 : 
 
 :   @param  $marcxml        element is the marcxml:datafield  
