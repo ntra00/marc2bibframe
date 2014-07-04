@@ -67,7 +67,10 @@ declare variable $marcxmluri as xs:string external;
 :)
 declare variable $serialization as xs:string external;
 
-let $marcxml := fn:doc($marcxmluri)//marcxml:record
+let $marcxml := if ($marcxmluri) then
+                    fn:doc($marcxmluri)//marcxml:record
+                else
+                    //marcxml:record
 
 let $resources :=
     for $r in $marcxml
