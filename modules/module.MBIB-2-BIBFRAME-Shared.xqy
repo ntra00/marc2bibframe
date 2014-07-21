@@ -2526,7 +2526,6 @@ declare function mbshared:generate-complex-notes(
                             let $lang := fn:substring(fn:string($d/ancestor::marcxml:record/marcxml:controlfield[@tag="008"]), 36, 3)     
                             let $scr := fn:tokenize($vernacular/marcxml:subfield[@code="6"],"/")[2]
                             let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
-
                            
                             return element bf:title {if ($xmllang) then attribute xml:lang{$lang} else (),
                                         fn:string($vernacular/marcxml:subfield[@code="t"][fn:position()=$x])
@@ -2536,10 +2535,10 @@ declare function mbshared:generate-complex-notes(
                         element details {
                         (://for the set of subfields after this $t, up until there's a new $t
                         problem is, $g precedes $t? 
-                        for each title t, get the immediate preceding $g, if it's there, and the following $r if it's there, and $u ??.
+                        for each title t, get the immediate preceding $gs, if there, and the following $rs if it's there, and $u ??.
                         :)
                             for $subfield in ($title/preceding-sibling::marcxml:subfield[@code="g"][following-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)] 
-                                | $title/following-sibling::marcxml:subfield[@code="r"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)])
+                                | $title/following-sibling::marcxml:subfield[@code="r" or @code="u"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)])
                                         (: the following is wrong, I think: assumes $t is first:
                                             for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]
                                         :)                
