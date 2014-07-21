@@ -58,8 +58,16 @@ declare variable $mbshared:transform-rules :=(
 <!--<rule status="on" id="7" label="856" category="instance-splitting">New instances on multiple856s that are resources (ind2=0)</rule>???-->
 </rules>
 );
-declare variable $mbshared:named-notes:=("(500|502|505|506|507|508|511|513|518|522|524|525|541|546|555)");
+declare variable $mbshared:named-notes:=("(502|505|506|507|508|511|513|518|522|524|525|541|546|555)");
 (:"(500|501|502|504|505|506|507|508|510|511|513|514|515|516|518|520|521|522|524|525|526|530|533|534|535|536|538|540|541|542|544|545|546|547|550|552|555|556|562|563|565|567|580|581|583|584|585|586|588|59X)":)
+(: this var plus all the simple-properties nodes are used to generate standalone 880s:)
+declare variable $mbshared:addl-880-nodes:= (
+	<properties>
+	 <node domain="work" 		property="note"			    	    tag="500" sfcodes="a">General Note</node>
+	 <node domain="instance" 		property="note"			    	    tag="500" sfcodes="a">General Note</node>
+	 <node domain="work" 		property="note"			    	    tag="505" sfcodes="t">complex note work title</node>
+	</properties>
+);
 
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $mbshared:simple-properties:= (
@@ -161,7 +169,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="cartography"	property="cartographicAscensionAndDeclination"		tag="255" sfcodes="d"		   >cartographicAscensionAndDeclination</node>
          <node domain="cartography"	property="cartographicEquinox"			   tag="255" sfcodes="e"		   >cartographicEquinox</node>
          <node domain="cartography"	property="cartographicOuterGRing"		   tag="255" sfcodes="f"		   >cartographicOuterGRing</node>
-         <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		   >CartographicExclusionGRing</node>
+         <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		  >CartographicExclusionGRing</node>
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
          
@@ -213,7 +221,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="legalDate"					tag="130" sfcodes="d"						>Legal Date</node>         
          <node domain="work"				property="legalDate"					tag="730" sfcodes="d"						>Legal Date</node>
          <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Legal Date</node>
-         <node domain="work"				property="note"					        tag="500" sfcodes="3a"					>General Note</node>
+         <!--<node domain="work"				property="note"					        tag="500" sfcodes="3a"					>General Note</node>-->
          <node domain="work"				property="dissertationNote"				tag="502" sfcodes="a"		                >Dissertation Note</node>
          <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
          <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>        
@@ -224,7 +232,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"			    property="note"					    tag="518" sfcodes="a"						>Event Date</node>
          <node domain="work"				property="geographicCoverageNote"	tag="522"				                >Geographic Coverage Note</node>
          <node domain="work"				property="supplementaryContentNote"	tag="525" sfcodes="a"					>Supplement Note</node>
-<node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>                  
+         <node domain="findingAid"			property="findingAidNote"			tag="555"	 sfcodes="3abc"                 >Cumulative Index/Finding Aids Note </node>                  
          <node domain="helditem"			property="custodialHistory"			tag="561"	 sfcodes="a"                 >Copy specific custodial history</node>
          <node domain="work"		        property="awardNote"			    		tag="586" sfcodes="3a"					>Awards Note</node>
          <node domain="instance"    	property="copyrightDate"		  tag="264" sfcodes="c" ind2="4">Copyright Date</node>
@@ -242,6 +250,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="notation"					      tag="546" sfcodes="b"				    >Language Notation(script)</node>
          <node domain="related" 	property="edition"					      tag="534"        sfcodes="b"	             >Edition</node>
          <node domain="related" 	property="note"					      tag="534"        sfcodes="n"	             >Note</node>
+         <!--<node domain="work"				property="note"				tag="500" sfcodes="a"			     	> test note </node>-->
   </properties>
 	)	;
 
@@ -562,7 +571,7 @@ let $issuance:=
           $issuance,
           $instance-relateds,
             $instance-simples,
-            $general-notes,
+            $general-notes,            
             $i504,             
             $instance-identifiers,               
             $physdesc,
@@ -574,6 +583,47 @@ let $issuance:=
         }
 };
 
+(:~
+:   This is the function generates other language labels from non-parallel 880s
+:	880 with $6 containing 00:  [tag]-00
+:   @param  $marcxml        element is the whole record tag *
+:   @return bf:* as element()
+:	
+:)
+declare function mbshared:generate-standalone-880
+    (
+   $marcxml as element(marcxml:record),
+    $domain as xs:string    
+    ) as element ()*
+{
+
+if ($marcxml/marcxml:datafield[@tag='880'][fn:matches(marcxml:subfield[@code="6"],"^[0-9]{3}-00")] ) then
+    let $nodes:=         ($mbshared:simple-properties//node[@domain=$domain],
+                            $mbshared:addl-880-nodes//node[@domain=$domain])
+    let $taglist := fn:concat("(",fn:string-join(fn:distinct-values($nodes//@tag),"|"),")")
+    let $lang := fn:substring(fn:string($marcxml/marcxml:controlfield[@tag="008"]), 36, 3)     
+    let $scr := fn:tokenize($marcxml/marcxml:subfield[@code="6"],"/")[2]
+    let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
+
+    return
+        
+        for $d in $marcxml/marcxml:datafield[@tag='880'][fn:matches(marcxml:subfield[@code="6"],"^[0-9]{3}-00$")]            
+            let $tag-to-convert:= fn:substring($d/marcxml:subfield[@code="6"],1,3)
+            
+            for $node880 in $nodes[fn:string(@tag)= $tag-to-convert]
+                let $return-codes:=
+ 			            if ($node880/@sfcodes) then fn:string($node880/@sfcodes) 		else "a"
+                        
+                return element {fn:concat("bf:",fn:string($node880/@property))} {
+                                    if ($xmllang) then         attribute xml:lang {$xmllang} else (),                    
+                                    fn:string($d/marcxml:subfield[fn:matches(@code,$return-codes)]),
+                                    fn:string($d/marcxml:subfield[@code="a"])
+                                } 
+        
+else 
+        ()
+
+};
 
 (:~
 :   This is the function generates other language authlabel or label from associated 880s
@@ -607,6 +657,7 @@ declare function mbshared:generate-880-label
         let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
 
         return 
+       
             if ($node-name="name") then
                 element bf:authorizedAccessPoint {
                     attribute xml:lang {$xmllang},
@@ -669,6 +720,8 @@ declare function mbshared:generate-880-label
             }				
 	(:not 880:)
 	else ()
+
+
 	
 };
 
@@ -1745,7 +1798,7 @@ declare function mbshared:generate-500notes(
 for $marc-note in $marcxml/marcxml:datafield[fn:starts-with(@tag, "5") and fn:not(fn:matches(@tag,$mbshared:named-notes))]
         return if ($marc-note[@tag !='504']) then
  			        let $note-text:= fn:string-join($marc-note/marcxml:subfield[@code="3" or @code="a"]," ")
-			         return (element bf:note {$note-text},
+			         return (element bf:note {$note-text},			                
 			                 mbshared:generate-880-label($marc-note,"note")
 			                 )
                 else ()
@@ -2364,7 +2417,7 @@ let $typeOf008:=
             else ()
     
 	let $work-identifiers := mbshared:generate-identifiers($marcxml,"work")
-	
+	   let $general-notes := mbshared:generate-500notes($marcxml)
 	let $work-classes := mbshared:generate-classification($marcxml,"work")
 	
  	let $subjects:= 		 
@@ -2381,6 +2434,8 @@ let $typeOf008:=
  	let $complex-notes:=              
  		 for $d in $marcxml/marcxml:datafield[@tag eq "505"][@ind2="0"]
  		     return mbshared:generate-complex-notes($d)
+ 	let $standalone-880s:=mbshared:generate-standalone-880( $marcxml ,"work")    
+    
  	let $gacs:= 
             for $d in $marcxml/marcxml:datafield[@tag = "043"]/marcxml:subfield[@code="a"]
             (:filter out trailing hyphens:)
@@ -2429,12 +2484,14 @@ let $typeOf008:=
             $abstract-annotation,
             $audience,         
             $genre,       
+            $general-notes,
             $cartography,
             $subjects,
             $gacs,            
             $work-classes,            
             $work-identifiers,                        
             $complex-notes,
+            $standalone-880s,
             $work-relateds,      
             $derivedFrom,
             $hashable,
@@ -3528,12 +3585,12 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
 					}
                  ,
                      
-        for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
+        (:for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
                 	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055)"))) then
                 			fn:string($cl)
-                		else (:050 has non-class stuff in it: :)
+                		else 
                   			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
                   			let $subclassCode := fn:replace($strip, "\d", "")			
                   			return                   		            
@@ -3541,9 +3598,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
         			            if ( mbshared:validate-lcc($subclassCode))        			              
         			                 then   								  
         			                fn:string($strip)
-        			            else (:invalid content in sfa:)
-        			                () 
-        	  for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
+        			            else 
+        			                ():) 
+        	  for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086|090)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
                 	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055)"))) then
@@ -3598,7 +3655,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                return                       
                        element bf:classification {
                            element bf:Classification {                        
-                                if (fn:matches($this-tag/@tag,"(050)"))     then element bf:classificationScheme {"lcc"} 
+                                if (fn:matches($this-tag/@tag,"(050|090)"))     then element bf:classificationScheme {"lcc"} 
                                    else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"nlm"}
                                    else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"udc"}                                   
                                    else if (fn:matches($this-tag/@tag,"082"))      then element bf:classificationScheme {"ddc"}
