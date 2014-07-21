@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-07-01-T17:00:00";
+declare variable $mbshared:last-edit :="2014-07-21-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -64,7 +64,7 @@ declare variable $mbshared:named-notes:=("(502|505|506|507|508|511|513|518|522|5
 declare variable $mbshared:addl-880-nodes:= (
 	<properties>
 	 <node domain="work" 		property="note"			    	    tag="500" sfcodes="a">General Note</node>
-	 <node domain="instance" 		property="note"			    	    tag="500" sfcodes="a">General Note</node>
+	 <node domain="instance" 	property="note"			    	    tag="500" sfcodes="a">General Note</node>
 	 <node domain="work" 		property="note"			    	    tag="505" sfcodes="t">complex note work title</node>
 	</properties>
 );
@@ -248,8 +248,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="languageNote"					  tag="546" sfcodes="3a"				>Language Note</node>
          <node domain="instance"		property="notation"					      tag="546" sfcodes="b"				    >Language Notation(script)</node>
          <node domain="related" 	property="edition"					      tag="534"        sfcodes="b"	             >Edition</node>
-         <node domain="related" 	property="note"					      tag="534"        sfcodes="n"	             >Note</node>
-         <!--<node domain="work"				property="note"				tag="500" sfcodes="a"			     	> test note </node>-->
+         <node domain="related" 	property="note"					      tag="534"        sfcodes="n"	             >Note</node>        
   </properties>
 	)	;
 
@@ -2507,7 +2506,7 @@ let $typeOf008:=
 (:~
 :   This function generates  constituent (hasPart) works from 505
 : 
-
+:   LC often uses only $a, but stanford has  $g$t, and dave reser says he's seen [$g]$t[$r][$u] and $u is always last.
 :   @param  $d        element is the marcxml:datafield  505
 :   @return bf:hasPart*
 :)
@@ -2515,41 +2514,62 @@ declare function mbshared:generate-complex-notes(
   $d as element(marcxml:datafield)   
     ) as element()*
 {
-
+ 			let $vernacular:= $d/ancestor::marcxml:record/marcxml:datafield[@tag="880"][fn:matches(marcxml:subfield[@code="6"],"^505-")]
+ 			    
  			let $sub-codes:= fn:distinct-values($d/marcxml:subfield[@code!="t"]/@code)
 			let $return-codes := "gru"			
 			let $set:=
-				for $title in $d/marcxml:subfield[@code="t"]
-				let $t := fn:replace(fn:string($title), " /", "")
-              
-                let $details := 
-                    element details {
-                    (://for the set of subfields after this $t, up until there's a new $t
-                    problem is, $g precedes $t? :)
-                        for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]                
-                        let $elname:=
-                            if ($subfield/@code="g") then "bf:note" 
-                            else if ($subfield/@code="r") then "bf:creator" 
-                            else if ($subfield/@code="u") then "rdf:resource" 
-                            else "bf:note" 
-                        let $sfdata := fn:replace(fn:string($subfield), " --", "")
-                        return
-                            if ($elname eq "rdf:resource") then
-                                element {$elname} { attribute rdf:resource {$sfdata} }
-                            else if ($elname eq "bf:creator") then
-                                if ( fn:contains($sfdata, ";") ) then
-                                    (: we have multiples :)
-                                    for $c in fn:tokenize($sfdata, ";")
-                                    return mbshared:get-name-fromSOR($c,"bf:creator")
-                                else
-                                    mbshared:get-name-fromSOR($sfdata,"bf:creator")
-                            else
-                                element {$elname} {$sfdata}
-                    }
+				for $title at $x in $d/marcxml:subfield[@code="t"]
+				    let $t := fn:replace(fn:string($title), " /", "")
+                    let $vernacular-title:=
+                        if ($vernacular) then                            
+                            let $lang := fn:substring(fn:string($d/ancestor::marcxml:record/marcxml:controlfield[@tag="008"]), 36, 3)     
+                            let $scr := fn:tokenize($vernacular/marcxml:subfield[@code="6"],"/")[2]
+                            let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
+
+                           
+                            return element bf:title {if ($xmllang) then attribute xml:lang{$lang} else (),
+                                        fn:string($vernacular/marcxml:subfield[@code="t"][fn:position()=$x])
+                                        }
+                        else ()
+                    let $details := 
+                        element details {
+                        (://for the set of subfields after this $t, up until there's a new $t
+                        problem is, $g precedes $t? 
+                        for each title t, get the immediate preceding $g, if it's there, and the following $r if it's there, and $u ??.
+                        :)
+                            for $subfield in ($title/preceding-sibling::marcxml:subfield[@code="g"][1][following-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)] 
+                                | $title/following-sibling::marcxml:subfield[@code="r"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)])
+                                        (: the following is wrong, I think: assumes $t is first:
+                                            for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]
+                                        :)                
+                                let $elname:=
+                                    if ($subfield/@code="g") then "bf:note" 
+                                    else if ($subfield/@code="r") then "bf:creator" 
+                                    else if ($subfield/@code="u") then "rdf:resource" 
+                                    else "bf:note" 
+                                let $sfdata := fn:replace(fn:string($subfield), " --", "")
+                                return
+                                    if ($elname eq "rdf:resource") then
+                                        element {$elname} { attribute rdf:resource {$sfdata} }
+                                    else if ($elname eq "bf:creator") then
+                                        if ( fn:contains($sfdata, ";") ) then
+                                            (: we have multiples :)
+                                            for $c in fn:tokenize($sfdata, ";")
+                                            return mbshared:get-name-fromSOR($c,"bf:creator")
+                                        else
+                                            mbshared:get-name-fromSOR($sfdata,"bf:creator")
+                                    else
+                                        element {$elname} {$sfdata}
+                            }
+                  
                 return 
                     element part {                   
-                        element bf:title {$t},                                   
-                        $details/*                                 
+                        $details/*       ,
+                        element bf:title {$t},
+                  
+                         $vernacular-title
+                                                  
                     }
 		return						
                 for $item in $set
