@@ -220,8 +220,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicVersion"					tag="240" sfcodes="o"						>Music Version</node>
          <node domain="work"				property="legalDate"					tag="130" sfcodes="d"						>Legal Date</node>         
          <node domain="work"				property="legalDate"					tag="730" sfcodes="d"						>Legal Date</node>
-         <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Legal Date</node>
-         <!--<node domain="work"				property="note"					        tag="500" sfcodes="3a"					>General Note</node>-->
+         <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Legal Date</node>         
          <node domain="work"				property="dissertationNote"				tag="502" sfcodes="a"		                >Dissertation Note</node>
          <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
          <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>        
@@ -239,7 +238,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="philatelicDataNote"			tag="258" sfcodes="ab"					>Philatelic data note</node>
          <node domain="instance"		property="illustrationNote"				tag="300" sfcodes="b"			      >Illustrative content note</node>
          <node domain="instance"		property="aspectRatio"				    tag="345" sfcodes="a"			      >Aspect Ratio</node>
-         <node domain="instance"		property="note"					          tag="500" sfcodes="3a"	      	>General Note</node>
+         
          <node domain="instance"		property="accessCondition"				tag="506"				                >Restrictions on Access Note</node>
          <node domain="instance"		property="graphicScaleNote"				tag="507" sfcodes="a"						>Scale Note for Graphic Material</node>
          <node domain="instance"		property="creditsNote"					  tag="508" startwith="Credits: " >Creation/Production Credits Note </node>
@@ -539,7 +538,7 @@ let $issuance:=
         )    
     
     let $general-notes := mbshared:generate-500notes($d/ancestor::marcxml:record)
-    
+   let $standalone-880s:=mbshared:generate-standalone-880( $d/ancestor::marcxml:record ,"instance") 
     (:337, 338::)
     let $physdesc := mbshared:generate-physdesc($d/ancestor::marcxml:record,"instance")
   
@@ -573,8 +572,9 @@ let $issuance:=
             $instance-simples,
             $general-notes,            
             $i504,             
-            $instance-identifiers,               
+            $instance-identifiers,            
             $physdesc,
+            $standalone-880s,
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
                 }, 
@@ -1360,7 +1360,7 @@ let $v-test:=
                     else ()
                     
                )
-      
+     
     let $instanceOf :=  
         element bf:instanceOf {
             attribute rdf:resource {$workID}
@@ -1424,7 +1424,7 @@ declare function mbshared:generate-instance-from250(
             (if ( fn:exists($instance) ) then
                 (
                     $instance/@*,
-                    $instance/*
+                    $instance/*    
                 )
             else 
                 $instanceOf)
