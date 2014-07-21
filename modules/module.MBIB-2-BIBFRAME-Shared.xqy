@@ -2538,7 +2538,7 @@ declare function mbshared:generate-complex-notes(
                         problem is, $g precedes $t? 
                         for each title t, get the immediate preceding $g, if it's there, and the following $r if it's there, and $u ??.
                         :)
-                            for $subfield in ($title/preceding-sibling::marcxml:subfield[@code="g"][1][following-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)] 
+                            for $subfield in ($title/preceding-sibling::marcxml:subfield[@code="g"][following-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)] 
                                 | $title/following-sibling::marcxml:subfield[@code="r"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)])
                                         (: the following is wrong, I think: assumes $t is first:
                                             for $subfield in $title/following-sibling::marcxml:subfield[@code!="t"][preceding-sibling::marcxml:subfield[@code="t"][1]=fn:string($title)]
