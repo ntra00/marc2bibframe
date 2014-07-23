@@ -70,6 +70,15 @@ declare namespace zerror        = "http://zorba.io/errors";
 declare variable $baseuri as xs:string external := "http://example.org/";
 
 (:~
+:   This variable determines whether bnodes should identify resources instead of 
+:   http URIs, except for the "main" Work derived from each MARC record.  At this time, 
+:   the "main" Work must be identified by HTTP URI (using the $baseuri variable
+:   above).
+:   
+:)
+declare variable $usebnodes as xs:string external := "false";
+
+(:~
 :   This variable is for the MARCXML location - externally defined.
 :)
 declare variable $marcxmluri as xs:string external;
@@ -276,7 +285,7 @@ let $rdfxml-raw :=
         
 let $rdfxml := 
     if ( $serialization ne "rdfxml-raw" ) then
-        let $flatrdfxml := RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
+        let $flatrdfxml := RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri, $usebnodes)
         return
             if ($resolveLabelsWithID eq "true") then
                 local:resolve-labels($flatrdfxml)

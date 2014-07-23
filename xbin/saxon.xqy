@@ -59,6 +59,16 @@ declare option saxon:default """http://example.org/""";
 declare variable $baseuri as xs:string external;
 
 (:~
+:   This variable determines whether bnodes should identify resources instead of 
+:   http URIs, except for the "main" Work derived from each MARC record.  At this time, 
+:   the "main" Work must be identified by HTTP URI (using the $baseuri variable
+:   above).
+:   
+:)
+declare option saxon:default """false""";
+declare variable $usebnodes as xs:string external;
+
+(:~
 :   This variable is for the MARCXML location - externally defined.
 :)
 declare option saxon:default """NONE""";
@@ -91,7 +101,7 @@ let $rdfxml-raw :=
         
 let $rdfxml := 
     if ( $serialization ne "rdfxml-raw" ) then
-        RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
+        RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri, $usebnodes)
     else
         $rdfxml-raw 
         

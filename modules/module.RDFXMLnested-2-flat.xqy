@@ -45,6 +45,7 @@ declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare variable $RDFXMLnested2flat:resourcesToIgnore := 
     <ignore>
         <class>Provider</class>
+        <class>Identifier</class>
         <class>Authority</class>
     </ignore>;
    
@@ -110,15 +111,16 @@ declare variable $RDFXMLnested2flat:inverses :=
 declare function RDFXMLnested2flat:RDFXMLnested2flat
         (
             $rdfxml as element(rdf:RDF),
-            $baseuri as xs:string
+            $baseuri as xs:string,
+            $usebnodes as xs:string
         ) 
         as element(rdf:RDF)
 {
     
-    let $resources := RDFXMLnested2flat:identifyClasses($rdfxml, $baseuri, 0)
+    let $resources := RDFXMLnested2flat:identifyClasses($rdfxml, $baseuri, $usebnodes, 0)
     let $resources := RDFXMLnested2flat:flatten($resources)
     let $resources := RDFXMLnested2flat:removeNesting($resources)
-    let $resources := RDFXMLnested2flat:insertInverses($resources)
+    let $resources := RDFXMLnested2flat:insertInverses($resources, $usebnodes)
     return
         (: ntra changed this to an inline element from constructed, so I control the namespaces added.
        
@@ -136,8 +138,8 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
      
             $rdfxml/@*,
             for $w in    $resources/self::bf:Work
-                order by $w/@rdf:about
-                    return $w,
+            order by $w/@rdf:about
+            return $w,
              
         
             $resources/self::bf:Instance,
@@ -170,7 +172,7 @@ declare function RDFXMLnested2flat:flatten($resources as element()*)
     let $resources := ($resources[@rdf:about],$resources//child::node()[@rdf:about])
     return $resources
     :)
-    for $r in $resources//@rdf:about
+    for $r in $resources//@rdf:about|$resources//@rdf:nodeID
     return $r/parent::node()[1]
 
 };
@@ -190,6 +192,7 @@ declare function RDFXMLnested2flat:identifyClasses
         (
             $rdfxml as element(rdf:RDF),
             $baseuri as xs:string,
+            $usebnodes as xs:string,
             $place as xs:integer
         )
         as element()*
@@ -204,6 +207,8 @@ declare function RDFXMLnested2flat:identifyClasses
         let $baseuri-new := 
             if  ($r/@rdf:about) then
                 xs:string($r/@rdf:about)                
+            else if ($usebnodes eq "true") then
+                "b"
             else
                 $baseuri
         where fn:not(fn:contains($ignore, fn:local-name($r)))
@@ -211,8 +216,10 @@ declare function RDFXMLnested2flat:identifyClasses
             element {fn:name($r)} { 
                 if  ($r/@rdf:about) then
                     $r/@rdf:about                
+                else if ($usebnodes eq "true") then
+                    attribute rdf:nodeID { fn:concat($baseuri-new, $n, ($pos + $place)) }
                 else
-                    attribute rdf:about { fn:concat($baseuri-new, $n, ($pos + $place)) },                
+                    attribute rdf:about { fn:concat($baseuri-new, $n, ($pos + $place)) },
                 
                 for $p at $spot in $r/*
                 return
@@ -221,7 +228,7 @@ declare function RDFXMLnested2flat:identifyClasses
                         return
                             element { fn:name($p) } {
                                 $p/@*,
-                                RDFXMLnested2flat:identifyClasses(<rdf:RDF>{$classes}</rdf:RDF>, $baseuri-new, ($pos + $spot + $place))
+                                RDFXMLnested2flat:identifyClasses(<rdf:RDF>{$classes}</rdf:RDF>, $baseuri-new, $usebnodes, ($pos + $spot + $place))
                             }
                     else
                         $p
@@ -263,8 +270,10 @@ declare variable $RDFXMLnested2flat:inverses :=
 :   @param  $resources      element()* are the resources.   
 :   @return element()       resources
 :)
-declare function RDFXMLnested2flat:insertInverses($resources as element()*)
-        as element()*
+declare function RDFXMLnested2flat:insertInverses(
+    $resources as element()*,
+    $usebnodes as xs:string)
+    as element()*
 {
     
     let $targets := fn:string-join($RDFXMLnested2flat:inverses/inverse/@targetResource, " ")
@@ -281,9 +290,9 @@ declare function RDFXMLnested2flat:insertInverses($resources as element()*)
         )
     let $modified-targets :=
         for $r in $resources
-           let $uri := xs:string($r/@rdf:about)
-           let $n := xs:string(fn:name($r))
-           let $lookFors := $RDFXMLnested2flat:inverses/inverse[@targetResource = $n]
+        let $uri := xs:string(($r/@rdf:about|$r/@rdf:nodeID)[1])
+        let $n := xs:string(fn:name($r))
+        let $lookFors := $RDFXMLnested2flat:inverses/inverse[@targetResource = $n]
         where fn:contains($targets, $n)
         return
             element {fn:name($r)} { 
@@ -299,7 +308,10 @@ declare function RDFXMLnested2flat:insertInverses($resources as element()*)
                     for $rr in $distinct-abouts
                     return
                         element { xs:string($replace/@enterOnTarget) } {
-                            attribute rdf:resource { xs:string($rr) }
+                            if ($usebnodes eq "false") then
+                                attribute rdf:resource { xs:string($rr) }
+                            else
+                                attribute rdf:nodeID { xs:string($rr) }
                         }
             }
 
@@ -333,8 +345,9 @@ declare function RDFXMLnested2flat:insertInverses($resources as element()*)
 :   @param  $resources      element()* are the resources.   
 :   @return element()       resources
 :)
-declare function RDFXMLnested2flat:removeNesting($resources as element()*)
-        as element()*
+declare function RDFXMLnested2flat:removeNesting(
+        $resources as element()*
+    ) as element()*
 {
     
     let $simplified-resources :=
@@ -351,6 +364,12 @@ declare function RDFXMLnested2flat:removeNesting($resources as element()*)
                         return
                             element { fn:name($p) } {
                                 attribute rdf:resource { xs:string($p/child::node()[@rdf:about]/@rdf:about) }
+                            }
+                    else if ($p/child::node()[@rdf:nodeID]) then
+                        let $classes := $p/child::node()[fn:matches(fn:local-name(), "^([A-Z])([a-z]+)")]
+                        return
+                            element { fn:name($p) } {
+                                attribute rdf:nodeID { xs:string($p/child::node()[@rdf:nodeID]/@rdf:nodeID) }
                             }
                     else
                         $p
