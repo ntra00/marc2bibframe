@@ -62,7 +62,7 @@ declare namespace httpexpath = "http://expath.org/ns/http-client";
 :   It is the base URI for the rdf:about attribute.
 :   
 :)
-declare variable $baseuri as xs:string external;
+declare variable $baseuri as xs:string external := "http://example.org/";
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
@@ -70,9 +70,9 @@ declare variable $baseuri as xs:string external;
 declare variable $marcxmluri as xs:string external;
 
 (:~
-:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
+:   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON, log
 :)
-declare variable $serialization as xs:string external;
+declare variable $serialization as xs:string external := "rdfxml";
 
 (:~
 :   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
@@ -180,7 +180,11 @@ let $marcxml :=
         let $http-response := http:get-node($marcxmluri) 
         return $http-response[2]
     else
-        let $raw-data as xs:string := file:read-text($marcxmluri)
+       let $raw-data :=
+            if ( fn:starts-with($marcxmluri, "raw:" ) ) then
+                fn:substring($marcxmluri, 5)
+            else
+                file:read-text($marcxmluri)
         let $mxml := parsexml:parse(
                     $raw-data, 
                     <parseoptions:options />
