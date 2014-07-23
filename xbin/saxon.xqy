@@ -70,10 +70,11 @@ declare variable $marcxmluri as xs:string external;
 declare option saxon:default """rdfxml""";
 declare variable $serialization as xs:string external;
 
-let $marcxml := if ($marcxmluri ne "NONE") then
-                    fn:doc($marcxmluri)//marcxml:record
-                else
-                    //marcxml:record
+let $marcxml := 
+    if ($marcxmluri ne "NONE") then
+        fn:doc($marcxmluri)//marcxml:record
+    else
+        //marcxml:record
 
 
 let $resources :=
