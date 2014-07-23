@@ -59,7 +59,7 @@ declare option xdmp:output "indent-untyped=yes" ;
 :   It is the base URI for the rdf:about attribute.
 :   
 :)
-declare variable $baseuri as xs:string := xdmp:get-request-field("baseuri","http://base-uri/");
+declare variable $baseuri as xs:string := xdmp:get-request-field("baseuri","http://example.org/");
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
