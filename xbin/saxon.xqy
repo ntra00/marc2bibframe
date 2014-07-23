@@ -55,6 +55,7 @@ declare option saxon:output "indent=yes";
 :   It is the base URI for the rdf:about attribute.
 :   
 :)
+declare option saxon:default """http://example.org/""";
 declare variable $baseuri as xs:string external;
 
 (:~
@@ -66,6 +67,7 @@ declare variable $marcxmluri as xs:string external;
 (:~
 :   This variable is for desired serialzation.  Expected values are: rdfxml (default), ntriples, json
 :)
+declare option saxon:default """rdfxml""";
 declare variable $serialization as xs:string external;
 
 let $marcxml := if ($marcxmluri ne "NONE") then
