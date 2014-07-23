@@ -60,6 +60,7 @@ declare variable $baseuri as xs:string external;
 (:~
 :   This variable is for the MARCXML location - externally defined.
 :)
+declare option saxon:default """NONE""";
 declare variable $marcxmluri as xs:string external;
 
 (:~
@@ -67,7 +68,11 @@ declare variable $marcxmluri as xs:string external;
 :)
 declare variable $serialization as xs:string external;
 
-let $marcxml := fn:doc($marcxmluri)//marcxml:record
+let $marcxml := if ($marcxmluri ne "NONE") then
+                    fn:doc($marcxmluri)//marcxml:record
+                else
+                    //marcxml:record
+
 
 let $resources :=
     for $r in $marcxml
