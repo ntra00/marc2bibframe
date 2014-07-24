@@ -59,7 +59,16 @@ declare option xdmp:output "indent-untyped=yes" ;
 :   It is the base URI for the rdf:about attribute.
 :   
 :)
-declare variable $baseuri as xs:string := xdmp:get-request-field("baseuri","http://base-uri/");
+declare variable $baseuri as xs:string := xdmp:get-request-field("baseuri","http://example.org/");
+
+(:~
+:   This variable determines whether bnodes should identify resources instead of 
+:   http URIs, except the "main" Work derived from each MARC record.  At this time, 
+:   the "main" work must be referenced by HTTP URI (using the $baseuri variable
+:   above).
+:   
+:)
+declare variable $usebnodes as xs:string := xdmp:get-request-field("usebndoes","false");
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
@@ -158,7 +167,7 @@ let $rdfxml-raw :=
         
 let $rdfxml := 
     if ( $serialization ne "rdfxml-raw" ) then
-        RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
+        RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri, $usebnodes)
     else
         $rdfxml-raw 
 
