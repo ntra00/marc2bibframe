@@ -95,7 +95,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="videorecordingNumber"		tag="028" sfcodes="a" ind1="4" group="identifiers"	 	>publisher assigned videorecording number</node>
          <node domain="instance"		property="publisherNumber"				tag="028" sfcodes="a" ind1="5"	 group="identifiers"	>other publisher assigned number</node>
          <node domain="instance"		property="coden"					      	tag="030" sfcodes="a"	     group="identifiers"     >CODEN</node>
-         <node domain="7xx"		property="systemNumber"					      	tag="776" sfcodes="w"	     group="identifiers"  uri="http://www.worldcat.org/oclc/"   >system number</node>
+         <node domain="7xx"		   property="systemNumber"					      	tag="776" sfcodes="w"	     group="identifiers"  uri="http://www.worldcat.org/oclc/"   >system number</node>
          <node domain="7xx"		property="issn"					      	tag="776" sfcodes="x"	     group="identifiers"     >issn</node>
          <node domain="7xx"		property="coden"					      	tag="776" sfcodes="y"	     group="identifiers"     >CODEN</node>
          <node domain="7xx"		property="isbn"					      	tag="776" sfcodes="z"	     group="identifiers"     >issn</node>
@@ -219,8 +219,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicVersion"					tag="130" sfcodes="o"						>Music Version</node>
          <node domain="work"				property="musicVersion"					tag="240" sfcodes="o"						>Music Version</node>
          <node domain="work"				property="legalDate"					tag="130" sfcodes="d"						>Legal Date</node>         
-         <node domain="work"				property="legalDate"					tag="730" sfcodes="d"						>Legal Date</node>
-         <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Legal Date</node>         
+         <node domain="work"				property="legalDate"					tag="730" sfcodes="d"						>Legal Date</node>                 
          <node domain="work"				property="dissertationNote"				tag="502" sfcodes="a"		                >Dissertation Note</node>
          <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
          <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>        
@@ -668,7 +667,7 @@ declare function mbshared:generate-880-label
                 }
             else if ($node-name="title") then 
                 let $subfs := 
-                    if ( fn:matches($d/@tag, "(245|242|243|246|490|510|630|730|740|830)") ) then
+                    if ( fn:matches($d/@tag, "(130|245|242|243|246|490|510|630|730|740|830)") ) then
                         "(a|b|f|h|k|n|p)"
                     else
                         "(t|f|k|m|n|p|s)"
@@ -686,31 +685,32 @@ declare function mbshared:generate-880-label
                 for $sf in $match/marcxml:subfield[@code="a"]
                 let $text:=         marc2bfutils:clean-string(fn:string($sf))
                 
-                return
-                    element  bf:providerPlace {
-                        element bf:Place {
+                return (:inside bf:Place:)
                             element bf:label { 
-                                    if (fn:not(fn:matches($text, "[a-zA-Z]"))) then attribute xml:lang {$xmllang} else (),
+                                     attribute xml:lang {$xmllang} ,
                                     $text
                             }
-                        }
-                    }
+                        
+                    
 	       else if ($node-name="provider") then 
                 for $sf in $match/marcxml:subfield[@code="b"]
-                return
-                    element bf:providerName {
-                      element bf:Organization {
+                return                 
                             element bf:label {
                                 attribute xml:lang {$xmllang},   			
                                 marc2bfutils:clean-string(fn:string($sf))
                             }
-                        }
-                    }
+                 
           else if ($node-name="responsibilityStatement") then
                  for $sf in $match/marcxml:subfield[@code="c"]
                      return
                          element bf:responsibilityStatement {                      
                              attribute xml:lang {$xmllang},   			
+                             marc2bfutils:clean-string(fn:string($sf))
+                         }    
+          else if ($node-name="providerDate") then
+                 for $sf in $match/marcxml:subfield[@code="c"]
+                     return
+                         element bf:providerDate {                                                    		
                              marc2bfutils:clean-string(fn:string($sf))
                          }                        
         else 
@@ -969,7 +969,7 @@ abc and def are parallel, so a and d are treated the same, etc, except the start
 :   @return bf:* 	   element()
 
 !!! work on ab abc bibid 468476
-!!! work on 880s in 260abc, def
+!!! work on 880s in 260abc, efg
 :)
 declare function mbshared:generate-publication
     (
@@ -986,8 +986,12 @@ declare function mbshared:generate-publication
 	               "bf:distribution"
 	           else
 	                "bf:publication"
-	            
-                            
+	           (:if there's only one c, it applies to multiple ab's:) 
+             let $date:=      if ($d/marcxml:subfield[@code="c"][$x]) then
+                                    $d/marcxml:subfield[@code="c"][$x]
+                             else if ( $x gt 1 and $d/marcxml:subfield[@code="c"][$x - 1]) then
+                             $d/marcxml:subfield[@code="c"][$x - 1]
+                             else ()
 	        return 
 	            element {$propname} {
 	                element bf:Provider {
@@ -998,26 +1002,33 @@ declare function mbshared:generate-publication
                         :)
 	                    element bf:providerName {
 	                       element bf:Organization {
-	                           element bf:label {
-	                       marc2bfutils:clean-string(fn:string($pub))}
+	                           element bf:label {marc2bfutils:clean-string(fn:string($pub))},
+	                           mbshared:generate-880-label($d,"provider")
 	                       }
-	                    },
-	                    mbshared:generate-880-label($d,"provider") ,
+	                    }
+	                    ,
 	                    if ( $d/marcxml:subfield[@code="a"][$x]) then
-	                        (element bf:providerPlace {
+	                        element bf:providerPlace {
 	                           element bf:Place {
 	                               element bf:label {
-	                                   marc2bfutils:clean-string($d/marcxml:subfield[@code="a"][$x])}
+	                                   marc2bfutils:clean-string($d/marcxml:subfield[@code="a"][$x])},
+	                                      mbshared:generate-880-label($d,"place")
 	                           }
-                           },
-	                         mbshared:generate-880-label($d,"place") )
+                           }
 	                          
 	                    else (),
-	                    if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
+	                    if (fn:starts-with($date,"c")) then
+	                    (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
+	                        element bf:copyrightDate {marc2bfutils:clean-string($date)}
+	                     else if ( fn:not(fn:starts-with($date,"c") )) then
+	                        element bf:providerDate {marc2bfutils:chopPunctuation($date,".")}                 
+	                    else ()
+	                    (:if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then 
+	                       
 	                        element bf:copyrightDate {marc2bfutils:clean-string($d/marcxml:subfield[@code="c"][$x])}
 	                    else if ($d/marcxml:subfield[@code="c"][$x] and fn:not(fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") )) then
 	                        element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="c"][$x],".")}                 
-	                    else ()
+	                    else ():)
 	                }
 		}   
 		(:there is no $b:)
@@ -1025,12 +1036,13 @@ declare function mbshared:generate-publication
 	            element bf:publication {
 	                element bf:Provider {
 	                    for $pl in $d/marcxml:subfield[@code="a"]
-	                    return (element bf:providerPlace {
+	                    return element bf:providerPlace {
 	                                   element bf:Place {
-	                                       element bf:label {fn:string($pl)}
+	                                       element bf:label {fn:string($pl)},
+	                                       mbshared:generate-880-label($d,"place")  
 	                                   }
 	                               },
-	                    		     mbshared:generate-880-label($d,"place")  ),
+	                    		     
 	                    for $pl in $d/marcxml:subfield[@code="c"]
 	                    	return 
 	                        if (fn:starts-with($pl,"c")) then				
@@ -1039,47 +1051,50 @@ declare function mbshared:generate-publication
 				       element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}		
 		      }
 	        }
-        (:handle $d,e,f like abc :)
-        else if ($d/marcxml:subfield[@code="e"]) then
-        for $pub at $x in $d/marcxml:subfield[@code="e"]
-	        let $propname := "bf:manufacture"   
-	        return 
-	            element {$propname} {
-	                element bf:Provider {
-	                    element bf:providerName {
+	    else (),    
+        (:handle $e,f,g like abc :)
+        if ($d/marcxml:subfield[@code="e"]) then
+            for $pub at $x in $d/marcxml:subfield[@code="e"]
+	           let $propname := "bf:manufacture"   
+	           return 
+	                element {$propname} {
+	                    element bf:Provider {
+	                       element bf:providerName {
 	                        element bf:Organization {
-	                           element bf:label {  
-	                               marc2bfutils:clean-string(fn:string($pub))}
+	                           element bf:label {marc2bfutils:clean-string(fn:string($pub))},
+	                            mbshared:generate-880-label($d,"provider") 
 	                           }
-	                           },
-	                    mbshared:generate-880-label($d,"provider") ,
-	                    if ( $d/marcxml:subfield[@code="d"][$x]) then
-	                        (element bf:providerPlace {
+	                           }
+	                    ,
+	                    if ( $d/marcxml:subfield[@code="f"][$x]) then
+	                        element bf:providerPlace {
 	                               element bf:Place {
-	                                   element bf:label {                      fn:string($d/marcxml:subfield[@code="d"][$x])}
+	                                   element bf:label {                      fn:string($d/marcxml:subfield[@code="f"][$x])},
+	                                   mbshared:generate-880-label($d,"place") 
 	                                   }
-	                                   },
-	                        mbshared:generate-880-label($d,"place") )
+	                                   }	                        
 	                    else (),
-	                    if ($d/marcxml:subfield[@code="f"][$x]) then
-	                        element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="f"][$x],".")}	                                     
-	                    else ()
+	                    if ($d/marcxml:subfield[@code="g"][$x]) then
+	                        element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="g"][$x],".")}	                                     
+	                    else if ($d/marcxml:subfield[@code="c"][$x]) then
+	                       element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="c"][$x],".")}
+	                       else ()
 	                }
 		}   
 		(:there is no $b:)       
-        else if ($d/marcxml:subfield[fn:matches(@code,"(d|f)")]) then	
+        else if ($d/marcxml:subfield[fn:matches(@code,"(e|f)")]) then	
             element bf:publication {
                 element bf:Provider {
-                    for $pl in $d/marcxml:subfield[@code="d"]
-                    	return (element bf:providerPlace {
+                    for $pl in $d/marcxml:subfield[@code="e"]
+                    	return element bf:providerPlace {
                     	           element bf:Place {
-	                       element bf:label {fn:string($pl)}
-	                       }
+	                                           element bf:label {fn:string($pl)},
+	                       	                   mbshared:generate-880-label($d,"place")
+	                                   }
 	                       },
-                    			mbshared:generate-880-label($d,"place") 
-                    		),
-                    for $pl in $d/marcxml:subfield[@code="f"]							
-                    	return element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")}						
+                    for $pl in $d/marcxml:subfield[@code="g"]							
+                    	return (element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")},
+                    	mbshared:generate-880-label($d,"providerDate") ) 
                 }
             }
     
@@ -3434,7 +3449,8 @@ declare function mbshared:get-uniformTitle(
                                                 attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
                                               }
          else element bf:languageNote {marc2bfutils:clean-string($s)},
-         
+          mbshared:generate-880-label($d,"title"),
+   
          mbshared:generate-translationOf($d)
         )
                 else ()
