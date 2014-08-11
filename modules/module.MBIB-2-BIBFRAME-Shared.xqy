@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-07-21-T17:00:00";
+declare variable $mbshared:last-edit :="2014-08-11-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -152,7 +152,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="g"      >title attributes</node>         
          <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="g"      >Miscellaneous </node>         
          
-         <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="o"      >arrangement</node>
+         <!--<node domain="title"		property="titleAttribute"			     tag="240" sfcodes="o"      >arrangement</node>-->
          <node domain="work"		property="musicVersion"			     tag="130" sfcodes="s"      >version</node>
          <node domain="work"		property="musicVersion"			     tag="240" sfcodes="s"      >version</node>
          <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="abc"         >title Statement</node>
@@ -259,7 +259,7 @@ declare variable $mbshared:relationships :=
         <!-- Work to Work relationships -->
         <work-relateds all-tags="(400|410|411|430|440|490|510|533|534|630|700|710|711|730|740|760|762|765|767|770|772|773|774|775|777|780|785|787|800|810|811|830)">
             <type tag="(700|710|711|730)" ind2="2" property="hasPart">isIncludedIn</type>            
-            <type tag="(700|710|711|730)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
+            <type tag="(700|710|711|730|787)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>            
 		    <type tag="740" property="partOf"  ind2="2">hasPart</type>
 		    <type tag="760" property="subseriesOf">hasParts</type>	
@@ -295,11 +295,11 @@ declare variable $mbshared:relationships :=
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
 		    <type tag="534" property="originalVersion"></type>
-    		<type tag="787" property="relatedResource">relatedItem</type>					  	    	  	   	  	    	  	    
+    		<!--<type tag="787" property="relatedResource">relatedItem</type>-->					  	    	  	   	  	    	  	    
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|430|440|490|800|810|811|830)" property="series">hasParts</type>
-            <type tag="730" property="relatedWork"  ind2=" ">relatedItem</type>             
-            <type tag="730" property="hasPart" ind2="2" >partOf</type>
+            <!--<type tag="730" property="relatedWork"  ind2=" ">relatedItem</type>             
+            <type tag="730" property="hasPart" ind2="2" >partOf</type>-->
         </work-relateds>
         <!--
         <type tag="490" ind1="0" property="inSeries">hasParts</type>
@@ -2059,6 +2059,7 @@ declare function mbshared:generate-related-work
            ) then
              mbshared:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])               
         else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|490|800|810|811|510|630|730|740|830)")) ) then
+        
                 mbshared:get-name($d)
         else ()
     let $related-props:=mbshared:generate-simple-property($d,"related")
@@ -2199,35 +2200,35 @@ declare function mbshared:related-works
         	 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,$relateds/@all-tags)]
         	   let $property:=$relateds/type[@tag=$d/@tag]/@property
         	    return mbshared:generate-related-instance($d,$property)
-        	else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]) then (: title is in $a , @ind2 needs attention:)                
+        	else
+        	       (: title is in $a , @ind2 needs attention:)                
+                (
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]                    
                     for $type in $relateds/type[@tag=$d/@tag][@ind2=$d/@ind2] 
                         return mbshared:generate-related-work($d,$type, $workID)   
-                
-     	    else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]) then
-     	      for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]
+                ,     	    
+     	        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]
      	          for $type in $relateds/type[@tag=$d/@tag]                		
 			         return mbshared:generate-related-reproduction($d,$type)                                         
-			         
-            else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")][marcxml:subfield[@code="t"]] ) then            (:@ind2:)
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")][marcxml:subfield[@code="t"]]                    
-                    for $type in $relateds/type[@tag=$d/@tag][@ind2=$d/@ind2] 
-                        return mbshared:generate-related-work($d,$type, $workID)
-                        
-            else if ($marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")]) then
+			    ,    
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711,787)")][marcxml:subfield[@code="t"]]                                                       
+                  for $type in $relateds/type[fn:matches($d/@tag,@tag)][fn:matches($d/@ind2,@ind2)] 
+                     return      mbshared:generate-related-work($d,$type, $workID)                                                 
+                ,                       
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")][marcxml:subfield[@code="a"]]
                     for $type in $relateds/type[@tag=$d/@tag]                     	
 			          return mbshared:generate-related-work($d,$type, $workID)
-            
-            else if ($marcxml/marcxml:datafield[@tag="534"][marcxml:subfield[@code="f"]]) then 
-                for $type in $relateds/type[@tag=$marcxml/marcxml:datafield/@tag]
-                    for $d in $marcxml/marcxml:datafield[fn:matches(@tag,fn:string($type/@tag))]
-			  	  return mbshared:generate-related-work($d,$type, $workID)            
-            else
+            ,
+            (:else if ($marcxml/marcxml:datafield[@tag="534"][marcxml:subfield[@code="f"]]) then:)
+            for $d in $marcxml/marcxml:datafield[@tag="534"][marcxml:subfield[@code="t"]] 
+                for $type in $relateds/type[@tag=$d/@tag]                    
+			  	  return mbshared:generate-related-work($d,$type, $workID)      
+			  	  )
+            (:else, what's left??? need to figure out!! 2014-08-11
                 for $type in $relateds/type[@tag=$marcxml/marcxml:datafield/@tag]
                     for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t" or @code="s"]]                
 			   	return mbshared:generate-related-work($d,$type, $workID)
-				
+			:)	
     return 
 				$relateds
 };
@@ -2325,7 +2326,7 @@ let $typeOf008:=
     
     (: Let's create an authoritativeLabel for this :)
     let $aLabel := 
-        if ($uniformTitle[bf:workTitle]) then
+        if ($uniformTitle[bf:workTitle]) then 
             fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($uniformTitle/bf:workTitle) )
         else if ($titles) then
             fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($titles/bf:title[1]) )
@@ -2484,8 +2485,7 @@ let $typeOf008:=
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
-                (),
-                
+                (),                
             $titles/bf:*,        
             $names,            
             $addl-names,
@@ -3425,12 +3425,12 @@ for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag
        } 
 };
 (:~
-:   This function generates a uniformTitle.
-:   It takes a specific datafield as input.
+:   This function generates a Work based on the uniformTitle.
+:   It takes a specific datafield (130 or 240) as input.
 :   It generates a bf:Work as output.
 :
 :   @param  $d        element is the marcxml:datafield  
-:   @return bf:workTitle
+:   @return bf:Work
 :)
 declare function mbshared:get-uniformTitle(
     $d as element(marcxml:datafield)
