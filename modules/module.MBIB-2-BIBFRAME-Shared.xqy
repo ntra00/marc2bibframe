@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-08-28-T17:00:00";
+declare variable $mbshared:last-edit :="2014-08-28-T17:05:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -1277,12 +1277,10 @@ declare function mbshared:generate-instance-fromISBN(
                 
     let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
     let $volume:= 
-        if (fn:contains($isbn-extra,"v. ")) then
-        fn:replace(marc2bfutils:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,"v.")[2])),"\)","")
-        else 
-        if (fn:contains($isbn-extra,":")) then    
+       (:too hard to parse :)
+      (:  if (fn:contains($isbn-extra,":")) then    
             fn:replace(marc2bfutils:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2])),"\)","")
-        else
+        else:)
             fn:replace(marc2bfutils:clean-string(fn:normalize-space($isbn-extra)),"\)","")
     let $v-test:= 
         fn:replace(marc2bfutils:clean-string(fn:normalize-space($isbn-extra)),"\)","")
@@ -1318,8 +1316,8 @@ declare function mbshared:generate-instance-fromISBN(
                 "electronic resource"
             else if (fn:contains($carrier,"lib. bdg.") ) then
                 "library binding"			
-            else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
-                "acid free"					           
+            (:else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
+                "acid free":)					           
             else 
                 ""
             (:else fn:replace($carrier,"\)",""):)
@@ -1409,9 +1407,9 @@ declare function mbshared:generate-instance-fromISBN(
         		$volume-info,
         		
         (:not done yet:  2013-05-21 :)
-        element bf:testvtest{$v-test},
+      (:  element bf:testvtest{$v-test},
         element bf:testvolume{$volume},
-        element bf:testvolumetest{   $volume-test},
+        element bf:testvolumetest{   $volume-test},:)
    	        		        
    	         if ( fn:exists($instance) ) then
 	                (
@@ -3228,7 +3226,8 @@ declare function mbshared:get-title(
         ) 
 {
     
-    let $title := fn:replace(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|b|k|n|p|s)")] ," "),"^(.+)/$","$1")
+    (:let $title := fn:replace(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|b|k|n|p|s)")] ," "),"^(.+)/$","$1"):)
+    let $title := fn:replace(fn:string($d/marcxml:subfield[@code="a"]),"^(.+)/$","$1")
     let $title := 
         if (fn:ends-with($title, ".")) then
             fn:substring($title, 1, fn:string-length($title) - 1 )
