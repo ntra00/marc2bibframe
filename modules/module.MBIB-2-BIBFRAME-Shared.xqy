@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-08-11-T17:00:00";
+declare variable $mbshared:last-edit :="2014-08-28-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -877,7 +877,14 @@ let $id024-028:=
 
 declare function mbshared:handle-system-number( $sys-num as element(marcxml:subfield)  ) 
 {
-
+if (fn:starts-with(fn:normalize-space($sys-num),"(uri)")) then
+         let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
+         return element bf:hasAuthority {attribute rdf:resource{$id} }
+ else
+ if (fn:contains(fn:normalize-space($sys-num),"http://")) then
+         let $id:=fn:normalize-space(fn:concat("http://",fn:substring-after(fn:string($sys-num),"http://")  ) )
+         return element bf:hasAuthority {attribute rdf:resource{$id} }
+ else
  if (fn:starts-with(fn:normalize-space($sys-num),"(DE-588")) then
          let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
          return element bf:hasAuthority {attribute rdf:resource{fn:concat("http://d-nb.info/gnd/",$id)} }
@@ -1253,7 +1260,9 @@ declare function mbshared:generate-physdesc
 :   @param  $isbn-extra       is the stuff after the number (eg pbk v. 12 )
 :  @param  $instance 	element bf:Instance is generated fromthe first 260  
 :   @return bf:* as element()
-
+:
+:work with this example, bibid 13891080
+:
 :)
 declare function mbshared:generate-instance-fromISBN(
     $d as element(marcxml:record),
@@ -1268,12 +1277,15 @@ declare function mbshared:generate-instance-fromISBN(
                 
     let $isbn-extra:=fn:normalize-space(fn:tokenize(fn:string($isbn-set/marcxml:subfield[1]),"\(")[2])
     let $volume:= 
+        if (fn:contains($isbn-extra,"v. ")) then
+        fn:replace(marc2bfutils:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,"v.")[2])),"\)","")
+        else 
         if (fn:contains($isbn-extra,":")) then    
             fn:replace(marc2bfutils:clean-string(fn:normalize-space(fn:tokenize($isbn-extra,":")[2])),"\)","")
         else
             fn:replace(marc2bfutils:clean-string(fn:normalize-space($isbn-extra)),"\)","")
-let $v-test:= 
-    fn:replace(marc2bfutils:clean-string(fn:normalize-space($isbn-extra)),"\)","")
+    let $v-test:= 
+        fn:replace(marc2bfutils:clean-string(fn:normalize-space($isbn-extra)),"\)","")
  
  let $volume-test:= ($v-test, fn:tokenize($v-test,":")[1],fn:tokenize($v-test,":")[2])
  let $volume-test:= fn:tokenize($v-test,":")[2]
@@ -1382,11 +1394,11 @@ let $v-test:=
 
     return 
         element bf:Instance {
-        		$isbn,
+        		
         		(: See extent-title above :)
         		(: if ($volume) then element bf:title{ $volume} else (), :)
         	    $extent-title,
-    
+                $isbn,
         		(:for $t in $extent-title
         		return 
                     element bf:label { 
@@ -1395,9 +1407,11 @@ let $v-test:=
                     },:)
         		(:if ($physicalForm) then      element bf:physicalForm {$physicalForm} else (),:)
         		$volume-info,
-        (:not done yet:  2013-05-21
-        element bf:test{$v-test},
-        $volume-test,:)
+        		
+        (:not done yet:  2013-05-21 :)
+        element bf:testvtest{$v-test},
+        element bf:testvolume{$volume},
+        element bf:testvolumetest{   $volume-test},
    	        		        
    	         if ( fn:exists($instance) ) then
 	                (
@@ -2092,8 +2106,7 @@ declare function mbshared:generate-related-work
                     else ()
     return 
  	  element {fn:concat("bf:",fn:string($type/@property))} {
-		element bf:Work {		
-		element bf:label {$title},
+		element bf:Work {				
 		element bf:title {$title},
             element bf:authorizedAccessPoint {$aLabel},
             $aLabelWork880,
@@ -2732,19 +2745,18 @@ declare function mbshared:get-subject(
                 ( 
                     element bf:authorizedAccessPoint {fn:string($madsrdf/madsrdf:authoritativeLabel)},
                     element bf:label { fn:string($madsrdf/madsrdf:authoritativeLabel) },
-                    element bf:hasAuthority {
-                                
-                        element madsrdf:Authority {
-                            element rdf:type {
-                                attribute rdf:resource { 
-                                    fn:concat("http://www.loc.gov/mads/rdf/v1#" , fn:local-name($madsrdf))
-                                }
-                            },
-                            $madsrdf/madsrdf:authoritativeLabel
-                        }
-                    },
-                    
-                  
+                 
+                        element bf:hasAuthority {                                
+                            element madsrdf:Authority {
+                                element rdf:type {
+                                    attribute rdf:resource { 
+                                        fn:concat("http://www.loc.gov/mads/rdf/v1#" , fn:local-name($madsrdf))
+                                    }
+                                },
+                                $madsrdf/madsrdf:authoritativeLabel                
+                            }
+                        },
+                                               
                     for $sys-num in $d/marcxml:subfield[@code="0"] 
                     return mbshared:handle-system-number($sys-num)                    
                 )
@@ -2934,7 +2946,9 @@ declare function mbshared:get-name(
     	
     let $aLabel :=  marc2bfutils:clean-name-string($label)
     
-    let $elementList := if ($d/@tag!='534') then
+    let $elementList := if ($d/@tag!='534'
+    and   fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="0"]),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
+    (:if there's a $0 uri, then we don't need the madsrdf:)
       element bf:hasAuthority{
          element madsrdf:Authority {
          element madsrdf:authoritativeLabel {$aLabel}
