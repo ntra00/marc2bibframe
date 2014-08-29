@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-08-28-T17:05:00";
+declare variable $mbshared:last-edit :="2014-08-29-T17:05:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -879,7 +879,7 @@ declare function mbshared:handle-system-number( $sys-num as element(marcxml:subf
 {
 if (fn:starts-with(fn:normalize-space($sys-num),"(uri)")) then
          let $id:=fn:normalize-space(fn:tokenize(fn:string($sys-num),"\)")[2] )
-         return element bf:hasAuthority {attribute rdf:resource{$id} }
+         return  element bf:hasAuthority {attribute rdf:resource{$id} }
  else
  if (fn:contains(fn:normalize-space($sys-num),"http://")) then
          let $id:=fn:normalize-space(fn:concat("http://",fn:substring-after(fn:string($sys-num),"http://")  ) )
@@ -2743,22 +2743,21 @@ declare function mbshared:get-subject(
                 ( 
                     element bf:authorizedAccessPoint {fn:string($madsrdf/madsrdf:authoritativeLabel)},
                     element bf:label { fn:string($madsrdf/madsrdf:authoritativeLabel) },
-                 
+                 if (   fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="0"]),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
                         element bf:hasAuthority {                                
                             element madsrdf:Authority {
                                 element rdf:type {
                                     attribute rdf:resource { 
                                         fn:concat("http://www.loc.gov/mads/rdf/v1#" , fn:local-name($madsrdf))
                                     }
-                                },
+                                },                                
                                 $madsrdf/madsrdf:authoritativeLabel                
                             }
-                        },
-                                               
-                    for $sys-num in $d/marcxml:subfield[@code="0"] 
-                    return mbshared:handle-system-number($sys-num)                    
+                        }
+                else ()
+                                    
                 )
-            return ($details)
+            return $details
             
 	   
        else if (fn:matches(fn:string($d/@tag),"(662|752)")) then
@@ -2806,16 +2805,18 @@ declare function mbshared:get-subject(
                         attribute rdf:resource { "http://www.loc.gov/mads/rdf/v1#HierarchicalGeographic"}
                     },
                     element bf:authorizedAccessPoint { fn:string($aLabel) },
-                    element bf:label { fn:string($aLabel) },                    
-                    element bf:hasAuthority {
-                         element madsrdf:Authority {
-                          element madsrdf:authoritativeLabel{fn:string($aLabel)},
-                            element madsrdf:componentList {
-                                attribute rdf:parseType {"Collection"},
-                                $components 
+                    element bf:label { fn:string($aLabel) },
+                    if (   fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="0"]),"(http://|\(uri\)|\(DE-588\))" ) ) ) then                    
+                        element bf:hasAuthority {
+                             element madsrdf:Authority {
+                              element madsrdf:authoritativeLabel{fn:string($aLabel)},
+                                element madsrdf:componentList {
+                                    attribute rdf:parseType {"Collection"},
+                                    $components 
+                                }
                             }
                         }
-                    }
+                    else ()
                 )
             return $details
             (:656 occupation itoamc in $2? :)
