@@ -155,7 +155,7 @@ declare variable $mbshared:simple-properties:= (
          <!--<node domain="title"		property="titleAttribute"			     tag="240" sfcodes="o"      >arrangement</node>-->
          <node domain="work"		property="musicVersion"			     tag="130" sfcodes="s"      >version</node>
          <node domain="work"		property="musicVersion"			     tag="240" sfcodes="s"      >version</node>
-         <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="abc"         >title Statement</node>
+         <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
          
          <node domain="instance"	property="responsibilityStatement"		tag="245" sfcodes="c"         >responsibility Statement</node>
          <node domain="work"	    property="treatySignator"		    	tag="710" sfcodes="g"         >treaty Signator</node>
@@ -173,8 +173,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
          
-         <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="a"	uri="http://id.loc.gov/vocabulary/mediaCategory/"		    >Media Category</node>
-         <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="b"	uri="http://id.loc.gov/vocabulary/mediaCategory/"		    >Media Category</node>
+         <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="a"	uri="http://id.loc.gov/vocabulary/mediaTypes/"		    >Media Category</node>
+         <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="b"	uri="http://id.loc.gov/vocabulary/mediaTypes/"		    >Media Category</node>
          <node domain="specialinstnc"	property="carrierCategory"					        tag="338" sfcodes="b"	uri="http://id.loc.gov/vocabulary/carriers/"		    >Physical Description</node>
          <node domain="specialinstnc"	property="carrierCategory"					        tag="338" sfcodes="a"	uri="http://id.loc.gov/vocabulary/carriers/"		    >Physical Description</node>
          <node domain="work"				property="musicKey"					      tag="384" sfcodes="a"		    		> Key </node>
@@ -689,8 +689,7 @@ declare function mbshared:generate-880-label
                             element bf:label { 
                                      attribute xml:lang {$xmllang} ,
                                     $text
-                            }
-                        
+                            }                        
                     
 	       else if ($node-name="provider") then 
                 for $sf in $match/marcxml:subfield[@code="b"]
@@ -809,24 +808,26 @@ let $id024-028:=
                                             "bf:identifier"
                                         else fn:concat("bf:", $scheme)
                                         
-                            let $cancels:= for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"z")]                                                
+                            let $cancels:= 
+                                                for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"z")]                                                
                                                      return element {$property-name} { mbshared:handle-cancels($this-tag, $sf, $scheme)} 
-                                (:if  024 has a c, it's qualified, needs a class  else just prop w/$a:)
+                                            
+                                (:if  024 has a c, b, q,  it  needs a class  else just prop w/$a Zs are handled in handle-cancels :)
                             return
-                                if ( ($this-tag/marcxml:subfield[@code="a"] and 
+                              ( if ( fn:not($this-tag/marcxml:subfield[@code="z"]) and ($this-tag/marcxml:subfield[@code="a"] and 
                                         ( fn:contains(fn:string($this-tag/marcxml:subfield[@code="c"]), "(") or 
                                             $this-tag/marcxml:subfield[@code="q" or @code="b" or @code="2"]  
         			                     )
-        			                 )   or
+        			                     
+        			                    or
         			                     fn:not($this-id/@uri) or
-        			                    $scheme="unspecified"
+        			                    $scheme="unspecified" ) 
         			                 ) then	
         			                 let $value:=
         			                     if ($this-tag/marcxml:subfield[@code="d"]) then 
         			                           fn:string-join($this-tag/marcxml:subfield[fn:matches(@code,"(a|d)")],"-")
         			                         else
-        			                            fn:string($this-tag/marcxml:subfield[@code="a"])
-        			                           
+        			                            fn:string($this-tag/marcxml:subfield[@code="a"])        			                           
 	                                 return 
 	                                   element {$property-name} {
 	                                    element bf:Identifier{
@@ -835,11 +836,10 @@ let $id024-028:=
        	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
        	                                       return element bf:identifierAssigner{fn:string($sub)},	        
        	                                    for $sub in $this-tag/marcxml:subfield[@code="q"] 
-       	                                       return element bf:identifierQualifier {fn:string($sub)}	                                                       
+       	                                       return element bf:identifierQualifier {fn:string($sub)}       	                                        	                                      
 	                                       }	
-	                                   }
-	                                   
-                            else (:not c,q,b:)
+	                                   }	                                  
+                            else (:not c,q,b 2 . (z yes ) :)
                                 let $property-name:= (:024 had a z only; no $a: bibid;17332794:)
                                                 (:unmatched scheme in $2:)
                                         if ($this-tag/@ind1="7" and fn:not(fn:matches( fn:string($this-tag/marcxml:subfield[@code="2"]),"(ansi|doi|iso|isan|istc|iswc|local)" ))) then                                                            
@@ -853,11 +853,12 @@ let $id024-028:=
                                                             element bf:identifierValue { fn:normalize-space(fn:string($s))        }
                                                             }
                                                         }
-                                        else  ()
-                                        ,                                                                                                      
-                                        $cancels                                        
-                                    )
-                        else ()         (:end 024 / 028:)
+                                        else ()
+                                      )                                      
+                        ,     $cancels                            
+                        )
+                        else   ()         (:end 024 / 028 none found :)
+                        
 
 	return  
      	  for $bfi in ($bfIdentifiers,$id024-028)
