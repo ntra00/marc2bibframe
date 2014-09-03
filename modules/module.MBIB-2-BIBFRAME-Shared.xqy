@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-08-29-T17:05:00";
+declare variable $mbshared:last-edit :="2014-09-03-T11:05:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -171,7 +171,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="cartography"	property="cartographicOuterGRing"		   tag="255" sfcodes="f"		   >cartographicOuterGRing</node>
          <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		  >CartographicExclusionGRing</node>
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
-         <node domain="instance"	property="extent"					        tag="300" sfcodes="af"			    >Physical Description</node>
+         <node domain="instance"	property="extent"					        tag="300" sfcodes="aef"				    >Physical Description</node>
          
          <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="a"	uri="http://id.loc.gov/vocabulary/mediaTypes/"		    >Media Category</node>
          <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="b"	uri="http://id.loc.gov/vocabulary/mediaTypes/"		    >Media Category</node>
@@ -197,16 +197,19 @@ declare variable $mbshared:simple-properties:= (
          <node domain="arrangement"			property="materialArrangement"			tag="351" sfcodes="b"					>ImaterialArrangement</node>
          <node domain="arrangement"			property="materialHierarchicalLevel"	tag="351" sfcodes="c"					>materialHierarchicalLevel</node>
          
-         <node domain="contentcategory"		property="contentCategory"				tag="130" sfcodes="h"					>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="240" sfcodes="h"						>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="243" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"		property="carrierCategory"				tag="130" sfcodes="h"					>Nature of content</node>
+         <node domain="contentcategory"				property="carrierCategory"				tag="240" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"				property="carrierCategory"				tag="243" sfcodes="h"						>Nature of content</node>
+         
          <node domain="contentcategory"				property="contentCategory"				tag="245" sfcodes="k"						>Nature of content</node>         
-         <node domain="contentcategory"				property="contentCategory"				tag="513" sfcodes="a"						>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="516" sfcodes="a"						>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="730" sfcodes="h"						>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="700" sfcodes="h"						>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="710" sfcodes="h"						>Nature of content</node>
-         <node domain="contentcategory"				property="contentCategory"				tag="711" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"				property="genre"				tag="513" sfcodes="a"						>Nature of content</node>
+         <node domain="contentcategory"				property="genre"				tag="516" sfcodes="a"						>Nature of content</node>
+         
+         <node domain="related"				property="carrierCategory"				tag="730" sfcodes="h"						>Nature of content</node>
+         
+         <node domain="related"				property="carrierCategory"				tag="700" sfcodes="h"						>Nature of content</node>
+         <node domain="related"				property="carrierCategory"				tag="710" sfcodes="h"						>Nature of content</node>
+         <node domain="related"				property="carrierCategory"				tag="711" sfcodes="h"						>Nature of content</node>
          <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="046" sfcodes="kl" stringjoin="-"					>Date of origin</node>
@@ -489,8 +492,9 @@ declare function mbshared:generate-instance-from260(
             for $i in $d/../marcxml:datafield[@tag eq "255"]/marcxml:subfield[@code eq "c"]
             return element bf:cartographicCoordinates  {fn:string($i)},
             
-            for $i in $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "d" or @code eq "e" or @code eq "f" or @code eq "g"]  
-            return element bf:cartographicCoordinates {fn:string($i)}
+            if ( $d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "d" or @code eq "e" or @code eq "f" or @code eq "g"] ) then  
+                  element bf:cartographicCoordinates {fn:concat(fn:string-join($d/../marcxml:datafield[@tag eq "034"]/marcxml:subfield[@code eq "d" or @code eq "e" or @code eq "f" or @code eq "g"], '° '),'°')}
+            else ()
         ) 
         
 let $leader:=fn:string($d/../marcxml:leader) 
@@ -515,10 +519,10 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
                 return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
    
 let $issuance:=
-           	if (fn:matches($leader7,"(a|c|d|m)")) 		            then "monographic"
+           	if (fn:matches($leader7,"(a|c|d)")) 		            then "monographic"
            	else if ($leader7="b") 						            then "continuing"
            	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "multipart monograph"
-           	else if ($leader7='m' and $leader19='#') 				then "single unit"
+           	else if ($leader7='m' and $leader19=' ') 				then "single unit"
            	else if ($leader7='i') 						           	then "integrating resource"
            	else if ($leader7='s')           						then "serial"
            	else ()
@@ -1945,7 +1949,7 @@ return
 					
 						if ($extent) then element bf:extent {$extent} else (),
 						if ($coverage) then element bf:temporalCoverageNote {$coverage}  else (),						
-						if ($carrier!="" ) then	element bf:carrierCategory {element bf:Category {element bf:categoryValue {$carrier}}}   else (),
+						if ($carrier!="" ) then	element bf:carrierCategory {element bf:Category {element bf:categoryValue {marc2bfutils:chopPunctuation($carrier,".")}}}   else (),
 						
 						if ($note) then  $note  else ()						
 						
@@ -2076,6 +2080,7 @@ declare function mbshared:generate-related-work
                 mbshared:get-name($d)
         else ()
     let $related-props:=mbshared:generate-simple-property($d,"related")
+    
         
     let $aLabel := 
         fn:concat(
@@ -3218,8 +3223,8 @@ declare function mbshared:get-resourceTypes(
 :
 :   @param  $d        element is the marcxml:datafield
 :   @param  $domain   "work" or "instance" to name the property
-
-:   @return bf:uniformTitle
+:
+:   @return  sequence of bf:title, workTitle, instanceTitle, nonsort, sysnum etc.
 : drop the $h from the work title????
 :)
 declare function mbshared:get-title(
