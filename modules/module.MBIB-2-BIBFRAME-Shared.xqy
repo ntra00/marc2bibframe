@@ -190,8 +190,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicMediumNote"				tag="243" sfcodes="m"	     			> Music medium note </node>
          <node domain="instance"		property="dimensions"					    tag="300" sfcodes="c"			     	>Physical Size</node>
          <node domain="work"				property="duration"					    tag="306" sfcodes="a"			     	>Playing time</node>
-         <node domain="work"				property="frequencyNote"				tag="310" sfcodes="ab"					>Issue frequency</node>
-         <node domain="work"				property="frequencyNote"				tag="321" sfcodes="ab"					>Issue frequency</node>
+         <node domain="instance"				property="frequencyNote"				tag="310" sfcodes="ab"					>Issue frequency</node>
+         <!--<node domain="instance"				property="frequencyNote"				tag="321" sfcodes="ab"					>Issue frequency</node>-->
          <node domain="arrangement"			property="materialPart"			        tag="351" sfcodes="3"					>material Organization</node>
          <node domain="arrangement"			property="materialOrganization"			tag="351" sfcodes="a"					>material Organization</node>
          <node domain="arrangement"			property="materialArrangement"			tag="351" sfcodes="b"					>ImaterialArrangement</node>
@@ -241,7 +241,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="illustrationNote"				tag="300" sfcodes="b"			      >Illustrative content note</node>
          <node domain="instance"		property="aspectRatio"				    tag="345" sfcodes="a"			      >Aspect Ratio</node>
          
-         <node domain="instance"		property="accessCondition"				tag="506"				                >Restrictions on Access Note</node>
+         <node domain="instance"		property="accessCondition"				tag="506"		 sfcodes="3a"		                >Restrictions on Access Note</node>
          <node domain="instance"		property="graphicScaleNote"				tag="507" sfcodes="a"						>Scale Note for Graphic Material</node>
          <node domain="instance"		property="creditsNote"					  tag="508" startwith="Credits: " >Creation/Production Credits Note </node>
          <node domain="instance"		property="performerNote"					tag="511" startwith="Cast: " 		>Participant or Performer Note </node>
@@ -301,8 +301,7 @@ declare variable $mbshared:relationships :=
     		<!--<type tag="787" property="relatedResource">relatedItem</type>-->					  	    	  	   	  	    	  	    
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|430|440|490|800|810|811|830)" property="series">hasParts</type>
-            <!--<type tag="730" property="relatedWork"  ind2=" ">relatedItem</type>             
-            <type tag="730" property="hasPart" ind2="2" >partOf</type>-->
+            
         </work-relateds>
         <!--
         <type tag="490" ind1="0" property="inSeries">hasParts</type>
@@ -424,16 +423,48 @@ let $leader18:=fn:substring($marcxml/marcxml:leader,19,1)
                 }
             }
 };
-        
+(:~
+:   This is the function generates secondary instances from multiple 260/264
+:
+:   @param  $d        element is the MARCXML 260/264{position>1]
+:   @param  $workID   uri for the derivedfrom
+:   @param  $position nth position of  the 260 in the record; match to 321s
+:   @return bf:* as element()
+:)
+declare function mbshared:generate-additional-instance(
+          $d as element(marcxml:datafield),
+    $workID as xs:string,
+    $position as xs:integer
+    ) as element () 
+{
+
+     let $derivedFrom:= 
+        element bf:derivedFrom {                
+            attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
+        }
+    let $instance-title := 
+        fn:concat(fn:string($d/marcxml:subfield[@code="3"])," ",fn:string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"]))
+    let $pub:=          mbshared:generate-publication($d)
+    let $freq:= for $s in $d/../marcxml:datafield[@tag="321"][fn:position()=$position - 1]
+            return element bf:frequencyNote {fn:string-join($s/marcxml:subfield[@code="a" or @code="b"], " ")}
+return element bf:Instance {element bf:instanceTitle{
+            element bf:Title{ element bf:titleValue{$instance-title}}},
+            $freq,
+            $pub,
+            $derivedFrom
+    }
+};
+
 (:~
 :   This is the function generates instance resources.
 :
-:   @param  $d        element is the MARCXML 260   
+:   @param  $d        element is the MARCXML 260
+:   @param  $workID   uri for the derivedfrom
 :   @return bf:* as element()
 :)
 declare function mbshared:generate-instance-from260(
     $d as element(marcxml:datafield),
-    $workID as xs:string
+    $workID as xs:string 
     ) as element () 
 {
      let $derivedFrom:= 
@@ -447,7 +478,7 @@ declare function mbshared:generate-instance-from260(
             for $t in $titles
             return mbshared:get-title($t,"instance")
             
-    let $resp-statement880:= mbshared:generate-880-label($d/../marcxml:datafield[@tag = "245"][marcxml:subfield[@code="c"]],"responsibilityStatement")
+   let $resp-statement880:= mbshared:generate-880-label($d/../marcxml:datafield[@tag = "245"][marcxml:subfield[@code="c"]],"responsibilityStatement")
    
     let $edition-instances:= 
     for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
@@ -456,6 +487,7 @@ declare function mbshared:generate-instance-from260(
            element bf:relatedInstance {
                 element bf:Instance {
                    $instance-title,
+                   
                     $derivedFrom    ,            
                     (element bf:edition {marc2bfutils:clean-string($e/marcxml:subfield[@code="a"])},        
                         if ($e/marcxml:subfield[@code="b"]) then element bf:editionResponsibility {fn:string($e/marcxml:subfield[@code="b"])}
@@ -560,11 +592,12 @@ let $issuance:=
  	  for $i in $d/../marcxml:datafield[fn:not(fn:matches(@tag,"^0[1-9]")) ] 
  	       return mbshared:generate-simple-property($i,"instance")
  
- 	
+ 
     return 
         element bf:Instance {        
            $instance-types,                            
             $instance-title,
+      
             $resp-statement880,
             $publication,   
             $edition-880,
@@ -1707,11 +1740,11 @@ let $hld:= if ($marcxml//hld:holdings) then mbshared:generate-holdings-from-hld(
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
-	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|060|070|080|082|084)")]
+	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|070|080|082|084)")]
 (:	multiple $a is possible: 2017290 use $i to handle :)
 		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"]
        		let $element:= 
-       			if (fn:matches($class/../@tag,"(050|055|070)")) then "bf:shelfMarkLcc"
+       			if (fn:matches($class/../@tag,"(050|051|055|070)")) then "bf:shelfMarkLcc"
        			else if (fn:matches($class/../@tag,"060")) then "bf:shelfMarkNlm"
        			else if (fn:matches($class/../@tag,"080") ) then "bf:shelfMarkUdc"
        			else if (fn:matches($class/../@tag,"082") ) then "bf:shelfMarkDdc"
@@ -1798,13 +1831,13 @@ let $isbn-sets:=
 	else ()
 
     return    
-        (        
+        (
         if ( $isbn-sets//bf:set) then           
         	(:use the first 260 to set up a book instance... what else is an instance in other formats?:)
             let $instance:= 
                 for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1]
           		      return mbshared:generate-instance-from260($i, $workID)        
-
+                    
             for $set in $isbn-sets/bf:set
           	  return mbshared:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
 	   	
@@ -1812,7 +1845,10 @@ let $isbn-sets:=
             (:for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]:)
             for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1]
      	       return mbshared:generate-instance-from260($i, $workID)   
-    )
+   ,
+        for $i at $x in $marcxml/marcxml:datafield[@tag="260"]
+          return  mbshared:generate-additional-instance($i, $workID , $x)
+   )
 };
 (:~
 :   This is the function generates general notes for all marc notes not in vocabulary
@@ -2527,8 +2563,8 @@ let $typeOf008:=
             $derivedFrom,
             $hashable,
             $admin,
-           
-            for $i in $instances 
+          
+            for $i in $instances
                 return element  bf:hasInstance{$i},
              $instancesfrom856
              
@@ -3287,7 +3323,7 @@ declare function mbshared:get-title(
              } (:end Title:)
              
     return 
-        ( element bf:title {  $lang-attribute, $title },  
+        ( (:element bf:title {  $lang-attribute, $title },  :)
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
             $constructed-title,
             mbshared:generate-titleNonsort($d,$title, $element-name),       
