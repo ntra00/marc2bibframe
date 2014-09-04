@@ -83,6 +83,20 @@ declare variable $marc2bfutils:resourceTypes := (
         <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Dataset</type>
     </resourceTypes>
     );
+    (:008-20 for MU type of resource:)
+    declare variable $marc2bfutils:musicFormats:=(
+ 
+    <musicFormats>
+        <term cf008-20="a">Full score</term>
+        <term cf008-20="b">Full score, miniature or study size</term>
+        <term cf008-20="c">Accompaniment reduced for keyboard</term>
+        <term cf008-20="d">Voice score with accompaniment omitted</term>
+        <term cf008-20="e">Condensed score or piano-conductor score</term>
+        <term cf008-20="g">Close score</term>
+        <term cf008-20="h">Chorus score</term>
+        <term cf008-20="i">Condensed score</term>
+    </musicFormats>
+    );
     declare variable $marc2bfutils:instanceTypes := (
     <instanceTypes>
         <type leader6="d">Manuscript</type>
@@ -2604,8 +2618,10 @@ declare function marc2bfutils:clean-string(
 { 
 	if (fn:exists($s)) then
 	    let $s:= fn:replace($s,"from old catalog","","i")
-	    let $s := fn:replace($s, "([\[\];]+)", "")
-	    let $s := fn:replace($s, " :", "")
+	    (:nate removed ; from this one. not sure why we should remove ; from teh middle of a field. Consider Choppunctuation if it's needed?:) 
+	    let $s := fn:replace($s, "([\[\]]+)", "")
+	    (:nate removed : from this one. not sure why we should remove ; from the middle of a field. Consider Choppunctuation if it's needed?:)
+	    (:let $s := fn:replace($s, " :", ""):)
 	    let $s := fn:normalize-space($s)
 	    (:if it contains unbalanced parens, delete:)
 	    let $s:= if (fn:contains($s,"(") and fn:not(fn:contains($s, ")")) ) then
@@ -2616,6 +2632,8 @@ declare function marc2bfutils:clean-string(
 	    
 	    return 
 	        if ( fn:ends-with($s, ",") ) then
+	            fn:substring($s, 1, (fn:string-length($s) - 1) )
+	        else  if ( fn:ends-with($s, "/") ) then
 	            fn:substring($s, 1, (fn:string-length($s) - 1) )
 	        else
 	            $s
@@ -3102,6 +3120,8 @@ declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:
  let $role:= marc2bfutils:chopPunctuation(marc2bfutils:clean-string($role-text),".")
  return fn:string( $marc2bfutils:role-xwalk//term[@roletext=$role]/@rolecode)			
 };
+			
+
 (: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
 adapted from marcslim2modsutils.xsl
 :)

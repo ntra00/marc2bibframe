@@ -67,7 +67,16 @@ declare namespace zerror        = "http://zorba.io/errors";
 :   It is the base URI for the rdf:about attribute.
 :   
 :)
-declare variable $baseuri as xs:string external;
+declare variable $baseuri as xs:string external := "http://example.org/";
+
+(:~
+:   This variable determines whether bnodes should identify resources instead of 
+:   http URIs, except for the "main" Work derived from each MARC record.  At this time, 
+:   the "main" Work must be identified by HTTP URI (using the $baseuri variable
+:   above).
+:   
+:)
+declare variable $usebnodes as xs:string external := "false";
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
@@ -77,7 +86,7 @@ declare variable $marcxmluri as xs:string external;
 (:~
 :   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON, log
 :)
-declare variable $serialization as xs:string external;
+declare variable $serialization as xs:string external := "rdfxml";
 
 (:~
 :   This variable is for desired serialzation.  Expected values are: rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
@@ -212,7 +221,11 @@ let $marcxml :=
         let $json := http:get($marcxmluri)
         return parsexml:parse($json("body")("content"), <parseoptions:options/>)
     else
-        let $raw-data as xs:string := file:read-text($marcxmluri)
+       let $raw-data :=
+            if ( fn:starts-with($marcxmluri, "raw:" ) ) then
+                fn:substring($marcxmluri, 5)
+            else
+                file:read-text($marcxmluri)
         let $mxml := parsexml:parse(
                     $raw-data, 
                     <parseoptions:options />
@@ -272,7 +285,7 @@ let $rdfxml-raw :=
         
 let $rdfxml := 
     if ( $serialization ne "rdfxml-raw" ) then
-        let $flatrdfxml := RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri)
+        let $flatrdfxml := RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri, $usebnodes)
         return
             if ($resolveLabelsWithID eq "true") then
                 local:resolve-labels($flatrdfxml)
