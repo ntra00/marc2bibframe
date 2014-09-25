@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-09-03-T11:05:00";
+declare variable $mbshared:last-edit :="2014-09-25-T13:05:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -55,7 +55,7 @@ declare variable $mbshared:transform-rules :=(
 <rule status="on" id="4" label="250" category="instance-splitting">New instances on multiple 250s</rule>
 <rule status="on" id="5" label="246" category="instance-node">246 domain is instance</rule>
 <rule status="on" id="6" label="247" category="instance-node">247 domain is instance</rule>
-<!--<rule status="on" id="7" label="856" category="instance-splitting">New instances on multiple856s that are resources (ind2=0)</rule>???-->
+<!--<rule status="on" id="7" label="856" category="instance-splitting">New instances on multiple856s that are resources (ind2=0)</rule>??? -->
 </rules>
 );
 declare variable $mbshared:named-notes:=("(502|505|506|507|508|511|513|518|522|524|525|541|546|555)");
@@ -1887,12 +1887,12 @@ declare function mbshared:generate-titleNonsort(
 {
 if (fn:matches($d/@tag,"(222|242|243|245|440|240)" ) and fn:number($d/@ind2) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
-                element bf:title {attribute xml:lang {"x-bf-sortable"},
+                element bf:title {attribute xml:lang {"x-bf-sort"},
                        fn:substring($title, fn:number($d/@ind2)+1)
                              }
 else if (fn:matches($d/@tag,"(130|630)" ) and fn:number($d/@ind1) gt 0 ) then
                 (:need to sniff for begin and end nonsort codes also:)                
-                element bf:title {attribute xml:lang {"x-bf-sortable"},
+                element bf:title {attribute xml:lang {"x-bf-sort"},
                         fn:substring($title, fn:number($d/@ind1)+1)
                              }
 
@@ -2650,7 +2650,7 @@ declare function mbshared:generate-complex-notes(
 (:~
 :   This function generates a hashable version of the work, using title, name etc.
 :
-:   It generates a bf:authorizedAccessPoint xml:lang="x-bf-hashable" private language.
+:   It generates a bf:authorizedAccessPoint xml:lang="x-bf-hash" private language.
 :
 :   The "hashable" string is an attempt to create an identifier of sorts to help 
 :   establish "sameness" between works (this may be extended to instances in the future).
@@ -2726,7 +2726,7 @@ let $hashableTitle :=
     let $hashableStr := fn:lower-case($hashableStr)
 return 
         element bf:authorizedAccessPoint {
-            attribute xml:lang { "x-bf-hashable"},
+            attribute xml:lang { "x-bf-hash"},
             $hashableStr
         }
 };
@@ -2785,7 +2785,7 @@ declare function mbshared:get-subject(
                 ( 
                     element bf:authorizedAccessPoint {fn:string($madsrdf/madsrdf:authoritativeLabel)},
                     element bf:label { fn:string($madsrdf/madsrdf:authoritativeLabel) },
-                 if (   fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="0"]),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
+                 if (   fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
                         element bf:hasAuthority {                                
                             element madsrdf:Authority {
                                 element rdf:type {
@@ -2848,7 +2848,7 @@ declare function mbshared:get-subject(
                     },
                     element bf:authorizedAccessPoint { fn:string($aLabel) },
                     element bf:label { fn:string($aLabel) },
-                    if (   fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="0"]),"(http://|\(uri\)|\(DE-588\))" ) ) ) then                    
+                    if (   fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then                    
                         element bf:hasAuthority {
                              element madsrdf:Authority {
                               element madsrdf:authoritativeLabel{fn:string($aLabel)},
@@ -2988,7 +2988,8 @@ declare function mbshared:get-name(
     let $aLabel :=  marc2bfutils:clean-name-string($label)
     
     let $elementList := if ($d/@tag!='534'
-    and   fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="0"]),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
+    and   
+    fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
     (:if there's a $0 uri, then we don't need the madsrdf:)
       element bf:hasAuthority{
          element madsrdf:Authority {
