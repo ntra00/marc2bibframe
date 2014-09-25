@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-09-25-T13:05:00";
+declare variable $mbshared:last-edit :="2014-09-25-T16:25:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -2485,7 +2485,7 @@ let $typeOf008:=
             else ()
     
 	let $work-identifiers := mbshared:generate-identifiers($marcxml,"work")
-	   let $general-notes := mbshared:generate-500notes($marcxml)
+	let $general-notes := mbshared:generate-500notes($marcxml)
 	let $work-classes := mbshared:generate-classification($marcxml,"work")
 	
  	let $subjects:= 		 
@@ -2495,7 +2495,7 @@ let $typeOf008:=
  	let $findaids:= for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"555")]
  	                  return if ($d/marcxml:subfield[@code="u"]) then 	                      
  	                              mbshared:generate-finding-aid-work($d)
- 	                              else
+ 	                         else
  	                              mbshared:generate-simple-property($d,"findingaid")
  	let $work-relateds := mbshared:related-works($marcxml,$workID,"work") 	
  	
@@ -2538,8 +2538,8 @@ let $typeOf008:=
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
-                (),                
-            $titles/bf:*,        
+                $titles/bf:workTitle,                
+          (:  $titles/bf:*,        :)
             $names,            
             $addl-names,
             $events,
@@ -3529,8 +3529,7 @@ declare function mbshared:get-uniformTitle(
                    element bf:label {$aLabel},
                      element madsrdf:authoritativeLabel{ fn:string($aLabel)},
 	  		       $title-nonsort,                      
-                   element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},
-               (:    $elementList,:)
+                   element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},               
                    $ut-local-id,
                    $translationOf
             }                    
