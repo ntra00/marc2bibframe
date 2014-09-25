@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-09-25-T16:25:00";
+declare variable $mbshared:last-edit :="2014-09-25-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -746,7 +746,8 @@ declare function mbshared:generate-880-label
           else if ($node-name="providerDate") then
                  for $sf in $match/marcxml:subfield[@code="c"]
                      return
-                         element bf:providerDate {                                                    		
+                         element bf:providerDate {  
+                            attribute xml:lang {$xmllang},   			
                              marc2bfutils:clean-string(fn:string($sf))
                          }                        
         else 
@@ -1066,7 +1067,9 @@ declare function mbshared:generate-publication
 	                    (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
 	                        element bf:copyrightDate {marc2bfutils:clean-string($date)}
 	                     else if ( fn:not(fn:starts-with($date,"c") )) then
-	                        element bf:providerDate {marc2bfutils:chopPunctuation($date,".")}                 
+	                       ( element bf:providerDate {marc2bfutils:chopPunctuation($date,".")},
+	                            mbshared:generate-880-label($d,"providerDate")
+	                            )
 	                    else ()
 	                    (:if ($d/marcxml:subfield[@code="c"][$x] and fn:starts-with($d/marcxml:subfield[@code="c"][$x],"c") ) then 
 	                       
@@ -1120,9 +1123,13 @@ declare function mbshared:generate-publication
 	                                   }	                        
 	                    else (),
 	                    if ($d/marcxml:subfield[@code="g"][$x]) then
-	                        element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="g"][$x],".")}	                                     
+	                        (element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="g"][$x],".")},
+	                                   mbshared:generate-880-label($d,"providerDate") 
+	                           )
 	                    else if ($d/marcxml:subfield[@code="c"][$x]) then
-	                       element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="c"][$x],".")}
+	                      ( element bf:providerDate {marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="c"][$x],".")},
+	                      mbshared:generate-880-label($d,"providerDate") 
+	                      )
 	                       else ()
 	                }
 		}   
@@ -3345,10 +3352,11 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
     ) as element( bf:translationOf)
     
 {
-  let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:not(fn:matches(@code,"(0|6|8|l)") ) ]," "))    
+  (:let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:not(fn:matches(@code,"(0|6|8|l)") ) ]," ")):)    
+  let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|d|f|g|h|k)")  ]," "))
   return    element bf:translationOf {     
             element bf:Work {
-                (:element bf:authorizedAccessPoint{$label}, :)               
+                              
                 element bf:title {$aLabel},
                 mbshared:generate-titleNonsort($d,$aLabel,"bf:title") ,                                    
                 element madsrdf:authoritativeLabel{$aLabel},                               
@@ -3526,7 +3534,7 @@ declare function mbshared:get-uniformTitle(
     return
     
         element bf:Work {
-                   element bf:label {$aLabel},
+                   (:element bf:label {$aLabel},:)
                      element madsrdf:authoritativeLabel{ fn:string($aLabel)},
 	  		       $title-nonsort,                      
                    element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},               
