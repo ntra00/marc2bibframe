@@ -88,7 +88,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		       group="identifiers"   >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		       group="identifiers"   >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a"		       group="identifiers" >Standard Technical Report Number</node>
-   <!--  <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		group="identifiers">sound recording publisher issue number</node>-->
+    <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		group="identifiers">sound recording publisher issue number</node>
          <node domain="instance"	property="matrixNumber"						tag="028" sfcodes="a" ind1="1"		group="identifiers">sound recording publisher matrix master number</node>
          <node domain="instance"	property="musicPlate"					  	tag="028" sfcodes="a" ind1="2"	group="identifiers"	>music publication number assigned by publisher</node>
          <node domain="instance"	property="musicPublisherNumber"		tag="028" sfcodes="a" ind1="3"	  group="identifiers">other publisher number for music</node>
@@ -2273,7 +2273,7 @@ declare function mbshared:related-works
 			          return mbshared:generate-related-work($d,$type, $workID)
             ,
             (:else if ($marcxml/marcxml:datafield[@tag="534"][marcxml:subfield[@code="f"]]) then:)
-            for $d in $marcxml/marcxml:datafield[@tag="534"][marcxml:subfield[@code="t"]] 
+            for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(534|775)")][marcxml:subfield[@code="t"]] 
                 for $type in $relateds/type[@tag=$d/@tag]                    
 			  	  return mbshared:generate-related-work($d,$type, $workID)      
 			  	  )
