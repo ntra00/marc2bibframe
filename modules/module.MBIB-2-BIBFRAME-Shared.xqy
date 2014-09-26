@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-09-25-T17:00:00";
+declare variable $mbshared:last-edit :="2014-09-26-T09:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -211,7 +211,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="related"				property="carrierCategory"				tag="710" sfcodes="h"						>Nature of content</node>
          <node domain="related"				property="carrierCategory"				tag="711" sfcodes="h"						>Nature of content</node>
          <node domain="work"				property="originDate"					tag="130" sfcodes="f"						>Date of origin</node>
-         <node domain="work"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
+         <node domain="related"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="046" sfcodes="kl" stringjoin="-"					>Date of origin</node>
 
          <node domain="instance"				property="formDesignation"				tag="245" sfcodes="h"						>Form Designation</node>
@@ -1612,8 +1612,7 @@ declare function mbshared:generate-dissertation(
     ) as element ()* 
 {
 
-((: simple properties already generated
- mbshared:generate-simple-property($d,"work"),:)
+(
 
     if ($d/marcxml:subfield[@code="c"] ) then
         element bf:dissertationInstitution {element bf:Organization {
@@ -2262,10 +2261,11 @@ declare function mbshared:related-works
         	    return mbshared:generate-related-instance($d,$property)
         	else
         	       (: title is in $a , @ind2 needs attention:)                
-                (
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]                    
-                    for $type in $relateds/type[@tag=$d/@tag][@ind2=$d/@ind2] 
-                        return mbshared:generate-related-work($d,$type, $workID)   
+                ( 
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(730|740|780|785)")]
+                return (
+                    for $type in $relateds/type[fn:matches($d/@tag,@tag)][fn:matches(@ind2,$d/@ind2)] 
+                        return mbshared:generate-related-work($d,$type, $workID)   )
                 ,     	    
      	        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(533)")]
      	          for $type in $relateds/type[@tag=$d/@tag]                		
@@ -2528,6 +2528,7 @@ let $typeOf008:=
  	let $work-simples:=
  	  for $d in $marcxml/marcxml:datafield
  	      return mbshared:generate-simple-property($d,"work")
+ 	      
  	let $admin:=mbshared:generate-admin-metadata($marcxml, $workID) 
     return 
         element {fn:concat("bf:" , $mainType)} {
@@ -3218,7 +3219,7 @@ let $types:=
 };
 (:~
 :   This is the function generates a work subclass.
-:
+: test on this bib id : 11510969
 :   @param  $marcxml        element is the MARCXML  
 :   @return bf:* as element()
 :)
@@ -3230,6 +3231,7 @@ declare function mbshared:get-resourceTypes(
     let $leader06 := fn:substring(fn:string($record/marcxml:leader), 7, 1)   
     let $types:=
     (	for $cf in $record/marcxml:controlfield[@tag="007"]/fn:substring(text(),1,1)
+    (:00 - Category of material :)
     		for $t in $marc2bfutils:resourceTypes/type[@cf007]
     			where fn:matches($cf,$t/@cf007) 
     				return fn:string($t)    ,	
@@ -3276,8 +3278,7 @@ declare function mbshared:get-title(
             $domain as xs:string
         ) 
 {
-    
-    (:let $title := fn:replace(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|b|k|n|p|s)")] ," "),"^(.+)/$","$1"):)
+        
     let $title := fn:replace(fn:string($d/marcxml:subfield[@code="a"]),"^(.+)/$","$1")
     let $title := 
         if (fn:ends-with($title, ".")) then
@@ -3309,7 +3310,7 @@ declare function mbshared:get-title(
               else  (:246 :)        
                 if ($d/@ind2=" "  and $d/marcxml:subfield[@code = "i"]) then
                     fn:string($d/marcxml:subfield[@code = "i"])
-                 else  if ($d/@ind2="0") then "portion"
+                 else if ($d/@ind2="0") then "portion"
                  else if ($d/@ind2="1") then "parallel"
                  else if ($d/@ind2="2") then "distinctive"                 
                  else if ($d/@ind2="4") then "cover"                 
@@ -3318,15 +3319,15 @@ declare function mbshared:get-title(
                  else if ($d/@ind2="8") then "spine"    
                  else ()
             else
-                ()
+                ""
        let $constructed-title:=
        element {$element-name} {
                 element bf:Title { 
                  if ($title-type ne "") then                      
                       element bf:titleType {$title-type}                                                      
                  else (),                     
-                     mbshared:generate-simple-property($d,"title"),
-                    mbshared:generate-880-label($d,"title")
+                 mbshared:generate-simple-property($d,"title"),                 
+                 mbshared:generate-880-label($d,"title")
                 }
              } (:end Title:)
              
@@ -3393,7 +3394,7 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
 declare function mbshared:generate-simple-property(
     $d as element(marcxml:datafield)*,
     $domain as xs:string
-    ) 
+    )
 {
 (:all the nodes in this domain with this datafield's tag, where there's no @ind1 or it matches the datafield's, and no ind2 or it matches the datafields:)
   for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1][ fn:not(@ind2) or @ind2=$d/@ind2]
@@ -3411,7 +3412,8 @@ declare function mbshared:generate-simple-property(
                  
        return
            for $i in $text
-                     return element {fn:concat("bf:",fn:string($node/@property))} {
+                     return  
+                     element {fn:concat("bf:",fn:string($node/@property))} {
                                 (:for identifiers, if it's oclc and there's an oclc id (035a) return attribute/uri, else return bf:Id:)
                          if (fn:string($node/@group)="identifiers") then
                                 if (fn:starts-with($i,"(OCoLC)") and fn:contains($node/@uri,"worldcat") ) then
