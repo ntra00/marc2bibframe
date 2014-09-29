@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-09-26-T11:00:00";
+declare variable $mbshared:last-edit :="2014-09-29-T09:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -1783,6 +1783,7 @@ declare function mbshared:generate-holdings(
 {
 
 let $hld:= if ($marcxml//hld:holdings) then mbshared:generate-holdings-from-hld($marcxml, $workID) else ()
+
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
@@ -2389,7 +2390,7 @@ let $typeOf008:=
 						"BK"
 					else if (fn:matches($leader7,"(b|i|s)")) then
 						"SE"
-					else ()					
+					else ""					
 					
 			else
 				if ($leader6="t") then "BK" 
@@ -2398,7 +2399,7 @@ let $typeOf008:=
 				else if (fn:matches($leader6,"(e|f|s)")) then "MP"
 				else if (fn:matches($leader6,"(g|k|o|r)")) then "VM"
 				else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
-				else ()
+				else ""
 				
     let $instances := mbshared:generate-instances($marcxml, $typeOf008, $workID)
     let $instancesfrom856:=
