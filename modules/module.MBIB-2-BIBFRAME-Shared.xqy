@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-09-29-T09:00:00";
+declare variable $mbshared:last-edit :="2014-10-01-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -1895,10 +1895,10 @@ let $isbn-sets:=
      	       return mbshared:generate-instance-from260($i, $workID)   
    ,
         if ($typeOf008!="SE") then
-            for $i at $x in $marcxml/marcxml:datafield[@tag="260"]
+            for $i at $x in $marcxml/marcxml:datafield[@tag="260"][fn:position() != 1]
                 return  mbshared:generate-additional-instance($i, $workID , $x)
         else (),
-            for $i at $x in $marcxml/marcxml:datafield[@tag="300"][fn:position()!=1]
+        for $i at $x in $marcxml/marcxml:datafield[@tag="300"][fn:position() != 1]
                 return   mbshared:generate-addl-physical($i, $workID , $x)
    )
 };
