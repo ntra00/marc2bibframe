@@ -164,7 +164,7 @@ declare variable $mbshared:simple-properties:= (
          
          <node domain="instance"	property="editionResponsibility"	      tag="250" sfcodes="b"        >Edition Responsibility</node>
          <node domain="cartography"	property="cartographicScale"			  tag="255" sfcodes="a"		   >cartographicScale</node>
-         <node domain="cartography"	property="cartographicScale"			  tag="034" sfcodes=""		   >cartographicScale</node>
+         <node domain="cartography"	property="cartographicScale"			  tag="034" sfcodes=""		   >cartographicScale</node>         
          <node domain="cartography"	property="cartographicProjection"		  tag="255" sfcodes="b"		   >cartographicProjection</node>
          <node domain="cartography"	property="cartographicCoordinates"		  tag="255" sfcodes="c"		   >cartographicCoordinates</node>
          <node domain="cartography"	property="cartographicAscensionAndDeclination"		tag="255" sfcodes="d"		   >cartographicAscensionAndDeclination</node>
@@ -2417,11 +2417,13 @@ let $typeOf008:=
        for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
             return mbshared:get-uniformTitle($d)     
     let $names := 
-        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
-                return mbshared:get-name($d)         
-    let $addl-names:= for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
+        (for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
+                return mbshared:get-name($d),
+                (:joined addl-names to names so we can get at least the first 700 if htere are no 1xx's into aap:)
+    (:let $addl-names:= :)
+        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
             return mbshared:get-name($d)
-         
+         )
         
     let $titles := 
         <titles>{
@@ -2435,7 +2437,7 @@ let $typeOf008:=
         if ($uniformTitle[bf:workTitle]) then 
             fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($uniformTitle/bf:workTitle) )
         else if ($titles) then
-            fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($titles/bf:title[1]) )
+            fn:concat( fn:string($names[1]/bf:*[1]/bf:label), " ", fn:string($titles/bf:workTitle[1]) )
         else
             ""
             
@@ -2586,16 +2588,15 @@ let $typeOf008:=
                     attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
                 },
              $aLabel,
-            $aLabelsWork880,
-          
-            $dissertation,         
+            $aLabelsWork880,           
+            $dissertation,             
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
                 $titles/bf:workTitle,                
-          (:  $titles/bf:*,        :)
+       
             $names,            
-            $addl-names,
+            (:$addl-names,:)
             $events,
             $work-simples,
             $aud521,         
@@ -3026,15 +3027,22 @@ return
 :)
 declare function mbshared:get-name(
     $d as element(marcxml:datafield)     
-    ) as element()
+    ) as element()*
 {
-    let $relatorCode := 
-        if ($d/marcxml:subfield[@code = "4"]!="") then
-            (:marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1])):)
+    (:let $relatorCode := 
+        if ($d/marcxml:subfield[@code = "4"]!="") then            
             marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code = "4"][1])),".")
         else 
             marc2bfutils:generate-role-code(fn:string($d/marcxml:subfield[@code = "e"][1]))
-      
+    :)  
+    let $relatorCodes := 
+        for $role in $d/marcxml:subfield[@code = "4" or @code = "e"]
+          return 
+            if (fn:string($role/@code) = "4" and fn:string($role)!="") then            
+                marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($role)),".")
+            else 
+                marc2bfutils:generate-role-code(marc2bfutils:clean-string(fn:string($role))) 
+    
     let $label := if ($d/@tag!='534') then
     	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , ' ')    	
     	else 
@@ -3071,22 +3079,27 @@ declare function mbshared:get-name(
 
     let $tag := fn:string($d/@tag)
     let $desc-role:=if (fn:starts-with($tag , "10") or fn:starts-with($tag , "11")) then "primary" else () 
-    let $resourceRole := 
-        if ($relatorCode ne "") then
+    let $resourceRoles :=    
+        (:if ($relatorCode ne "") then:)
+       ( if (fn:string-join($relatorCodes,"") = "") then        
             (: 
                 k-note, added substring call because of cruddy data.
                 record 16963854 had "aut 146781635" in it
                 Actually, I'm going to undo this because this is a cataloging error
                 and we want those caught.  was fn:substring($relatorCode, 1, 3))
             :)
-            fn:concat("relators:" , $relatorCode)
-        else if ( fn:starts-with($tag, "1") ) then
-            "bf:creator"
-        else if ( fn:starts-with($tag, "7") and $d/marcxml:subfield[@code="t"] ) then
-            "bf:creator"
-        else
-            "bf:contributor"
-            
+           (: fn:concat("relators:" , $relatorCode):)
+            if ( fn:starts-with($tag, "1") ) then
+                "bf:creator"
+            else if ( fn:starts-with($tag, "7") and $d/marcxml:subfield[@code="t"] ) then
+                "bf:creator"
+            else
+                "bf:contributor"
+        else    
+            for $role in $relatorCodes[fn:string(.) !=""]
+                    return fn:concat("relators:" , $role) 
+        ) 
+        
     (: resourceRole inside the authority makes it un-re-useable; removed 2013-12-03
     let $resourceRoleTerms := 
         for $r in $d/marcxml:subfield[@code="e"]
@@ -3103,18 +3116,19 @@ declare function mbshared:get-name(
         for $sys-num in $d/marcxml:subfield[@code="0"] 
                      return mbshared:handle-system-number($sys-num)            
     return
-
-       element {$resourceRole} {
+      
+      for $role in  $resourceRoles
+       return element {fn:string($role)} {
             element {$class} { 
                 element bf:label { marc2bfutils:clean-name-string($label)},                
                 if ($d/@tag!='534') then element bf:authorizedAccessPoint {$aLabel} else (),
                 mbshared:generate-880-label($d,"name"),
                 $elementList,                          
                  $system-number,                 
-                 $bio-links
-                 
+                 $bio-links                 
             }
         }
+  
 };
 
 (:~
