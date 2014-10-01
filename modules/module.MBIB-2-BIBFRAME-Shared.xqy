@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-01-T16:00:00";
+declare variable $mbshared:last-edit :="2014-10-01-T10:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -2772,7 +2772,8 @@ let $hashableTitle :=
         return $n
     let $hashableNames := fn:string-join($hashableNames, " ")
     let $hashableLang := fn:normalize-space(fn:substring(fn:string($marcxml/marcxml:controlfield[@tag='008']), 36, 3))
-    let $hashableTypes := fn:concat($mainType, fn:string-join($types, ""))
+    (:let $hashableTypes := fn:concat($mainType, fn:string-join($types, "")):)
+    let $hashableTypes := fn:concat($mainType, $types[1])
     
     let $hashableStr := fn:concat($hashableNames, " / ", $hashableTitle, " / ", $hashableLang, " / ", $hashableTypes)
     let $hashableStr := fn:replace($hashableStr, "!|\||@|#|\$|%|\^|\*|\(|\)|\{|\}|\[|\]|:|;|'|&amp;quot;|&amp;|<|>|,|\.|\?|~|`|\+|=|_|\-|/|\\| ", "")
