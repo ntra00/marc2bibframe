@@ -3730,21 +3730,25 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         }
                     },
             for $this-tag in $marcxml/marcxml:datafield[@tag="052"] return mbshared:generate-simple-property($this-tag ,"classification")     ,
-           for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"086")][marcxml:subfield[@code="z"]]
-             return
-                   element bf:classification {
-                               element bf:Classification {                        
-                                 	if ($this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
+            for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"086")][marcxml:subfield[@code="z"]]
+             let $scheme:=
+                    if ($this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
                                  	       element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
                                  	else if ($this-tag[@ind1="0"]  ) then  
                                  	      element bf:classificationScheme {"SUDOC"}
                                  	else if ($this-tag[@ind1="1"]  ) then  
                                  	      element bf:classificationScheme {"Government of Canada classification"}
-                                 	  else (),
-                                 	element bf:classificationNumber {  fn:string($this-tag/marcxml:subfield[@code="z"])},
-					 		        element bf:classificationStatus  {"canceled/invalid"}
-					 		}
-					}
+                                 	  else ()
+              let $status:=element bf:classificationStatus  {"canceled/invalid"}                 
+             return for $cancel in $this-tag/marcxml:subfield[@code="z"]
+                        return
+                            element bf:classification {
+                                        element bf:Classification {                        
+                                          	$scheme,
+                                          	$status,
+                                          	element bf:classificationNumber {  fn:string($cancel)}					 		        
+         					 		}
+         					}
                  ,
                      
         (:for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
