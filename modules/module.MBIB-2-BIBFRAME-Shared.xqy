@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-01-T14:00:00";
+declare variable $mbshared:last-edit :="2014-10-02-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -458,7 +458,7 @@ return element bf:Instance {element bf:instanceTitle{
     }
 };
 (:~
-:   This is the function generates instance resources when there are multiple 300s
+:   This is the function generates Instance resources when there are multiple 300s
 :
 :   @param  $d        element is the MARCXML 300
 :   @param  $workID   uri for the derivedfrom
@@ -477,7 +477,7 @@ declare function mbshared:generate-addl-physical(
         }
     let $instance-title := 
         (   element bf:titleValue {marc2bfutils:clean-title-string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])},
-            element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="3"])}
+            if ($d/marcxml:subfield[@code="3"]) then  element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="3"])} else () 
         )
     let $instance-types1:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)                  
   
@@ -487,7 +487,7 @@ declare function mbshared:generate-addl-physical(
                 
 return element bf:Instance {element bf:instanceTitle{
             $instance-types,$instance-types1,
-            element bf:Title{ element bf:titleValue{$instance-title}}},
+            element bf:Title{ $instance-title}},
               mbshared:generate-simple-property($d, "instance"),
             $derivedFrom
     }
@@ -1914,7 +1914,7 @@ declare function mbshared:generate-500notes(
     ) as element ()*
 {
 
-for $marc-note in $marcxml/marcxml:datafield[fn:starts-with(@tag, "5") and fn:not(fn:matches(@tag,$mbshared:named-notes))]
+for $marc-note in $marcxml/marcxml:datafield[fn:starts-with(@tag, "5") and fn:not(fn:matches(@tag,$mbshared:named-notes))][marcxml:subfield[@code="3" or @code="a"]]
         return if ($marc-note[@tag !='504']) then
  			        let $note-text:= fn:string-join($marc-note/marcxml:subfield[@code="3" or @code="a"]," ")
 			         return (element bf:note {$note-text},			                
