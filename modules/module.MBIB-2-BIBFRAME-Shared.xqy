@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-02-T11:00:00";
+declare variable $mbshared:last-edit :="2014-10-02-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -834,7 +834,7 @@ declare function mbshared:generate-identifiers(
                	
                 (:if contains subprops, build class for $a else just prop w/$a:)
                 	let $cancels:= for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(m|y|z)")]
-                	                   return element {fn:concat("bf:",fn:string($id/@property)) }{
+                	                   return element {fn:concat("bf:",fn:string($id/@property)) }{ element bf:test {$id/@property,$sf},
 		                                   mbshared:handle-cancels($this-tag, $sf, fn:string($id/@property))
 		                                   }
                    	return  (:need to construct blank node if there's no uri or there are qualifiers/assigners :)
@@ -986,7 +986,7 @@ else
 :)
 declare function mbshared:handle-cancels($this-tag, $sf, $scheme) 
 {
- if (($this-tag[fn:matches(@tag,"(010|015|016|017|020|022|027|030|024|088)")] and $sf[@code="z"])  or
+ if (($this-tag[fn:matches(@tag,"(010|015|016|017|020|022|024|027|030|035|088)")] and $sf[@code="z"])  or
         ($this-tag[@tag="022"] and $sf[fn:matches(@code,"m|y")])) then
          element bf:Identifier {
   		  element bf:identifierScheme { $scheme },
@@ -997,7 +997,7 @@ declare function mbshared:handle-cancels($this-tag, $sf, $scheme)
                       element bf:identifierStatus{"canceled/invalid"}                
               else if ($this-tag[@tag="022"] and $sf[@code="m"]) then
                       element bf:identifierStatus {"canceled/invalid"}                
-              else if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|027|030|024|088)")] and $sf[@code="z"] ) then               
+              else if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|024|027|030|035|088)")] and $sf[@code="z"] ) then               
                       element bf:identifierStatus{"canceled/invalid"}                  
               else
                   ()
