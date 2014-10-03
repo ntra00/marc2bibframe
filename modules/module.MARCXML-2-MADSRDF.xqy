@@ -767,7 +767,6 @@ as element(rdf:RDF)
                     },
                 :)
                     element madsrdf:variantLabel {
-                        attribute xml:lang {"en"},
                         text {$authoritativeLabel} 
                     },
                     $componentList,
@@ -796,7 +795,6 @@ as element(rdf:RDF)
                     },
                 :)    
                     element madsrdf:authoritativeLabel {
-                        attribute xml:lang {"en"},
                         text {$authoritativeLabel} 
                     },
                     $componentList,
@@ -936,7 +934,6 @@ declare function marcxml2madsrdf:create-component(
                     attribute rdf:resource { fn:concat( xs:string( fn:namespace-uri-for-prefix("madsrdf", <madsrdf:blah/>) ) , $aORv ) }
                 }, 
                 element {$labelProperty} { 
-                    attribute xml:lang {"en"},
                     text {$label} 
                 },
                 $elementList
@@ -1018,7 +1015,6 @@ declare function marcxml2madsrdf:create-deletion-note($df as element()) as eleme
     let $text := fn:string-join($textparts, ' ')
             
     let $note := element madsrdf:deletionNote { 
-            attribute xml:lang {"en"},
             text {$text} 
         }
         
@@ -1051,7 +1047,6 @@ declare function marcxml2madsrdf:create-element($sf, $pos) {
             return
                 element {$el} {
                     element madsrdf:elementValue { 
-                        attribute xml:lang {"en"},
                         $label 
                     }
                 }
@@ -1065,7 +1060,6 @@ declare function marcxml2madsrdf:create-element($sf, $pos) {
                         (: this seems a little forced, but we need to seperate the the name and title parts :) 
                         element {$el} {
                             element madsrdf:elementValue { 
-                                attribute xml:lang {"en"},
                                 text {$dfc} 
                             }
                         }
@@ -1177,7 +1171,6 @@ declare function marcxml2madsrdf:create-hasLaterForm-relation(
                                 attribute rdf:resource { fn:concat( xs:string( fn:namespace-uri-for-prefix("madsrdf", <madsrdf:blah/>) ) , "Authority" ) }
                             },
                             element madsrdf:authoritativeLabel {
-                                attribute xml:lang {"en"},
                                 $s/text()
                                 }
                             }
@@ -1263,7 +1256,6 @@ declare function marcxml2madsrdf:create-relation($df as element()) as element()*
                             attribute rdf:resource { fn:concat( xs:string( fn:namespace-uri-for-prefix("madsrdf", <madsrdf:blah/>) ) , $aORv ) }
                         },
                         element {$labelProp} { 
-                            attribute xml:lang {"en"},
                             text {$label} 
                         },
                         $componentList,
@@ -1318,7 +1310,6 @@ declare function marcxml2madsrdf:create-relation($df as element()) as element()*
                                                 attribute rdf:resource { fn:concat( xs:string( fn:namespace-uri-for-prefix("madsrdf", <madsrdf:blah/>) ) , $aORv ) }
                                             },
                                             element {$labelProp} { 
-                                                attribute xml:lang {"en"},
                                                 text {$label} 
                                             },
                                             $componentList,
@@ -1371,7 +1362,6 @@ declare function marcxml2madsrdf:create-relation($df as element()) as element()*
                                                 attribute rdf:resource { fn:concat( xs:string( fn:namespace-uri-for-prefix("madsrdf", <madsrdf:blah/>) ) , $aORv ) }
                                             },
                                             element {$labelProp} { 
-                                                attribute xml:lang {"en"},
                                                 text {$label} 
                                             },
                                             $componentList,
@@ -1533,7 +1523,7 @@ declare function marcxml2madsrdf:create-source($df as element()) as element() {
     let $text := fn:string-join($textparts, ' ')
     let $text_element := 
         if (fn:normalize-space($text)) then
-            <madsrdf:citation-note xml:lang="en">{$text}</madsrdf:citation-note>
+            <madsrdf:citation-note>{$text}</madsrdf:citation-note>
         else ()
                
     let $source := 
@@ -1589,7 +1579,6 @@ declare function marcxml2madsrdf:create-variant($df as element()) as element() {
                 },
             :)
                 element madsrdf:variantLabel { 
-                    attribute xml:lang {"en"},
                     text {$label} 
                 },
                 $componentList,
