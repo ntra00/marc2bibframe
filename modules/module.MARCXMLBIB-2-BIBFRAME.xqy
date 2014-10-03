@@ -41,6 +41,8 @@ import module namespace marcxml2madsrdf = "info:lc/id-modules/marcxml2madsrdf#" 
 import module namespace music = "info:lc/id-modules/marcnotatedmusic2bf#" at "module.MBIB-NotatedMusic-2-BF.xqy";
 import module namespace bfdefault = "info:lc/id-modules/marcdefault2bf#" at "module.MBIB-Default-2-BF.xqy";
 
+import module namespace marcerrors  = 'info:lc/id-modules/marcerrors#' at "module.ErrorCodes.xqy";
+
 (: NAMESPACES :)
 declare namespace marcxml       	= "http://www.loc.gov/MARC21/slim";
 declare namespace rdf           	= "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
@@ -65,40 +67,44 @@ declare function marcbib2bibframe:marcbib2bibframe(
         $identifier as xs:string
         ) as element(rdf:RDF) 
 {   
-   if ($marcxml/marcxml:leader) then
-     let $about := 
-        if ($identifier eq "") then
-            ()
-        else if ( fn:not( fn:starts-with($identifier, "http://") ) ) then
-            attribute rdf:about { fn:concat("http://id.loc.gov/" , $identifier) }
+   
+    let $error := marcerrors:check($marcxml)
+    let $out := 
+        if ($error) then
+            $error
         else
-            attribute rdf:about { $identifier }
+            let $about := 
+                if ($identifier eq "") then
+                    ()
+                else if ( fn:not( fn:starts-with($identifier, "http://") ) ) then
+                    attribute rdf:about { fn:concat("http://id.loc.gov/" , $identifier) }
+                else
+                    attribute rdf:about { $identifier }
             
-    let $leader:=$marcxml/marcxml:leader
-	let $leader6:=fn:substring($leader,7,1)
-	let $leader7:=fn:substring($leader,8,1)
+            let $leader:=$marcxml/marcxml:leader
+            let $leader6:=fn:substring($leader,7,1)
+            let $leader7:=fn:substring($leader,8,1)
 		
-	let $leader67type:=
-		if ($leader6="a") then
-				if (fn:matches($leader7,"(a|c|d|m)")) then
-					"BK"
-				else if (fn:matches($leader7,"(b|i|s)")) then
-					"SE"
-				else ()									
-		else
-			if ($leader6="t") then "BK" 
-			     else if ($leader6="p") then "MM"
-         		 else if ($leader6="m") then "CF"
-         		 else if (fn:matches($leader6,"(e|f|s)")) then "MP"
-         		 else if (fn:matches($leader6,"(g|k|o|r)")) then "VM"
-         		 else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
-			     else ()
+            let $leader67type:=
+                if ($leader6="a") then
+                    if (fn:matches($leader7,"(a|c|d|m)")) then
+					    "BK"
+				    else if (fn:matches($leader7,"(b|i|s)")) then
+					    "SE"
+				    else ()									
+		        else
+			        if ($leader6="t") then "BK" 
+			        else if ($leader6="p") then "MM"
+         		    else if ($leader6="m") then "CF"
+         		    else if (fn:matches($leader6,"(e|f|s)")) then "MP"
+         		    else if (fn:matches($leader6,"(g|k|o|r)")) then "VM"
+         		    else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
+			        else ()
 			
-		let $musictype:=
-			     if ($leader67type="MU" and fn:matches($leader6,"(c|d)") ) then "notation" 
-			     else if (fn:matches($leader6,"(i|j)")) then "audio" 
-				 else ()
-     
+            let $musictype:=
+                if ($leader67type="MU" and fn:matches($leader6,"(c|d)") ) then "notation" 
+                else if (fn:matches($leader6,"(i|j)")) then "audio" 
+                else ()
 
             let $work := 
                 if ($musictype = "notation") then
@@ -118,10 +124,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
                     $work               
                 }
                 </rdf:RDF>
- else
-        element rdf:RDF {            	            	
-            comment {"No leader - invalid MARC/XML input"}                
-        }
+    return $out
 };
 
 declare function marcbib2bibframe:marcbib2bibframe(
