@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-02-T16:00:00";
+declare variable $mbshared:last-edit :="2014-10-06-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -744,7 +744,7 @@ declare function mbshared:generate-880-label
                 }
             else if ($node-name="title") then 
                 let $subfs := 
-                    if ( fn:matches($d/@tag, "(130|245|242|243|246|490|510|630|730|740|830)") ) then
+                    if ( fn:matches($d/@tag, "(130|240|245|242|243|246|490|510|630|730|740|830)") ) then
                         "(a|b|f|h|k|n|p)"
                     else
                         "(t|f|k|m|n|p|s)"
@@ -2413,9 +2413,9 @@ let $typeOf008:=
         
     let $mainType := "Work"
     
-    let $uniformTitle := (:work title can be from 245 if no 240/130:)    
+    let $uniformTitle := (:work title can be from 245 if no 240/130:)           
        for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
-            return mbshared:get-uniformTitle($d)     
+            return mbshared:get-uniformTitle($d)         
     let $names := 
         (for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
                 return mbshared:get-name($d),
@@ -2589,7 +2589,8 @@ let $typeOf008:=
                 },
              $aLabel,
             $aLabelsWork880,           
-            $dissertation,             
+            $dissertation,
+            
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
@@ -3019,7 +3020,7 @@ return
 (:~
 :   This function generates a name.
 :   It takes a specific datafield as input.
-:   It generates a bf:uniformTitle as output.
+:   It generates a bf:creator or other name link as output.
 :
 :   @param  $d        element is the marcxml:datafield
 :
@@ -3562,7 +3563,8 @@ for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag
 :)
 declare function mbshared:get-uniformTitle(
     $d as element(marcxml:datafield)
-    ) as element(bf:Work)
+    ) 
+    (:as     element(bf:Work):)
 {
     (:let $label := fn:string($d/marcxml:subfield["a"][1]):)
     (:??? filter out nonsorting chars??? 880s?:)
@@ -3573,12 +3575,14 @@ declare function mbshared:get-uniformTitle(
             (for $s in  $d/marcxml:subfield[@code="l"]
                   let $lang:= (:some have 2 codes german = deu, ger :)
                     $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation($s,".")]/iso6392[1]
-                  return if ($lang!="") then element bf:language { 
+                  return if ($lang!="") 
+                            then
+                                element bf:language { 
                                                 attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
                                               }
-         else element bf:languageNote {marc2bfutils:clean-string($s)},
-          mbshared:generate-880-label($d,"title"),
-   
+                                 else element bf:languageNote {marc2bfutils:clean-string($s)},
+          
+        mbshared:generate-880-label($d,"title"),
          mbshared:generate-translationOf($d)
         )
                 else ()
@@ -3600,7 +3604,10 @@ declare function mbshared:get-uniformTitle(
                    (:element bf:label {$aLabel},:)
                      element madsrdf:authoritativeLabel{ fn:string($aLabel)},
 	  		       $title-nonsort,                      
-                   element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title")}},               
+                   element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title"),
+                                    mbshared:generate-880-label($d,"title")                                    
+                                    }
+                            },               
                    $ut-local-id,
                    $translationOf
             }                    
