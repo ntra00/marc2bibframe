@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-06-T11:00:00";
+declare variable $mbshared:last-edit :="2014-10-06-T15:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -744,7 +744,7 @@ declare function mbshared:generate-880-label
                 }
             else if ($node-name="title") then 
                 let $subfs := 
-                    if ( fn:matches($d/@tag, "(130|240|245|242|243|246|490|510|630|730|740|830)") ) then
+                    if ( fn:matches($d/@tag, "(130|210|222|240|245|242|243|246|490|510|630|730|740|830)") ) then
                         "(a|b|f|h|k|n|p)"
                     else
                         "(t|f|k|m|n|p|s)"
