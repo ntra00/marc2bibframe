@@ -68,7 +68,7 @@ declare variable $baseuri as xs:string := xdmp:get-request-field("baseuri","http
 :   above).
 :   
 :)
-declare variable $usebnodes as xs:string := xdmp:get-request-field("usebndoes","false");
+declare variable $usebnodes as xs:string := xdmp:get-request-field("usebnodes","false");
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
