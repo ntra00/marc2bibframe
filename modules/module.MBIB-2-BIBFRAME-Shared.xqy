@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-06-T15:00:00";
+declare variable $mbshared:last-edit :="2014-10-08-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -297,7 +297,7 @@ declare variable $mbshared:relationships :=
 		    <type tag="785" ind2="5"  property="absorbedInPartBy">partiallyAbsorbs</type>
 		    <type tag="785" ind2="6"  property="splitInto">splitFrom</type>
 		    <type tag="785" ind2="7"  property="mergedToForm">mergedFrom</type>	    		
-    	    <type tag="785" ind2="8"  property="continuedBy">formerlyNamed</type>
+    	    <type tag="785" ind2="8"  property="succeededBy">formerlyNamed</type>
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
 		    <type tag="534" property="originalVersion"></type>
@@ -588,7 +588,7 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
         for $i in fn:distinct-values($instance-types)
                 return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
    
-let $issuance:=
+  let $issuance:=
            	if (fn:matches($leader7,"(a|c|d)")) 		            then "monographic"
            	else if ($leader7="b") 						            then "continuing"
            	else if ($leader7="m" and  fn:matches($leader19,"(a|b|c)")) 	then "multipart monograph"
@@ -596,12 +596,29 @@ let $issuance:=
            	else if ($leader7='i') 						           	then "integrating resource"
            	else if ($leader7='s')           						then "serial"
            	else ()
-     let $issuance := 
+  let $issuance := 
                 if ($issuance) then 
                    element bf:modeOfIssuance {$issuance}                  
                 else ()
-            
-            
+                
+let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and fn:matches(fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")) then
+
+                let $colorcode:=  if (  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)="h") then            
+                                    fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],9,1)
+                                  else 
+                                       fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],4,1)
+                return if ($colorcode= "a") then "One color"
+                        else if ($colorcode= "b") then "Black-and-white"
+                        else if ($colorcode= "c") then "Multicolored"
+                        else if ($colorcode= "g") then "Gray scale"
+                        else if ($colorcode= "m") then "Mixed"
+                        else if ($colorcode= "n") then "Not applicable"
+                        else if ($colorcode= "u") then "Unknown"
+                        else ()
+            else element bf:test { fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)}
+    let $color:= if ($color) then
+                    element bf:colorContent {$color}
+                 else ()
       let $holdings := mbshared:generate-holdings($d/ancestor::marcxml:record, $workID)
  
     let $instance-identifiers :=
@@ -642,6 +659,7 @@ let $issuance:=
             $publication,   
             $edition-880,
             $physMapData,
+            $color,
           $issuance,
           $instance-relateds,
             $instance-simples,
@@ -1025,7 +1043,7 @@ declare function mbshared:generate-26x-pub
 	                 return              
 	                    element bf:providerName {
 	                    element bf:Organization {
-	                       element bf:label {marc2bfutils:clean-string(fn:string($pub))}
+	                       element bf:label {marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($pub)),"")}
 	                       }
 	                    }
 	             ,
@@ -1034,7 +1052,7 @@ declare function mbshared:generate-26x-pub
 	                 return              
 	                    element bf:providerPlace {element bf:Place {
 	                       element bf:label {
-	                           marc2bfutils:clean-string(fn:string($pub))}
+	                           marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($pub)),"")}
                             }
                         }
 	                   ,
@@ -1088,7 +1106,7 @@ declare function mbshared:generate-publication
                         :)
 	                    element bf:providerName {
 	                       element bf:Organization {
-	                           element bf:label {marc2bfutils:clean-string(fn:string($pub))},
+	                           element bf:label {marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($pub)),"")},
 	                           mbshared:generate-880-label($d,"provider")
 	                       }
 	                    }
@@ -1097,7 +1115,7 @@ declare function mbshared:generate-publication
 	                        element bf:providerPlace {
 	                           element bf:Place {
 	                               element bf:label {
-	                                   marc2bfutils:clean-string($d/marcxml:subfield[@code="a"][$x])},
+	                                  marc2bfutils:chopPunctuation( marc2bfutils:clean-string($d/marcxml:subfield[@code="a"][$x]),"")},
 	                                      mbshared:generate-880-label($d,"place")
 	                           }
                            }
@@ -1126,7 +1144,7 @@ declare function mbshared:generate-publication
 	                    for $pl in $d/marcxml:subfield[@code="a"]
 	                    return element bf:providerPlace {
 	                                   element bf:Place {
-	                                       element bf:label {fn:string($pl)},
+	                                       element bf:label {marc2bfutils:chopPunctuation(fn:string($pl),"")},
 	                                       mbshared:generate-880-label($d,"place")  
 	                                   }
 	                               },
@@ -1149,7 +1167,7 @@ declare function mbshared:generate-publication
 	                    element bf:Provider {
 	                       element bf:providerName {
 	                        element bf:Organization {
-	                           element bf:label {marc2bfutils:clean-string(fn:string($pub))},
+	                           element bf:label {marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($pub)),"")},
 	                            mbshared:generate-880-label($d,"provider") 
 	                           }
 	                           }
@@ -1157,7 +1175,7 @@ declare function mbshared:generate-publication
 	                    if ( $d/marcxml:subfield[@code="f"][$x]) then
 	                        element bf:providerPlace {
 	                               element bf:Place {
-	                                   element bf:label {                      fn:string($d/marcxml:subfield[@code="f"][$x])},
+	                                   element bf:label { marc2bfutils:chopPunctuation( fn:string($d/marcxml:subfield[@code="f"][$x]),"")},
 	                                   mbshared:generate-880-label($d,"place") 
 	                                   }
 	                                   }	                        
@@ -1180,7 +1198,7 @@ declare function mbshared:generate-publication
                     for $pl in $d/marcxml:subfield[@code="e"]
                     	return element bf:providerPlace {
                     	           element bf:Place {
-	                                           element bf:label {fn:string($pl)},
+	                                           element bf:label {marc2bfutils:chopPunctuation(fn:string($pl),"")},
 	                       	                   mbshared:generate-880-label($d,"place")
 	                                   }
 	                       },
