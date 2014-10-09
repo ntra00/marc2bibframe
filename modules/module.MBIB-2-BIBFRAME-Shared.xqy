@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-08-T17:00:00";
+declare variable $mbshared:last-edit :="2014-10-09-T13:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -60,7 +60,7 @@ declare variable $mbshared:transform-rules :=(
 </rules>
 );
 declare variable $mbshared:named-notes:=("(502|505|506|507|508|511|513|518|522|524|525|541|546|555)");
-(:"(500|501|502|504|505|506|507|508|510|511|513|514|515|516|518|520|521|522|524|525|526|530|533|534|535|536|538|540|541|542|544|545|546|547|550|552|555|556|562|563|565|567|580|581|583|584|585|586|588|59X)":)
+
 (: this var plus all the simple-properties nodes are used to generate standalone 880s:)
 declare variable $mbshared:addl-880-nodes:= (
 	<properties>
@@ -248,8 +248,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="creditsNote"					  tag="508" startwith="Credits: " >Creation/Production Credits Note </node>
          <node domain="instance"		property="performerNote"					tag="511" startwith="Cast: " 		>Participant or Performer Note </node>
          <node domain="instance"		property="preferredCitation"			tag="524"				                >Preferred Citation of Described Materials Note</node>
-         <node domain="instance"		property="immediateAcquisition"		tag="541" sfcodes="3abcdfhno"					>Immediate Source of Acquisition Note</node>
-         541--/3+a (sep 3 by :)+b+c+d+f+h+n+o (sep by ;)
+         <node domain="instance"		property="immediateAcquisition"		tag="541" sfcodes="3abcdfhno"					>Immediate Source of Acquisition Note</node>        
 
          <node domain="instance"		property="languageNote"					  tag="546" sfcodes="3a"  		stringjoin=": "		>Language Note</node>
          <node domain="instance"		property="notation"					      tag="546" sfcodes="b"				    >Language Notation(script)</node>
@@ -312,9 +311,9 @@ declare variable $mbshared:relationships :=
         <type tag="510" property="describedIn">isReferencedBy</type>
         -->
         <!-- Instance to Work relationships (none!) -->
-	  	<instance-relateds all-tags="(530|776|777)">
+	  	<instance-relateds all-tags="(776|777)">
 	  	  <!--<type tag="6d30"  property="subject">isSubjectOf</type>-->
-	  	  <type tag="530" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>
+	  	  <!--<type tag="530" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>-->
          <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>	  	  
 	  	  <type tag="777" property="issuedWith">issuedWith</type>
 	  	</instance-relateds>
@@ -574,17 +573,7 @@ let $leader7:=fn:substring($leader,8,1)
 
 let $leader19:=fn:substring($leader,20,1)
 let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)                  
-    (: (if ($leader7="m" and 
-           	         fn:matches($leader19,"(a|b|c)")) 	then "MultipartMonograph"
-           	else if (fn:matches($leader7,"(a|c|d|m)"))	then "Monograph"
-            else if ($leader7='s')           		then "Serial"           	
-           	else if ($leader7='i') 				   	then "Integrating"           	
-           	else (),
-    if (fn:matches($leader7,"(c|d)"))	then "Collection" else (),
-    if (fn:matches($leader6,"(d|f|t)"))	then "Manuscript" else (),
-    if ($leader8="a")	then "Archival" else (),
- 
-    ):)
+  
   let $instance-types:= 
         for $i in fn:distinct-values($instance-types)
                 return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
@@ -601,6 +590,20 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
                 if ($issuance) then 
                    element bf:modeOfIssuance {$issuance}                  
                 else ()
+  let $physform:=  if (  $d/../marcxml:datafield[@tag = "020"][marcxml:subfield[@code="q"]]) then                
+                        marc2bfutils:clean-string(fn:normalize-space($d/../marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code="q"]))            
+                    else ()     
+    let $physicalForm:=                                				  	                        
+            if (fn:matches($physform,"(pbk|softcover)","i")) then
+                "paperback"
+            else if (fn:matches($physform,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
+                "hardback"
+            else if (fn:matches($physform,"(ebook|eresource|e-isbn|ebk)","i") ) then
+                "electronic resource"
+            else if (fn:contains($physform,"lib. bdg.") ) then
+                "library binding"			            					           
+            else 
+                ()
                 
 let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and fn:matches(fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")) then
 
@@ -649,7 +652,7 @@ let $sound:= for $s in $sound
             mbshared:generate-identifiers($d/ancestor::marcxml:record,"instance")    
         )    
     
-    let $general-notes := mbshared:generate-500notes($d/ancestor::marcxml:record)
+    let $general-notes := mbshared:generate-500notes($d/ancestor::marcxml:record, "instance")
    let $standalone-880s:=mbshared:generate-standalone-880( $d/ancestor::marcxml:record ,"instance") 
     (:337, 338::)
     let $physdesc := mbshared:generate-physdesc($d/ancestor::marcxml:record,"instance")
@@ -682,6 +685,7 @@ let $sound:= for $s in $sound
             $publication,   
             $edition-880,
             $physMapData,
+            if ($physicalForm) then      element bf:format {$physicalForm} else (),
             $color,
             $aspect,
             $sound,
@@ -1386,7 +1390,7 @@ declare function mbshared:generate-physdesc
 	and moved $instance (generating the rest of the instance from the 260 out 
 :   @param  $d        element is the 020  $a
 :   @param  $isbn-string       is the isbn string; may have come from subfield or calculation
-:   @param  $isbn-extra       is the stuff after the number (eg pbk v. 12 )
+
 :  @param  $instance 	element bf:Instance is generated fromthe first 260  
 :   @return bf:* as element()
 :
@@ -1420,7 +1424,9 @@ declare function mbshared:generate-instance-fromISBN(
     let $volume-info-test:=
         if (fn:not(fn:empty($volume-test ))) then
         for $v in  $volume-test
-            for $vol in fn:tokenize(fn:string($d/marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$v)][1]           
+            for $content in $d/marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]
+                for $vol in fn:tokenize(fn:string($content),"--")[fn:contains(.,$v)][1]
+            (:for $vol in fn:tokenize(fn:string($d/marcxml:datafield[@tag="505"]/marcxml:subfield[@code="a"]),"--")[fn:contains(.,$v)][1]:)           
 		      return if  (fn:contains($vol,$v)) then element bf:subtitle {fn:concat("experimental 505a matching to isbn:",$vol)} else ()
         else ()
                 
@@ -1431,25 +1437,24 @@ declare function mbshared:generate-instance-fromISBN(
 		      return if  (fn:contains($vol,$volume)) then element bf:subtitle {fn:concat("experimental 505a matching to isbn:",$vol)} else ()
         else ():)
 
-    let $carrier:=
+    let $physform:=            
         if (fn:tokenize( $isbn-set/marcxml:subfield[1],"\(")[1]) then        
             marc2bfutils:clean-string(fn:normalize-space(fn:tokenize($isbn-set/marcxml:subfield[1],"\(")[2]))            
         else () 
     
     let $physicalForm:=                                				  	                        
-            if (fn:matches($carrier,"(pbk|softcover)","i")) then
+            if (fn:matches($physform,"(pbk|softcover)","i")) then
                 "paperback"
-            else if (fn:matches($carrier,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
+            else if (fn:matches($physform,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
                 "hardback"
-            else if (fn:matches($carrier,"(ebook|eresource|e-isbn|ebk)","i") ) then
+            else if (fn:matches($physform,"(ebook|eresource|e-isbn|ebk)","i") ) then
                 "electronic resource"
-            else if (fn:contains($carrier,"lib. bdg.") ) then
+            else if (fn:contains($physform,"lib. bdg.") ) then
                 "library binding"			
-            (:else if (fn:matches($carrier,"(acid-free|acid free|alk)","i")) then
-                "acid free":)					           
+          		           
             else 
-                ""
-            (:else fn:replace($carrier,"\)",""):)
+                ()
+        
     (:9781555631185 (v. 4. print):)
     let $i-title :=  (:this already exists in the output?:)
         if ($d/marcxml:datafield[@tag = "245"]) then
@@ -1467,19 +1472,19 @@ declare function mbshared:generate-instance-fromISBN(
                     fn:normalize-space(fn:concat(xs:string($t), " (", $volume, ")"))
                     
                 }
-        else if ($physicalForm ne "") then
+        else if ($physicalForm) then
             for $t in $i-title
             return
                 element bf:title {                
                     $t/@*,                    
                     fn:normalize-space(fn:concat(xs:string($t), " (", $physicalForm, ")"))
                 }
-        else if ($carrier ne "") then
+        else if ($physform ne "") then
             for $t in $i-title
             return
                 element bf:title {
                     $t/@*,
-                    fn:normalize-space(fn:concat(xs:string($t), " (", $carrier, ")"))
+                    fn:normalize-space(fn:concat(xs:string($t), " (", $physform, ")"))
                 }
         else 
            ()
@@ -1502,7 +1507,7 @@ declare function mbshared:generate-instance-fromISBN(
                 attribute rdf:resource {fn:concat("http://isbn.example.org/",fn:normalize-space($i))}
                 },                                        
                     
-                if ($element-name ="bf:isbn10" and $physicalForm!="" ) then
+                if ($element-name ="bf:isbn10" and $physicalForm!=() ) then
                     element bf:isbn10 {
                         element bf:Identifier {
                             element bf:identifierValue {fn:normalize-space($i)},
@@ -1831,7 +1836,7 @@ let $hld:= if ($marcxml//hld:holdings) then mbshared:generate-holdings-from-hld(
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
  let $shelfmark:=  (: regex for call# "^[a-zA-Z]{1,3}[1-9].*$" :)        	        	         	         
-	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|070|080|082|084)")]
+	for $tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|051|055|060|070|080|082|083|084)")]
 (:	multiple $a is possible: 2017290 use $i to handle :)
 		for $class at $i in $tag[marcxml:subfield[@code="b"]]/marcxml:subfield[@code="a"]
        		let $element:= 
@@ -1839,6 +1844,7 @@ let $hld:= if ($marcxml//hld:holdings) then mbshared:generate-holdings-from-hld(
        			else if (fn:matches($class/../@tag,"060")) then "bf:shelfMarkNlm"
        			else if (fn:matches($class/../@tag,"080") ) then "bf:shelfMarkUdc"
        			else if (fn:matches($class/../@tag,"082") ) then "bf:shelfMarkDdc"
+       			else if (fn:matches($class/../@tag,"083") ) then "bf:shelfMarkDdc"
        			else if (fn:matches($class/../@tag,"084") ) then "bf:shelfMark"
        				else ()
             let $value:= 
@@ -1949,22 +1955,27 @@ let $isbn-sets:=
 (:~
 :   This is the function generates general notes for all marc notes not in vocabulary
 : 
-:   @param  $marcxml        element is the MARCXML  
+:   @param  $marcxml        element is the MARCXML
+:   @param  $domain         work or instance; allows suppression based on domain
 :   @return bf:note as element()?
 :)
 declare function mbshared:generate-500notes(
- $marcxml as element(marcxml:record)
+ $marcxml as element(marcxml:record),
+  $domain as xs:string
    
     ) as element ()*
 {
 
 for $marc-note in $marcxml/marcxml:datafield[fn:starts-with(@tag, "5") and fn:not(fn:matches(@tag,$mbshared:named-notes))][marcxml:subfield[@code="3" or @code="a"]]
-        return if ($marc-note[@tag !='504']) then
+        return if ($marc-note[@tag ='504']) then
+                    ()
+               else if ($marc-note[@tag !='530'] and $domain="work") then
+                ()
+                else
  			        let $note-text:= fn:string-join($marc-note/marcxml:subfield[@code="3" or @code="a"]," ")
 			         return (element bf:note {$note-text},			                
 			                 mbshared:generate-880-label($marc-note,"note")
-			                 )
-                else ()
+			                 )                
 };
 (:~
 :   This is the function generates a nonsort version of titles using private language tags
@@ -1995,7 +2006,7 @@ else if (fn:matches($d/@tag,"(130|630)" ) and fn:number($d/@ind1) gt 0 ) then
 else ()
 
 };
-(:530, 776, 777 related instances
+(:776, 777 related instances
 ex bib:12821255
 :)
 declare function mbshared:generate-related-instance
@@ -2197,7 +2208,7 @@ declare function mbshared:generate-related-work
             "(a|b|c)"
         else
             "(t|f|k|m|n|o|p|s)"
-    let $title := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,$titleFields)] , ' '))
+    let $title := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,$titleFields)] , " "))
     
     let $name := 
         if (
@@ -2584,7 +2595,7 @@ let $typeOf008:=
             else ()
     
 	let $work-identifiers := mbshared:generate-identifiers($marcxml,"work")
-	let $general-notes := mbshared:generate-500notes($marcxml)
+	let $general-notes := mbshared:generate-500notes($marcxml, "work")
 	let $work-classes := mbshared:generate-classification($marcxml,"work")
 	
  	let $subjects:= 		 
@@ -3089,7 +3100,7 @@ declare function mbshared:get-name(
                 marc2bfutils:generate-role-code(marc2bfutils:clean-string(fn:string($role))) 
     
     let $label := if ($d/@tag!='534') then
-    	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , ' ')    	
+    	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , " ")    	
     	else 
     	fn:string($d/marcxml:subfield[@code='a' ])
     	
@@ -3613,7 +3624,7 @@ declare function mbshared:get-uniformTitle(
     (:let $label := fn:string($d/marcxml:subfield["a"][1]):)
     (:??? filter out nonsorting chars??? 880s?:)
     
-    let $aLabel := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , ' '))       
+    let $aLabel := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , " "))       
     let $translationOf := 
         if ($d/marcxml:subfield[@code="l"]) then
             (for $s in  $d/marcxml:subfield[@code="l"]
@@ -3802,21 +3813,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
          					}
                  ,
                      
-        (:for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086)")]                            
-                for $cl in $this-tag/marcxml:subfield[@code="a"]           
-                	let $valid:=
-                	 	if (fn:not(fn:matches($this-tag/@tag,"(050|055)"))) then
-                			fn:string($cl)
-                		else 
-                  			let $strip := fn:replace(fn:string($cl), "(\s+|\.).+$", "")			
-                  			let $subclassCode := fn:replace($strip, "\d", "")			
-                  			return                   		            
-        			            
-        			            if ( mbshared:validate-lcc($subclassCode))        			              
-        			                 then   								  
-        			                fn:string($strip)
-        			            else 
-        			                ():) 
+       
         	  for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"(050|055|070|080|082|083|084|086|090)")]                            
                 for $cl in $this-tag/marcxml:subfield[@code="a"]           
                 	let $valid:=
