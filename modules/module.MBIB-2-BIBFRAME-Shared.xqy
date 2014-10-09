@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-09-T16:00:00";
+declare variable $mbshared:last-edit :="2014-10-09-T16:30:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -182,7 +182,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicKey"					      tag="240" sfcodes="r"			 	    > Key </node>
          <node domain="work"		property="formDesignation"			     tag="130" sfcodes="k"      >Form subheading from title</node>         
          <node domain="work"		property="formDesignation"			     tag="240" sfcodes="k"      >Form subheading from title</node>         
-         <node domain="work"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
+         <node domain="related"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
          <node domain="work"				property="musicMediumNote"				tag="382" sfcodes="adp"		    	> Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="130" sfcodes="m"				    > Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="730" sfcodes="m"			     	> Music medium note </node>
@@ -219,7 +219,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"				property="formDesignation"				tag="245" sfcodes="k"						>Form Designation</node>
          
          <node domain="work"				property="musicNumber"       			tag="130" sfcodes="n"						>Music Number</node>
-         <node domain="work"				property="musicNumber"					tag="730" sfcodes="n"						>Music Number</node>
+         <node domain="work"				property="partNumber"					tag="730" sfcodes="n"						>Music Number</node>
          <node domain="work"				property="musicVersion"					tag="130" sfcodes="o"						>Music Version</node>
          <node domain="work"				property="musicVersion"					tag="240" sfcodes="o"						>Music Version</node>
          <node domain="work"				property="legalDate"					tag="130" sfcodes="d"						>Legal Date</node>         
@@ -274,8 +274,8 @@ declare variable $mbshared:relationships :=
 		    <type tag="770" property="supplement">supplement</type>
 		    <type tag="772" ind2=" " property="supplementTo">isSupplemented</type>		    	
 		
-		    <type tag="773" property="partOf">hasConstituent</type>
-		     <type tag="774" property="hasPart">has Part</type>
+		    <type tag="773" property="partOf">hasConstituent</type>		     
+		    <type tag="774" property="hasPart">has Part</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
 		   
 		   
@@ -603,12 +603,12 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
             else 
                 ()
                 
-let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and fn:matches(fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")) then
-
-                let $colorcode:=  if (  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)="h") then            
-                                    fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],9,1)
+let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"]) then
+    for $c in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")] 
+                let $colorcode:=  if (  fn:substring($c,1,1)="h") then            
+                                    fn:substring($c,9,1)
                                   else 
-                                       fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],4,1)
+                                       fn:substring($c,4,1)
                 return if ($colorcode= "a") then "One color"
                         else if ($colorcode= "b") then "Black-and-white"
                         else if ($colorcode= "c") then "Multicolored"
@@ -621,8 +621,9 @@ let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] an
     let $color:= if ($color) then
                     element bf:colorContent {$color}
                  else ()
-let $aspect:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)="m") then
-                let $aspectcode:=            fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],5,1)
+let $aspect:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] )then 
+for $a in   $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][ fn:substring(text(),1,1)="m"] 
+                let $aspectcode:=            fn:substring($a,5,1)
                 return if ($aspectcode= "a" ) then "Standard sound aperture (reduced frame)" 
                             else if ($aspectcode= "b") then "Nonanamorphic (wide-screen)"
                             else if ($aspectcode= "c") then "3D"
@@ -632,12 +633,13 @@ let $aspect:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] a
                             else if ($aspectcode= "u") then "Unknown"
                             else ()
               else ()
-let $aspect:= if ($aspect) then
-                    element bf:aspectRatio {$aspect}
-                 else ()
+let $aspect:= for $a in $aspect
+                    return element bf:aspectRatio {$aspect}
+                 
 let $sound:=
-    if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and  fn:matches(fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(c|g|m|v)")) then
-                 marc2bfutils:generate-soundContent(  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],6,1),  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],7,1))                  
+    if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"]) then
+    for $s in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(text(),1,1) ,"(c|g|m|v)")] 
+          return       marc2bfutils:generate-soundContent(  fn:substring($s,6,1),  fn:substring($s,7,1) )                  
     else ()
 let $sound:= for $s in $sound
                 return  element bf:soundContent {$sound}
