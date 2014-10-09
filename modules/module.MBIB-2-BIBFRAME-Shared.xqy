@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-09-T13:00:00";
+declare variable $mbshared:last-edit :="2014-10-09-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -112,9 +112,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="classification"		property="classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
          <node domain="classification"		property="classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
          <node domain="classification"		property="classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
-         <node domain="classification"		property="classificationAssigner"   tag="083" sfcodes=""	        	>various orgs assigner</node><!-- uri="http://id.loc.gov/vocabulary/organizations/"--> 
-         <node domain="classification"		property="classificationEdition"   tag="082" sfcodes=""	         	>classificationEdition</node>
-         <node domain="classification"		property="classificationEdition"   tag="083" sfcodes=""	         	>classificationEdition</node>
+         <node domain="classification"		property="classificationAssigner"   tag="083" sfcodes="q"	        	>various orgs assigner</node><!-- uri="http://id.loc.gov/vocabulary/organizations/"--> 
+         
          <node domain="classification"		property="classificationLcc"   tag="052" sfcodes="ab"	stringjoin="."  uri="http://id.loc.gov/authorities/classification/G"	>geo class</node>
          <node domain="title"		property="titleQualifier"			tag="210" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="titleQualifier"			tag="222" sfcodes="b"          >title qualifier</node>
@@ -300,8 +299,7 @@ declare variable $mbshared:relationships :=
     	    <type tag="785" ind2="8"  property="succeededBy">formerlyNamed</type>
 		    <type tag="786" property="dataSource"></type>
 		    <type tag="533" property="reproduction"></type>
-		    <type tag="534" property="originalVersion"></type>
-    		<!--<type tag="787" property="relatedResource">relatedItem</type>-->					  	    	  	   	  	    	  	    
+		    <type tag="534" property="originalVersion"></type>    							  	    	  	   	  	    	  	   
 	  	    <type tag="630"  property="subject">isSubjectOf</type>
 	  	    <type tag="(400|410|411|430|440|490|800|810|811|830)" property="series">hasParts</type>
             
@@ -3568,8 +3566,9 @@ declare function mbshared:generate-simple-property(
 :   This is the function generates a literal property or simple uri from a string, using the nodes xml
 :   Example of usage: you need to convert the content of a subfield  before treating it like it's supposed to be treated.
 :    338 $a is the literal string, but you need the code, so you have to look it up.
-let $code :=marc2bfutils:generate-carrier-code("volume")
-mbshared:generate-property-from-text("338","a",$code,"work")
+:   let $code :=marc2bfutils:generate-carrier-code("volume")
+:   mbshared:generate-property-from-text("338","a",$code,"work")
+:   I don't have this in use. 338 is handled elsewhere
    
 :       Options in this function are a prefix, (@startwith), indicator2, and concatenation of multiple @sfcodes.
 :       If @ind2 is absent on the node, there is no test, otherwise it must match the datafield @ind2
@@ -3887,17 +3886,13 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                      	       element bf:classificationNumber {fn:string($cl)},
                      	       element bf:label {fn:string($cl)},
                       	       if ( $assigner) then 
-                      	         (:assigner is string, not uri:)
-                                  	(:(element bf:classificationAssigner {attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/organizations/",fn:encode-for-uri($assigner))}}:)
-                                  	(element bf:classificationAssigner {$assigner}
-                                  	(: does this work ? can't find example:
-                                  	,mbshared:generate-property-from-text($this-tag,"",$assigner,"classification"):)
+                      	         (:assigner is string, not uri:)                                  	
+                                  	(element bf:classificationAssigner {$assigner}                                  	
                                   	)
                                 else (),             			
          			            	
                     	       if ( 
-                      		    (fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") ) or 
-                      		    (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] )
+                      		    fn:matches($this-tag/@tag,"(080|082|083)") and fn:matches($this-tag/@ind1,"(0|1)") 
                      	 		   ) then  
                      	 		       let $this-edition:=                                     
                                          if (fn:matches($this-tag/@tag,"(080|082|083)") and $this-tag/@ind1="1") then
@@ -3907,10 +3902,14 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
          								else if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] ) then
          								    fn:string($this-tag/marcxml:subfield[@code="2"] )
          								else ()
-         							  return if ($this-edition ne "") then
-         								   mbshared:generate-property-from-text(fn:string($this-tag/@tag),"",$this-edition,"classification")
+         							  return if ($this-edition ) then
+         							    element bf:classificationEdition {$this-edition}
+         								   (:mbshared:generate-property-from-text(fn:string($this-tag/@tag),"",$this-edition,"classification"):)
          								   else ()
          							
+                                 else (),
+                                 if (fn:matches($this-tag/@tag,"(082|083)") and $this-tag/marcxml:subfield[@code="2"] ) then
+                                    element bf:classificationEdition {fn:string($this-tag/marcxml:subfield[@code="2"] )}
                                  else (),
          						 for $d in $this-tag[@tag="083"] return mbshared:generate-simple-property($d,"classification")                           
                     }
