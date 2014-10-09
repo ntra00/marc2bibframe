@@ -192,6 +192,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="dimensions"					    tag="300" sfcodes="c"			     	>Physical Size</node>
          <node domain="work"				property="duration"					    tag="306" sfcodes="a"			     	>Playing time</node>
          <node domain="instance"				property="frequencyNote"				tag="310" sfcodes="ab"					>Issue frequency</node>
+         <node domain="instance"				property="aspectRatio"				tag="345" sfcodes="a"					>aspect ratio</node>
          <!--<node domain="instance"				property="frequencyNote"				tag="321" sfcodes="ab"					>Issue frequency</node>-->
          <node domain="arrangement"			property="materialPart"			        tag="351" sfcodes="3"					>material Organization</node>
          <node domain="arrangement"			property="materialOrganization"			tag="351" sfcodes="a"					>material Organization</node>
@@ -615,10 +616,32 @@ let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] an
                         else if ($colorcode= "n") then "Not applicable"
                         else if ($colorcode= "u") then "Unknown"
                         else ()
-            else element bf:test { fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)}
+            else ()  (:element bf:test { fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)}:)
     let $color:= if ($color) then
                     element bf:colorContent {$color}
                  else ()
+let $aspect:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)="m") then
+                let $aspectcode:=            fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],5,1)
+                return if ($aspectcode= "a" ) then "Standard sound aperture (reduced frame)" 
+                            else if ($aspectcode= "b") then "Nonanamorphic (wide-screen)"
+                            else if ($aspectcode= "c") then "3D"
+                            else if ($aspectcode= "d") then "Anamorphic (wide-screen)"
+                            else if ($aspectcode= "e") then "Other wide-screen format"
+                            else if ($aspectcode= "f") then "Standard silent aperture (full frame)"
+                            else if ($aspectcode= "u") then "Unknown"
+                            else ()
+              else ()
+let $aspect:= if ($aspect) then
+                    element bf:aspectRatio {$aspect}
+                 else ()
+let $sound:=
+    if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and  fn:matches(fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(c|g|m|v)")) then
+                 marc2bfutils:generate-soundContent(  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],6,1),  fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],7,1))                  
+    else ()
+let $sound:= for $s in $sound
+                return  element bf:soundContent {$sound}
+        
+
       let $holdings := mbshared:generate-holdings($d/ancestor::marcxml:record, $workID)
  
     let $instance-identifiers :=
@@ -660,6 +683,8 @@ let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] an
             $edition-880,
             $physMapData,
             $color,
+            $aspect,
+            $sound,
           $issuance,
           $instance-relateds,
             $instance-simples,
@@ -852,7 +877,7 @@ declare function mbshared:generate-identifiers(
                	
                 (:if contains subprops, build class for $a else just prop w/$a:)
                 	let $cancels:= for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(m|y|z)")]
-                	                   return element {fn:concat("bf:",fn:string($id/@property)) }{ element bf:test {$id/@property,$sf},
+                	                   return element {fn:concat("bf:",fn:string($id/@property)) }{ 
 		                                   mbshared:handle-cancels($this-tag, $sf, fn:string($id/@property))
 		                                   }
                    	return  (:need to construct blank node if there's no uri or there are qualifiers/assigners :)
@@ -865,9 +890,9 @@ declare function mbshared:generate-identifiers(
                		                            element bf:identifierScheme {				 
                		                                fn:string($id/@property)
                		                            },	                            
-               		                            element bf:identifierValue { 		                               
-               		                                    fn:string($this-tag/marcxml:subfield[@code="a"][1])
-               		                            },
+               		                            if ($this-tag/marcxml:subfield[@code="a"]) then 
+               		                                   element bf:identifierValue { fn:string($this-tag/marcxml:subfield[@code="a"][1]) }
+               		                            else (),
                		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
                		                            	return element bf:identifierAssigner { 	fn:string($sub)},		
                		                            for $sub in $this-tag/marcxml:subfield[@code="q" ][$this-tag/@tag!="856"]
@@ -919,16 +944,17 @@ let $id024-028:=
         			                     fn:not($this-id/@uri) or
         			                    $scheme="unspecified" ) 
         			                 ) then	
-        			                 let $value:=
-        			                     if ($this-tag/marcxml:subfield[@code="d"]) then 
-        			                           fn:string-join($this-tag/marcxml:subfield[fn:matches(@code,"(a|d)")],"-")
-        			                         else
-        			                            fn:string($this-tag/marcxml:subfield[@code="a"])        			                           
+        			                 let $value:= if ($this-tag/marcxml:subfield[@code="a"] or $this-tag/marcxml:subfield[@code="d"]) then
+        			                                 if ($this-tag/marcxml:subfield[@code="d"]) then 
+        			                                    element bf:identifierValue { fn:string-join($this-tag/marcxml:subfield[fn:matches(@code,"(a|d)")],"-") }
+        			                                 else
+        			                                     element bf:identifierValue{ fn:string($this-tag/marcxml:subfield[@code="a"])}        			                      
+        			                             else ()
 	                                 return 
 	                                   element {$property-name} {
 	                                    element bf:Identifier{
        	                                    element bf:identifierScheme {$scheme},
-       	                                    element bf:identifierValue {$value},
+       	                                        $value,
        	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
        	                                       return element bf:identifierAssigner{fn:string($sub)},	        
        	                                    for $sub in $this-tag/marcxml:subfield[@code="q"] 
@@ -2922,7 +2948,7 @@ declare function mbshared:get-subject(
                         attribute rdf:resource { "http://www.loc.gov/mads/rdf/v1#HierarchicalGeographic"}
                     },
                     element bf:authorizedAccessPoint { fn:string($aLabel) },
-                    element bf:label { fn:string($aLabel) },
+                 (:   element bf:label { fn:string($aLabel) },:)
                     if (   fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then                    
                         element bf:hasAuthority {
                              element madsrdf:Authority {

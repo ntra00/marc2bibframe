@@ -191,6 +191,26 @@ declare variable $marc2bfutils:classes := (
     <property name="classificationUdc" label="UDC Classification" domain="Work" marc="080--/a+c" tag="080" sfcodes="a+c" level="property"/>	
 </vocab>
 );
+declare variable $marc2bfutils:sounds := (
+(:if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and  fn:matches(fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(c|g|m|v)")) then:)
+<sounds >        
+        <type cf007-5="a">Standard sound aperture (reduced frame)</type>       
+        <type cf007-5="b">Nonanamorphic (wide-screen)</type>
+        <type cf007-5="c">3D</type>
+        <type cf007-5="d">Anamorphic (wide-screen)</type>
+        <type cf007-5="e">Other wide-screen format</type>
+        <type cf007-5="f">Standard silent aperture (full frame)</type>
+        <type cf007-5="u">Unknown</type>                                           
+        <type cf007-6="a">Standard sound aperture (reduced frame)</type> 
+        <type cf007-6="b">Nonanamorphic (wide-screen)</type>
+        <type cf007-6="c">3D</type>
+        <type cf007-6="d">Anamorphic (wide-screen)</type>
+        <type cf007-6="e">Other wide-screen format</type>
+        <type cf007-6="f">Standard silent aperture (full frame)</type>
+        <type cf007-6="u">Unknown</type>
+</sounds>
+);
+                 
 (:
 relators crosswalk
 @source  http://id.loc.gov/vocabulary/relators 
@@ -3120,7 +3140,13 @@ declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:
  let $role:= marc2bfutils:chopPunctuation(marc2bfutils:clean-string($role-text),".")
  return fn:string( $marc2bfutils:role-xwalk//term[@roletext=$role]/@rolecode)			
 };
-			
+(: This function matches the soundcontent code to the varable containing the sound content code, returning the text for now
+:)
+declare function marc2bfutils:generate-soundContent($cf007-5, $cf007-6) as xs:string* {
+(fn:string( $marc2bfutils:sounds//type[@cf007-5=$cf007-5]/text()),
+fn:string( $marc2bfutils:sounds//type[@cf007-6=$cf007-6]/text())
+ )[1]
+};			
 
 (: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
 adapted from marcslim2modsutils.xsl
