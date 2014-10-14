@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-09-T16:30:00";
+declare variable $mbshared:last-edit :="2014-10-14-T11:30:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -56,7 +56,7 @@ declare variable $mbshared:transform-rules :=(
 <rule status="on" id="4" label="300" category="instance-splitting">New instances on multiple 300s</rule>
 <rule status="on" id="5" label="246" category="instance-node">246 domain is instance</rule>
 <rule status="on" id="6" label="247" category="instance-node">247 domain is instance</rule>
-<!--<rule status="on" id="7" label="856" category="instance-splitting">New instances on multiple856s that are resources (ind2=0)</rule>??? -->
+<!--<rule status="on" id="7" label="856" category="instance-splitting">New instances on secondary 856s that are resources (ind2=0)</rule>??? -->
 </rules>
 );
 declare variable $mbshared:named-notes:=("(502|505|506|507|508|511|513|518|522|524|525|541|546|555)");
@@ -257,12 +257,12 @@ declare variable $mbshared:simple-properties:= (
 	)	;
 
 
-(:$related fields must have $t except 510 630,730,830 , 767? 740 ($a is title),  :)
+(:$related fields must have $t except  630,730,830 , 767? 740 ($a is title),  :)
 declare variable $mbshared:relationships := 
 (
     <relationships>
         <!-- Work to Work relationships -->
-        <work-relateds all-tags="(400|410|411|430|440|490|510|533|534|630|700|710|711|730|740|760|762|765|767|770|772|773|774|775|777|780|785|787|800|810|811|830)">
+        <work-relateds all-tags="(400|410|411|430|440|490|533|534|630|700|710|711|730|740|760|762|765|767|770|772|773|774|775|777|780|785|787|800|810|811|830)">
             <type tag="(700|710|711|730)" ind2="2" property="hasPart">isIncludedIn</type>            
             <type tag="(700|710|711|730|787)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>            
@@ -588,21 +588,27 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
                 if ($issuance) then 
                    element bf:modeOfIssuance {$issuance}                  
                 else ()
-  let $physform:=  if (  $d/../marcxml:datafield[@tag = "020"][marcxml:subfield[@code="q"]]) then                
+  let $physform:=  for $s in   $d/../marcxml:datafield[@tag = "020"]/marcxml:subfield[@code="q"]                
+                        return marc2bfutils:clean-string(fn:normalize-space($s))
+                        
+                    
+  (:if (  $d/../marcxml:datafield[@tag = "020"][marcxml:subfield[@code="q"]]) then                
                         marc2bfutils:clean-string(fn:normalize-space($d/../marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code="q"]))            
-                    else ()     
-    let $physicalForm:=                                				  	                        
-            if (fn:matches($physform,"(pbk|softcover)","i")) then
-                "paperback"
-            else if (fn:matches($physform,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
-                "hardback"
-            else if (fn:matches($physform,"(ebook|eresource|e-isbn|ebk)","i") ) then
-                "electronic resource"
-            else if (fn:contains($physform,"lib. bdg.") ) then
-                "library binding"			            					           
-            else 
-                ()
-                
+                    else ():)     
+    let $physicalForm:=  
+            for $form in $physform                              				  	                        
+                return
+                    if (fn:matches($form,"(pbk|softcover)","i")) then                          
+                         element bf:format { "paperback"}
+                    else if (fn:matches($form,"(hbk|hdbk|hardcover|hc|hard)","i") ) then 
+                        element bf:format {"hardback"}
+                    else if (fn:matches($form,"(ebook|eresource|e-isbn|ebk)","i") ) then
+                        element bf:format {"electronic resource"}
+                    else if (fn:contains($form,"lib. bdg.") ) then
+                       element bf:format { "library binding"	}		            					           
+                    else 
+                        ()
+                        
 let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"]) then
     for $c in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")] 
                 let $colorcode:=  if (  fn:substring($c,1,1)="h") then            
@@ -685,12 +691,12 @@ let $sound:= for $s in $sound
             $publication,   
             $edition-880,
             $physMapData,
-            if ($physicalForm) then      element bf:format {$physicalForm} else (),
+            $physicalForm,
             $color,
             $aspect,
             $sound,
-          $issuance,
-          $instance-relateds,
+            $issuance,
+            $instance-relateds,
             $instance-simples,
             $general-notes,            
             $i504,             
@@ -791,7 +797,7 @@ declare function mbshared:generate-880-label
                 }
             else if ($node-name="title") then 
                 let $subfs := 
-                    if ( fn:matches($d/@tag, "(130|210|222|240|245|242|243|246|490|510|630|730|740|830)") ) then
+                    if ( fn:matches($d/@tag, "(130|210|222|240|245|242|243|246|490|630|730|740|830)") ) then
                         "(a|b|f|h|k|n|p)"
                     else
                         "(t|f|k|m|n|p|s)"
@@ -2203,13 +2209,11 @@ declare function mbshared:generate-related-work
         else if  (fn:matches($d/@tag,"(440|490|830)")) then
             "(a|n|p|v)"
         else if (fn:matches($d/@tag,"(534)")) then
-            "(t|b|f|k)"
-        else if (fn:matches($d/@tag,"(510)")) then
-            "(a|b|c)"
+            "(t|b|f|k)"       
         else
             "(t|f|k|m|n|o|p|s)"
-    let $title := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,$titleFields)] , " "))
-    
+    let $title :=
+            marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,$titleFields)] , " "))
     let $name := 
         if (
             $d/marcxml:subfield[@code="a"] and 
@@ -2218,8 +2222,7 @@ declare function mbshared:generate-related-work
             $d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1]
            ) then
              mbshared:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])               
-        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|490|800|810|811|510|630|730|740|830)")) ) then
-        
+        else if (  $d/marcxml:subfield[@code="a"]  and fn:not(fn:matches($d/@tag,"(400|410|411|440|490|800|810|811|630|730|740|830)")) ) then        
                 mbshared:get-name($d)
         else ()
     let $related-props:=mbshared:generate-simple-property($d,"related")
@@ -2256,7 +2259,7 @@ declare function mbshared:generate-related-work
 		element bf:Work {				
 		element bf:title {$title},
             element bf:authorizedAccessPoint {$aLabel},
-            $aLabelWork880,
+            $aLabelWork880,          
             if ($d/marcxml:subfield[@code="w" or @code="x"] and fn:not($d/@tag="630")) then (:(identifiers):)
                 for $s in $d/marcxml:subfield[@code="w" or @code="x" ]
   	              let $iStr :=  marc2bfutils:clean-string(fn:replace($s, "\(OCoLC\)", ""))
@@ -2265,14 +2268,16 @@ declare function mbshared:generate-related-work
 	                           element bf:systemNumber {  attribute rdf:resource {fn:concat("http://www.worldcat.org/oclc/",fn:replace($iStr,"(^ocm|^ocn)","")) }}	                      
 	                    else if ( fn:contains(fn:string($s), "(DLC)" ) ) then
 	                        element bf:lccn { attribute rdf:resource {fn:concat("http://id.loc.gov/authorities/test/identifiers/lccn/",fn:replace( fn:replace($iStr, "\(DLC\)", "")," ",""))} }                	                    
-	                    else if ($s/@code="x") then
-	                       element bf:hasInstance{ 
+	                    else if ($s/@code="x") then        element bf:issn {attribute rdf:resource {fn:concat("urn:issn:", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
+	                    (:too much nesting for "nested to flat" right now, but issn belongs in instance:  :)
+	                    (:   element bf:hasInstance{ 
 	                               element bf:Instance{ 
 	                               element bf:label {$title},
-	                                   element bf:title {$title},
+	                               
 	                                   element bf:issn {attribute rdf:resource {fn:concat("urn:issn:", fn:replace(marc2bfutils:clean-string($iStr)," ","")) } }
 	                              }
 	                       }
+	                    :)   
 		               else ()		               
      	   else 
      	       (),		            
@@ -2372,24 +2377,23 @@ declare function mbshared:related-works
      	          for $type in $relateds/type[@tag=$d/@tag]                		
 			         return mbshared:generate-related-reproduction($d,$type)                                         
 			    ,    
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711,787)")][marcxml:subfield[@code="t"]]                                                       
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|787)")][marcxml:subfield[@code="t"]]                                                       
                   for $type in $relateds/type[fn:matches($d/@tag,@tag)][fn:matches($d/@ind2,@ind2)] 
                      return      mbshared:generate-related-work($d,$type, $workID)                                                 
                 ,                       
                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")][marcxml:subfield[@code="a"]]
                     for $type in $relateds/type[@tag=$d/@tag]                     	
 			          return mbshared:generate-related-work($d,$type, $workID)
-            ,
-            (:else if ($marcxml/marcxml:datafield[@tag="534"][marcxml:subfield[@code="f"]]) then:)
-            for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(534|775)")][marcxml:subfield[@code="t"]] 
-                for $type in $relateds/type[@tag=$d/@tag]                    
-			  	  return mbshared:generate-related-work($d,$type, $workID)      
-			  	  )
-            (:else, what's left??? need to figure out!! 2014-08-11
-                for $type in $relateds/type[@tag=$marcxml/marcxml:datafield/@tag]
-                    for $d in $marcxml/marcxml:datafield[fn:matches(fn:string($type/@tag),@tag)][marcxml:subfield[@code="t" or @code="s"]]                
-			   	return mbshared:generate-related-work($d,$type, $workID)
-			:)	
+                 ,            
+                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(400|410|411|430|440|490|534|774|775|800|810|811|830)")][marcxml:subfield[@code="t"]] 
+                     for $type in $relateds/type[@tag=$d/@tag]                    
+     			  	  return mbshared:generate-related-work($d,$type, $workID)      
+     			,
+     			 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(760|762|765|767|770|772|773|774)")]
+                         for $type in $relateds/type[fn:matches(@tag,$d/@tag)]                     	
+     			          return 
+     			          mbshared:generate-related-work($d,$type, $workID)     			          
+            )
     return 
 				$relateds
 };
@@ -2456,14 +2460,21 @@ let $typeOf008:=
 				else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
 				else ""
 				
-    let $instances := mbshared:generate-instances($marcxml, $typeOf008, $workID)
+    let $instances := mbshared:generate-instances($marcxml, $typeOf008, $workID) (:??? nate make 856 ind2=0 rdf types in there:)
     let $instancesfrom856:=
-     if ( $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]) then         
         (:set up instances/annotations for each non-contributor bio link:)    
+            (:first 856 wi/ind2=0 is the existing Instance:)    
+        for $d at $x in  $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")]
+                return if ( ($d/@ind2 = 0 and $x ne 1 ) or  
+                         fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"contributor","i"))) then             
+                     mbshared:generate-instance-from856($d, $workID)
+                else ()
+            
+     (:if ( $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]) then                    
         for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]
             return mbshared:generate-instance-from856($d, $workID)            
         else 
-            ()
+            ():)
     let $types := mbshared:get-resourceTypes($marcxml)
         
     let $mainType := "Work"
@@ -3218,13 +3229,7 @@ declare function mbshared:get-name-fromSOR(
         return
             element {$prop} {
                 element bf:Agent {
-                    element bf:label {$name}
-                  (:  ,                  
-                   resource role has got to be on the resource, in a note or something!  
-                  if ($role ne "") then
-                        element bf:resourceRole {$role}
-                    else
-                        ():)
+                    element bf:label {$name}               
                 }
             }
 
@@ -3470,7 +3475,7 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
     ) as element( bf:translationOf)
     
 {
-  (:let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:not(fn:matches(@code,"(0|6|8|l)") ) ]," ")):)    
+      
   let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|d|f|g|h|k)")  ]," "))
   return    element bf:translationOf {     
             element bf:Work {
