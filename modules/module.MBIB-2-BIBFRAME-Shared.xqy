@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-14-T11:30:00";
+declare variable $mbshared:last-edit :="2014-10-15-T17:30:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -532,7 +532,8 @@ declare function mbshared:generate-instance-from260(
                 }
             }
             )
-    let $edition-880:= mbshared:generate-880-label($d/../marcxml:datafield[@tag = "250"][marcxml:subfield[@code="a"]],"edition")                
+    let $edition-880:= for $ed in  $d/../marcxml:datafield[@tag = "250"][marcxml:subfield[@code="a"]]
+                        return mbshared:generate-880-label($ed,"edition")                
     let $publication:= 
             if (fn:matches($d/@tag, "(260|264)")) then mbshared:generate-publication($d)
             else if (fn:matches($d/@tag, "(261|262)")) then mbshared:generate-26x-pub($d)
@@ -849,8 +850,6 @@ declare function mbshared:generate-880-label
             }				
 	(:not 880:)
 	else ()
-
-
 	
 };
 
@@ -2460,7 +2459,7 @@ let $typeOf008:=
 				else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
 				else ""
 				
-    let $instances := mbshared:generate-instances($marcxml, $typeOf008, $workID) (:??? nate make 856 ind2=0 rdf types in there:)
+    let $instances := mbshared:generate-instances($marcxml, $typeOf008, $workID) 
     let $instancesfrom856:=
         (:set up instances/annotations for each non-contributor bio link:)    
             (:first 856 wi/ind2=0 is the existing Instance:)    
@@ -3331,10 +3330,10 @@ let $types:=
         if ($leader07='s')           		then "Serial"           	
            	else if ($leader07='i') 				   	then "Integrating"           	
            	else (),
-            if (fn:matches($leader07,"(c|d)"))	then "Collection" else (),
-            if (fn:matches($leader06,"(d|f|t)"))	then "Manuscript" else (),
-            if ($leader08="a")	then "Archival" else ()                        
-         
+        if (fn:matches($leader07,"(c|d)"))	then "Collection" else (),
+        if (fn:matches($leader06,"(d|f|t)"))	then "Manuscript" else (),
+        if ($leader08="a")	then "Archival" else (),
+        if ($record/marcxml:datafield[@tag="856"][@ind2="0"][marcxml:subfield[@code="u"]]) then "Electronic" else ()
 	)
     return $types
     
