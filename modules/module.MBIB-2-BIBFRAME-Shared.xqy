@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-15-T17:30:00";
+declare variable $mbshared:last-edit :="2014-10-16-T17:30:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -611,7 +611,7 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
                         ()
                         
 let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"]) then
-    for $c in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")] 
+    for $c in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")]     
                 let $colorcode:=  if (  fn:substring($c,1,1)="h") then            
                                     fn:substring($c,9,1)
                                   else 
@@ -620,11 +620,12 @@ let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"]) t
                         else if ($colorcode= "b") then "Black-and-white"
                         else if ($colorcode= "c") then "Multicolored"
                         else if ($colorcode= "g") then "Gray scale"
+                        else if ($colorcode= "h") then "Hand colored"
                         else if ($colorcode= "m") then "Mixed"
                         else if ($colorcode= "n") then "Not applicable"
                         else if ($colorcode= "u") then "Unknown"
                         else ()
-            else ()  (:element bf:test { fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1)}:)
+            else ()  
     let $color:= if ($color) then
                     element bf:colorContent {$color}
                  else ()
@@ -2380,14 +2381,15 @@ declare function mbshared:related-works
                   for $type in $relateds/type[fn:matches($d/@tag,@tag)][fn:matches($d/@ind2,@ind2)] 
                      return      mbshared:generate-related-work($d,$type, $workID)                                                 
                 ,                       
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(490|630|830)")][marcxml:subfield[@code="a"]]
-                    for $type in $relateds/type[@tag=$d/@tag]                     	
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(490)")][marcxml:subfield[@code="a"]]
+                    for $type in $relateds/type[fn:matches($d/@tag,@tag)]                	
 			          return mbshared:generate-related-work($d,$type, $workID)
                  ,            
-                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(400|410|411|430|440|490|534|774|775|800|810|811|830)")][marcxml:subfield[@code="t"]] 
-                     for $type in $relateds/type[@tag=$d/@tag]                    
+                 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(400|410|411|430|440|534|774|775|800|810|811|830)")][marcxml:subfield[@code="t"]] 
+                     for $type in $relateds/type[fn:matches($d/@tag,@tag)]                   
      			  	  return mbshared:generate-related-work($d,$type, $workID)      
      			,
+     		
      			 for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(760|762|765|767|770|772|773|774)")]
                          for $type in $relateds/type[fn:matches(@tag,$d/@tag)]                     	
      			          return 
@@ -2464,7 +2466,7 @@ let $typeOf008:=
         (:set up instances/annotations for each non-contributor bio link:)    
             (:first 856 wi/ind2=0 is the existing Instance:)    
         for $d at $x in  $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")]
-                return if ( ($d/@ind2 = 0 and $x ne 1 ) or  
+                return if ( ($d/@ind2 = "0" and $x ne 1 ) or  
                          fn:not(fn:matches(fn:string($d/marcxml:subfield[@code="3"]),"contributor","i"))) then             
                      mbshared:generate-instance-from856($d, $workID)
                 else ()
@@ -2897,7 +2899,7 @@ declare function mbshared:get-subject(
                             attribute tag { fn:concat("1" , $last2Tag) },
                             attribute ind1 { " " },
                             attribute ind2 { "0" },
-                            $d/*[@code ne "2"][@code ne "0"][@code ne "8"]
+                            $d/*[@code ne "2"][@code ne "0"][@code ne "8"]                            
                         }
                     }
                 </marcxml:record>
@@ -2908,7 +2910,7 @@ declare function mbshared:get-subject(
                     element bf:authorizedAccessPoint {fn:string($madsrdf/madsrdf:authoritativeLabel)},
                     element bf:label { fn:string($madsrdf/madsrdf:authoritativeLabel) },
                  if (   fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
-                        element bf:hasAuthority {                                
+                       ( element bf:hasAuthority {                                
                             element madsrdf:Authority {
                                 element rdf:type {
                                     attribute rdf:resource { 
@@ -2917,7 +2919,9 @@ declare function mbshared:get-subject(
                                 },                                
                                 $madsrdf/madsrdf:authoritativeLabel                
                             }
-                        }
+                        },
+                         if ($d/marcxml:subfield[@code="2"]) then  element bf:authoritySource {fn:string($d/marcxml:subfield[@code="2"])} else ()
+                         )
                 else ()
                                     
                 )
@@ -3848,7 +3852,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     return	 
                         element  {fn:concat("bf:",$property)} {          
                      			if ($property="classificationLcc" ) then 
-                     				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($valid))}                    				                     		
+                     				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($cl ))}                    				                     		
                      		    else	if ($property="classificationDdc" ) then 
                      		             attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])),"/about")}
                      		    else element bf:Classification {
