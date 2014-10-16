@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-16-T17:30:00";
+declare variable $mbshared:last-edit :="2014-10-16-T17:50:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -2661,7 +2661,7 @@ let $typeOf008:=
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
-                $titles/bf:workTitle,                
+                $titles/*                ,
        
             $names,            
             (:$addl-names,:)
