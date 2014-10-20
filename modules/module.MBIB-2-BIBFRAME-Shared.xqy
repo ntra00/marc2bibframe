@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-16-T17:55:00";
+declare variable $mbshared:last-edit :="2014-10-20-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -226,8 +226,9 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="legalDate"					tag="730" sfcodes="d"						>Legal Date</node>                 
          <node domain="work"				property="dissertationNote"				tag="502" sfcodes="a"		                >Dissertation Note</node>
          <node domain="work"				property="dissertationDegree"			tag="502" sfcodes="b"			                >Dissertation Note</node>
-         <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>        
-         <node domain="instance"				property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
+         <node domain="work"				property="dissertationYear"				tag="502" sfcodes="d"				                >Dissertation Note</node>
+         <node domain="work"				property="dissertationNote"				tag="502" sfcodes="g"		                >Dissertation Note</node>
+         <node domain="instance"			property="contentsNote"					  tag="505" sfcodes="agrtu" ind2=" ">Formatted Contents Note</node>
          
          <node domain="work"				property="temporalCoverageNote"		tag="513" sfcodes="b"						>Period Covered Note</node>
          <node domain="event"			    property="eventDate"					    tag="518" sfcodes="d"						>Event Date</node>
@@ -893,7 +894,9 @@ declare function mbshared:generate-identifiers(
                    	return  (:need to construct blank node if there's no uri or there are qualifiers/assigners :)
                    	    	if (fn:not($id/@uri) or  $this-tag/marcxml:subfield[fn:matches(@code,"(b|q|2)")]   or  $this-tag[@tag="037"][marcxml:subfield[@code="c"]] 
                                 (:canadian stuff is not  in id:)
-                                or  	$this-tag[@tag="040"][fn:starts-with(fn:normalize-space(fn:string(marcxml:subfield[@code="a"])),'Ca')])
+                                or  	$this-tag[@tag="040"][fn:starts-with(fn:normalize-space(fn:string(marcxml:subfield[@code="a"])),'Ca')]
+                                (:parenthetical in $a is idqualifier:)
+                                or $this-tag/marcxml:subfield[@code="a"][fn:matches(text(),"^.+\(.+\).+$")])
                    	    	    then 
 		                          (element {fn:concat("bf:",fn:string($id/@property)) }{		                              
                		                       element bf:Identifier{		                          
@@ -901,12 +904,18 @@ declare function mbshared:generate-identifiers(
                		                                fn:string($id/@property)
                		                            },	                            
                		                            if ($this-tag/marcxml:subfield[@code="a"]) then 
-               		                                   element bf:identifierValue { fn:string($this-tag/marcxml:subfield[@code="a"][1]) }
+               		                                if ( $this-tag/marcxml:subfield[@code="a"][fn:matches(text(),"^.+\(.+\).+$")]) then
+               		                                      let $val:=fn:replace($this-tag/marcxml:subfield[@code="a"],"(.+\()(.+)(\).+)","$1")
+               		                            	      return  element bf:identifierValue { fn:substring($val,1, fn:string-length($val)-1)}
+               		                            	else
+               		                                    element bf:identifierValue { fn:string($this-tag/marcxml:subfield[@code="a"][1]) }               		                                   
                		                            else (),
                		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
                		                            	return element bf:identifierAssigner { 	fn:string($sub)},		
                		                            for $sub in $this-tag/marcxml:subfield[@code="q" ][$this-tag/@tag!="856"]
-               		                            	return element bf:identifierQualifier {fn:string($sub)},
+               		                            	return element bf:identifierQualifier {fn:string($sub)},   
+               		                            for $sub in $this-tag/marcxml:subfield[@code="a"][fn:matches(text(),"^.+\(.+\).+$")] 
+               		                            	return element bf:identifierQualifier { fn:replace($sub,"(.+\()(.+)(\).+)","$2")},               		                            
                	                                for $sub in $this-tag[@tag="037"]/marcxml:subfield[@code="c"]
                		                            	return element bf:identifierQualifier {fn:string($sub)}	                          		                           
                	                        	}
