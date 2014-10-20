@@ -171,6 +171,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="cartography"	property="cartographicOuterGRing"		   tag="255" sfcodes="f"		   >cartographicOuterGRing</node>
          <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		  >CartographicExclusionGRing</node>
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
+         <node domain="instance"	property="providerStatement"			tag="264" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="3aef"				    >Physical Description</node>
          
          <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="a"	uri="http://id.loc.gov/vocabulary/mediaTypes/"		    >Media Category</node>
@@ -493,9 +494,10 @@ return element bf:Instance {element bf:instanceTitle{
 };
 
 (:~
-:   This is the function generates instance resources.
+:   This is the function generates instance resources from publication data
+: (first of: 260|261|262|264|300 )
 :
-:   @param  $d        element is the MARCXML 260
+:   @param  $d        element is the MARCXML 260 or substitute
 :   @param  $workID   uri for the derivedfrom
 :   @return bf:* as element()
 :)
@@ -536,7 +538,9 @@ declare function mbshared:generate-instance-from260(
     let $edition-880:= for $ed in  $d/../marcxml:datafield[@tag = "250"][marcxml:subfield[@code="a"]]
                         return mbshared:generate-880-label($ed,"edition")                
     let $publication:= 
-            if (fn:matches($d/@tag, "(260|264)")) then mbshared:generate-publication($d)
+            if (fn:matches($d/@tag, "(260|264)")) then
+                for $pub in $d/../marcxml:datafield[fn:matches(@tag, "(260|264)")]
+                    return mbshared:generate-publication($pub)
             else if (fn:matches($d/@tag, "(261|262)")) then mbshared:generate-26x-pub($d)
             else ()
     
