@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-20-T11:00:00";
+declare variable $mbshared:last-edit :="2014-10-21-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -170,6 +170,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="cartography"	property="cartographicEquinox"			   tag="255" sfcodes="e"		   >cartographicEquinox</node>
          <node domain="cartography"	property="cartographicOuterGRing"		   tag="255" sfcodes="f"		   >cartographicOuterGRing</node>
          <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		  >CartographicExclusionGRing</node>
+         <!--change 260, 264 to 3abc? -->
          <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="providerStatement"			tag="264" sfcodes="abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="3aef"				    >Physical Description</node>
@@ -654,7 +655,7 @@ let $sound:=
     for $s in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(text(),1,1) ,"(c|g|m|v)")] 
           return       marc2bfutils:generate-soundContent(  fn:substring($s,6,1),  fn:substring($s,7,1) )                  
     else ()
-let $sound:= for $s in $sound
+let $sound:= for $s in $sound[fn:string(.)!=""]
                 return  element bf:soundContent {$sound}
         
 
@@ -1087,8 +1088,7 @@ declare function mbshared:generate-26x-pub
  
   element bf:publication {
             element bf:Provider {	
-                for $pub in $d[@tag="261"]/marcxml:subfield[@code="a"][1] |
-                    $d[@tag="262"]/marcxml:subfield[@code="b"][1]
+                for $pub in $d[@tag="261"]/marcxml:subfield[@code="a"][1] | $d[@tag="262"]/marcxml:subfield[@code="b"][1]
 	                 return              
 	                    element bf:providerName {
 	                    element bf:Organization {
@@ -1096,8 +1096,7 @@ declare function mbshared:generate-26x-pub
 	                       }
 	                    }
 	             ,
-	             for $pub in $d[@tag="261"]/marcxml:subfield[@code="f"][1] |
-                    $d[@tag="262"]/marcxml:subfield[@code="a"][1]
+	             for $pub in $d[@tag="261"]/marcxml:subfield[@code="f"][1] | $d[@tag="262"]/marcxml:subfield[@code="a"][1]
 	                 return              
 	                    element bf:providerPlace {element bf:Place {
 	                       element bf:label {
@@ -1105,8 +1104,7 @@ declare function mbshared:generate-26x-pub
                             }
                         }
 	                   ,
-	            for $pub in $d[@tag="261"]/marcxml:subfield[@code="d"][1] |
-                    $d[@tag="262"]/marcxml:subfield[@code="c"][1]
+	            for $pub in $d[@tag="261"]/marcxml:subfield[@code="d"][1] |  $d[@tag="262"]/marcxml:subfield[@code="c"][1]
 	                 return              
 	                    element bf:providerDate {marc2bfutils:chopPunctuation(fn:string($pub),".")}	                    	                  
 	       }
@@ -1143,8 +1141,8 @@ declare function mbshared:generate-publication
              let $date:=      if ($d/marcxml:subfield[@code="c"][$x]) then
                                     $d/marcxml:subfield[@code="c"][$x]
                              else if ( $x gt 1 and $d/marcxml:subfield[@code="c"][$x - 1]) then
-                             $d/marcxml:subfield[@code="c"][$x - 1]
-                             else ()
+                                      $d/marcxml:subfield[@code="c"][$x - 1]
+                                   else ()
 	        return 
 	            element {$propname} {
 	                element bf:Provider {
@@ -1173,7 +1171,7 @@ declare function mbshared:generate-publication
 	                    if (fn:starts-with($date,"c")) then
 	                    (:\D filters out "c" and other non-digits, but also ?, so switch to clean-string for now. may want "clean-date??:)
 	                        element bf:copyrightDate {marc2bfutils:clean-string($date)}
-	                     else if ( fn:not(fn:starts-with($date,"c") )) then
+	                     else if ( $date !=""  and fn:not(fn:starts-with($date,"c") )) then
 	                       ( element bf:providerDate {marc2bfutils:chopPunctuation($date,".")},
 	                            mbshared:generate-880-label($d,"providerDate")
 	                            )
@@ -1201,9 +1199,9 @@ declare function mbshared:generate-publication
 	                    for $pl in $d/marcxml:subfield[@code="c"]
 	                    	return 
 	                        if (fn:starts-with($pl,"c")) then				
-				       element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")}
+				                element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")}
 	                        else 
-				       element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}		
+				                element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}		
 		      }
 	        }
 	    else (),    
@@ -2085,7 +2083,7 @@ let $agent:= for  $aa in $d/marcxml:subfield[@code="c"]
 	                      element bf:label {fn:string($aa)}
 	                   }
 	                 }
-let $pubDate:=marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="d"],".")
+let $pubDate:= if ($d/marcxml:subfield[@code="d"]) then element bf:providerDate{ marc2bfutils:chopPunctuation($d/marcxml:subfield[@code="d"],".")} else ()
 let $extent:= fn:string($d/marcxml:subfield[@code="e"])
 let $coverage:= fn:string($d/marcxml:subfield[@code="m"])
 (:gwu has multiple 533$n:)
@@ -2095,8 +2093,7 @@ return
 	element {fn:concat("bf:",fn:string($type/@property))} {
 			element bf:Work{
 			    element bf:authorizedAccessPoint {$title},
-				element bf:title {$title},			
-				element bf:label{$title},	
+				element bf:title {$title},							
 				if ($pubDate or $pubPlace or $agent or $extent or $coverage or $note) then
 				element bf:hasInstance {
 					element bf:Instance {
@@ -2104,7 +2101,7 @@ return
 						element bf:publication {
 							element bf:Provider {
 								$pubPlace,
-								element bf:providerDate{$pubDate},								
+								$pubDate,								
 								$agent
 							}
 						},

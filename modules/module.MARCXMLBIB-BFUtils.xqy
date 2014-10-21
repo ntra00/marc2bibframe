@@ -3143,8 +3143,8 @@ declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:
 (: This function matches the soundcontent code to the varable containing the sound content code, returning the text for now
 :)
 declare function marc2bfutils:generate-soundContent($cf007-5, $cf007-6) as xs:string* {
-(fn:string( $marc2bfutils:sounds//type[@cf007-5=$cf007-5]/text()),
-fn:string( $marc2bfutils:sounds//type[@cf007-6=$cf007-6]/text())
+( fn:string( $marc2bfutils:sounds//type[@cf007-5=$cf007-5]/text()),
+  fn:string( $marc2bfutils:sounds//type[@cf007-6=$cf007-6]/text() ) 
  )[1]
 };			
 
