@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-21-T11:00:00";
+declare variable $mbshared:last-edit :="2014-10-21-T14:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -652,11 +652,13 @@ let $aspect:= for $a in $aspect
                  
 let $sound:=
     if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"]) then
-    for $s in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(text(),1,1) ,"(c|g|m|v)")] 
-          return       marc2bfutils:generate-soundContent(  fn:substring($s,6,1),  fn:substring($s,7,1) )                  
+    for $s in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(text(),1,1) ,"(c|g|m|v)")]
+           let $cf007-6:= if (fn:substring($s,1,1)="c") then "" else  fn:substring($s,7,1)
+          return       marc2bfutils:generate-soundContent(  fn:substring($s,6,1), $cf007-6 )                  
     else ()
-let $sound:= for $s in $sound[fn:string(.)!=""]
-                return  element bf:soundContent {$sound}
+let $sound:=
+            for $s in $sound[fn:string(.)!=""]
+                return  element bf:soundContent {$s}
         
 
       let $holdings := mbshared:generate-holdings($d/ancestor::marcxml:record, $workID)
@@ -3534,7 +3536,11 @@ declare function mbshared:generate-simple-property(
 (:all the nodes in this domain with this datafield's tag, where there's no @ind1 or it matches the datafield's, and no ind2 or it matches the datafields:)
   for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1][ fn:not(@ind2) or @ind2=$d/@ind2]
     let $return-codes:=	if ($node/@sfcodes) then fn:string($node/@sfcodes)	else "a"
-    let $startwith:=fn:string($node/@startwith) 
+    let $startwith:= 
+        if ($d/@tag="511" and $d/@ind1=0) then 
+            "" 
+        else
+            fn:string($node/@startwith) 
  
     return 
       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then

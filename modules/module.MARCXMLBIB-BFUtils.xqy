@@ -193,20 +193,18 @@ declare variable $marc2bfutils:classes := (
 );
 declare variable $marc2bfutils:sounds := (
 (:if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"] and  fn:matches(fn:substring($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(c|g|m|v)")) then:)
-<sounds >        
-        <type cf007-5="a">Standard sound aperture (reduced frame)</type>       
-        <type cf007-5="b">Nonanamorphic (wide-screen)</type>
-        <type cf007-5="c">3D</type>
-        <type cf007-5="d">Anamorphic (wide-screen)</type>
-        <type cf007-5="e">Other wide-screen format</type>
-        <type cf007-5="f">Standard silent aperture (full frame)</type>
-        <type cf007-5="u">Unknown</type>                                           
-        <type cf007-6="a">Standard sound aperture (reduced frame)</type> 
-        <type cf007-6="b">Nonanamorphic (wide-screen)</type>
-        <type cf007-6="c">3D</type>
-        <type cf007-6="d">Anamorphic (wide-screen)</type>
-        <type cf007-6="e">Other wide-screen format</type>
-        <type cf007-6="f">Standard silent aperture (full frame)</type>
+<sounds > 
+        <type cf007-5="a">Sound on medium</type>
+        <type cf007-5="b">Sound separate from medium</type>
+        <type cf007-5="u">Unknown</type>
+        <type cf007-6="b">Magnetic sound track on motion picture film</type>
+        <type cf007-6="c">Magnetic audio tape in cartridge</type>
+        <type cf007-6="d">Sound disc</type>
+        <type cf007-6="e">Magnetic audio tape on reel</type>
+        <type cf007-6="f">Magnetic audio tape in cassette</type>
+        <type cf007-6="g">Optical and magnetic sound track on motion picture film</type>
+        <type cf007-6="h">Videotape</type>
+        <type cf007-6="i">Videodisc</type>
         <type cf007-6="u">Unknown</type>
 </sounds>
 );
@@ -3143,9 +3141,10 @@ declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:
 (: This function matches the soundcontent code to the varable containing the sound content code, returning the text for now
 :)
 declare function marc2bfutils:generate-soundContent($cf007-5, $cf007-6) as xs:string* {
-( fn:string( $marc2bfutils:sounds//type[@cf007-5=$cf007-5]/text()),
-  fn:string( $marc2bfutils:sounds//type[@cf007-6=$cf007-6]/text() ) 
- )[1]
+ 
+    (fn:string( $marc2bfutils:sounds//type[@cf007-5=$cf007-5]/text()),
+    fn:string( $marc2bfutils:sounds//type[@cf007-6=$cf007-6]/text() )
+    )
 };			
 
 (: This function chops the given punctuation from the end of the given string. useful for lopping off ending periods (but be careful!)
