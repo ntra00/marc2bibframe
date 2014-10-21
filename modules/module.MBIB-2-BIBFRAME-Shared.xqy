@@ -170,9 +170,9 @@ declare variable $mbshared:simple-properties:= (
          <node domain="cartography"	property="cartographicEquinox"			   tag="255" sfcodes="e"		   >cartographicEquinox</node>
          <node domain="cartography"	property="cartographicOuterGRing"		   tag="255" sfcodes="f"		   >cartographicOuterGRing</node>
          <node domain="cartography"	property="cartographicExclusionGRing"		tag="255" sfcodes="g"		  >CartographicExclusionGRing</node>
-         <!--change 260, 264 to 3abc? -->
-         <node domain="instance"	property="providerStatement"			tag="260" sfcodes="abc"		   >Provider statement</node>
-         <node domain="instance"	property="providerStatement"			tag="264" sfcodes="abc"		   >Provider statement</node>
+         
+         <node domain="instance"	property="providerStatement"			tag="260" sfcodes="3abc"		   >Provider statement</node>
+         <node domain="instance"	property="providerStatement"			tag="264" sfcodes="3abc"		   >Provider statement</node>
          <node domain="instance"	property="extent"					        tag="300" sfcodes="3aef"				    >Physical Description</node>
          
          <node domain="specialinstnc"	property="mediaCategory"					        tag="337" sfcodes="a"	uri="http://id.loc.gov/vocabulary/mediaTypes/"		    >Media Category</node>
