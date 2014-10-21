@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-21-T14:00:00";
+declare variable $mbshared:last-edit :="2014-10-21-T19:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -77,8 +77,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="nbn" 				    	       tag="015" sfcodes="a"		group="identifiers"          >National Bibliography Number</node>
          <node domain="instance" 	property="nban" 			          	    tag="016" sfcodes="a"	    group="identifiers"       	>National bibliography agency control number</node>
          <node domain="instance" 	property="legalDeposit" 		            tag="017" sfcodes="a"		group="identifiers"          >copyright or legal deposit number</node>
-         <node domain="instance" 	property="issn" 			    	        tag="022" sfcodes="a"	group="identifiers"	uri="http://issn.example.org/"	        >International Standard Serial Number</node>
-         <node domain="work" 		property="issnL"			           	    tag="022" sfcodes="l"		group="identifiers"   uri="http://issn.example.org/"  >linking International Standard Serial Number</node>
+         <node domain="instance" 	property="issn" 			    	        tag="022" sfcodes="a"	group="identifiers"	        >International Standard Serial Number</node>
+         <node domain="work" 		property="issnL"			           	    tag="022" sfcodes="l"		group="identifiers"    >linking International Standard Serial Number</node>
          <node domain="instance" 	property="isrc" 			   				tag="024" sfcodes="a"   ind1="0"	group="identifiers">International Standard Recording Code</node>
          <node domain="instance" 	property="upc" 				   				tag="024" sfcodes="a"   ind1="1"	group="identifiers">Universal Product Code</node>
          <node domain="instance" 	property="ismn"					 			tag="024" sfcodes="a"    ind1="2" group="identifiers">International Standard Music Number</node>
@@ -313,8 +313,7 @@ declare variable $mbshared:relationships :=
         -->
         <!-- Instance to Work relationships (none!) -->
 	  	<instance-relateds all-tags="(776|777)">
-	  	  <!--<type tag="6d30"  property="subject">isSubjectOf</type>-->
-	  	  <!--<type tag="530" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>-->
+	  	  <!--<type tag="6d30"  property="subject">isSubjectOf</type>-->	  	  
          <type tag="776" property="otherPhysicalFormat">hasOtherPhysicalFormat</type>	  	  
 	  	  <type tag="777" property="issuedWith">issuedWith</type>
 	  	</instance-relateds>
@@ -879,10 +878,11 @@ declare function mbshared:generate-identifiers(
 { 
       let $identifiers:=         
              $mbshared:simple-properties//node[@domain=$domain][@group="identifiers"]
+
       let $taglist:= fn:concat("(",fn:string-join(fn:distinct-values($identifiers//@tag),"|"),")")
                     
                     
-    let $bfIdentifiers := 
+      let $bfIdentifiers := 
          (:for $id in $identifiers[fn:not(@ind1)][@domain=$domain] (\:all but 024 and 028:\)                        	 
                	return
                	for $this-tag in $marcxml/marcxml:datafield[@tag eq $id/@tag] :)
@@ -929,7 +929,7 @@ declare function mbshared:generate-identifiers(
                	                       },
 	                        	$cancels	                        			                              
 		                        )
-	                    	else 	(: not    @code,"(b|q|2) :)                
+	                    	else 	(: not    @code,"(b|q|2) , contains uri :)                
 	                        ( mbshared:generate-simple-property($this-tag,$domain ) ,	                        
 	                        $cancels	                  	                           
 			                 )(: END OF not    @code,"(b|q|2), end of tags matching ids without @ind1:)
@@ -1988,7 +1988,7 @@ declare function mbshared:generate-500notes(
 for $marc-note in $marcxml/marcxml:datafield[fn:starts-with(@tag, "5") and fn:not(fn:matches(@tag,$mbshared:named-notes))][marcxml:subfield[@code="3" or @code="a"]]
         return if ($marc-note[@tag ='504']) then
                     ()
-               else if ($marc-note[@tag !='530'] and $domain="work") then
+               else if ( $domain="work") then
                 ()
                 else
  			        let $note-text:= fn:string-join($marc-note/marcxml:subfield[@code="3" or @code="a"]," ")
@@ -2654,7 +2654,7 @@ let $typeOf008:=
    
  	let $work-simples:=
  	  for $d in $marcxml/marcxml:datafield
- 	      return mbshared:generate-simple-property($d,"work")
+ 	      return  mbshared:generate-simple-property($d,"work") 
  	      
  	let $admin:=mbshared:generate-admin-metadata($marcxml, $workID) 
     return 
@@ -3537,13 +3537,13 @@ declare function mbshared:generate-simple-property(
   for $node in  $mbshared:simple-properties//node[fn:string(@domain)=$domain][@tag=$d/@tag][ fn:not(@ind1) or @ind1=$d/@ind1][ fn:not(@ind2) or @ind2=$d/@ind2]
     let $return-codes:=	if ($node/@sfcodes) then fn:string($node/@sfcodes)	else "a"
     let $startwith:= 
-        if ($d/@tag="511" and $d/@ind1=0) then 
+        if ($d/@tag="511" and $d/@ind1="0") then 
             "" 
         else
             fn:string($node/@startwith) 
  
-    return 
-      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
+    return    
+      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)][@group="identifiers"] ) then
         let $text:= if (fn:string-length($return-codes) > 1) then 
                         let $stringjoin:= if ($node/@stringjoin) then fn:string($node/@stringjoin) else " "
                         return   element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
