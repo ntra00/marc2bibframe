@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-22-T11:00:00";
+declare variable $mbshared:last-edit :="2014-10-22-T16:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -106,6 +106,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="stockNumber"						tag="037" sfcodes="a"		 group="identifiers"         >stock number for acquisition</node>
          <node domain="instance"	property="reportNumber"						tag="088" sfcodes="a"       	 group="identifiers" >technical report number</node>
          <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
+         <node domain="annotation"	property="descriptionModifier"			tag="040" sfcodes="d"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
          <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptionConventions/"           >Description conventions</node>
          <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
          
@@ -131,10 +132,10 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="titleValue"					tag="222" sfcodes="a"          > title itself</node>
          
          <node domain="title"		property="titleValue"					tag="242" sfcodes="a"          >title itself</node>
-         <node domain="title"		property="titleValue"					tag="245" sfcodes="a"          > title itself</node>                  
+         <!--<node domain="title"		property="titleValue"					tag="245" sfcodes="a"          > title itself</node>-->                  
          <node domain="title"		property="titleValue"					tag="246" sfcodes="a"          >title itself</node>
          <node domain="title"		property="titleValue"					tag="247" sfcodes="a"          >title itself</node>         
-         <node domain="title"		property="subtitle"					    tag="245" sfcodes="b"          > subtitle </node>
+         <!--<node domain="title"		property="subtitle"					    tag="245" sfcodes="b"          > subtitle </node>-->
          <node domain="title"		property="subtitle"				        tag="246" sfcodes="b"          >subtitle</node>
          <node domain="title"		property="subtitle"					    tag="247" sfcodes="b"          >subtitle</node>
          
@@ -147,7 +148,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="partTitle"					tag="240" sfcodes="p"          >part title</node>
          <node domain="title"		property="titleVariationDate"			tag="246" sfcodes="f"          >title variation date</node>
          <node domain="title"		property="titleVariationDate"			tag="247" sfcodes="f"          >title variation date</node>
-         <node domain="title"		property="titleSource"			        tag="210" sfcodes="2"      >title source</node>
+         <node domain="title"		property="titleSource"			        tag="210" sfcodes="2"     uri="http://id.loc.gov/vocabulary/organizations/"  >title source</node>
                          
          <node domain="title"		property="titleAttribute"			     tag="130" sfcodes="g"      >title attributes</node>         
          <node domain="title"		property="titleAttribute"			     tag="240" sfcodes="g"      >Miscellaneous </node>         
@@ -476,7 +477,12 @@ declare function mbshared:generate-addl-physical(
             attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
         }
     let $instance-title := 
-        (   element bf:titleValue {marc2bfutils:clean-title-string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])},
+        (   element bf:titleValue {if (fn:contains($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"],"=")) then
+                                    fn:substring-before($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"],"=")
+                                   else
+                                    marc2bfutils:clean-title-string($d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"])
+                                    },
+                    (: ... this will probably need to change: :)
             if ($d/marcxml:subfield[@code="3"]) then  element bf:titleQualifier {fn:string($d/marcxml:subfield[@code="3"])} else () 
         )
     let $instance-types1:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)                  
@@ -3405,6 +3411,7 @@ declare function mbshared:get-resourceTypes(
 
 (:~
 :   This returns a basic title from 245. 
+:       actually 243|245|246|247|222|242|210 
 :
 :   @param  $d        element is the marcxml:datafield
 :   @param  $domain   "work" or "instance" to name the property
@@ -3419,13 +3426,18 @@ declare function mbshared:get-title(
 {
         
     let $title := fn:replace(fn:string($d/marcxml:subfield[@code="a"]),"^(.+)/$","$1")
+   
     let $title := 
         if (fn:ends-with($title, ".")) then
             fn:substring($title, 1, fn:string-length($title) - 1 )
         else
             $title
-     let $title := fn:normalize-space($title)
-     
+
+
+let $title := if (fn:contains($title,"=")) then
+                    fn:substring-before($title, "=")
+               else
+                    fn:normalize-space($title)
      let $element-name :=
             if (fn:matches(fn:string($d/@tag),"(246|247|242)" )) then 
                 "bf:titleVariation" 
@@ -3459,13 +3471,27 @@ declare function mbshared:get-title(
                  else ()
             else
                 ""
-       let $constructed-title:=
+  let $parallel:= if (fn:contains(fn:string($d/marcxml:subfield[@code="a"]),"=")) then
+                    element   {$element-name} {
+                    element bf:titleValue {fn:normalize-space(marc2bfutils:clean-title-string($d/marcxml:subfield[@code="b"]))},
+                    element bf:titleType {"parallel"}
+                    }
+               else
+                    ()     
+
+  
+  let $constructed-title:=
        element {$element-name} {
                 element bf:Title { 
                  if ($title-type ne "") then                      
                       element bf:titleType {$title-type}                                                      
-                 else (),                     
-                 mbshared:generate-simple-property($d,"title"),                 
+                 else (),
+                 
+                 if ($d/@tag="245") then element bf:titleValue {$title} else (),
+                 if (fn:not(fn:contains($title,"=")) and $d/marcxml:subfield[@code="b"]) then
+                    element bf:subtitle { marc2bfutils:clean-title-string($d/marcxml:subfield[@code="b"])}
+                    else (),
+                 mbshared:generate-simple-property($d,"title"),   
                  mbshared:generate-880-label($d,"title")
                 }
              } (:end Title:)
@@ -3475,7 +3501,7 @@ declare function mbshared:get-title(
             (:this is wasteful if there's only an $a, but there is no simple string property for keytitle etc.:)
             $constructed-title,
             mbshared:generate-titleNonsort($d,$title, $element-name),       
-            (:mbshared:generate-880-label($d,"title"),:)
+            $parallel, 
               for $sys-num in $d/marcxml:subfield[@code="0"] 
                      return mbshared:handle-system-number($sys-num)  
         )
@@ -3562,6 +3588,9 @@ declare function mbshared:generate-simple-property(
                                 if (fn:starts-with($i,"(OCoLC)") and fn:contains($node/@uri,"worldcat") ) then
                                     let $s :=  marc2bfutils:clean-string(fn:replace($i, "\(OCoLC\)", ""))
                                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
+                                else if (fn:contains($node/@uri,"id.loc.gov/vocabulary/organizations") ) then
+                                    let $s :=  marc2bfutils:clean-string(fn:lower-case($i))
+                                    return attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)  }
                                 else
                                      element bf:Identifier { 
                                                 element bf:identifierValue {
