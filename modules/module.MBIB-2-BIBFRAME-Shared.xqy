@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-21-T19:00:00";
+declare variable $mbshared:last-edit :="2014-10-22-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -96,7 +96,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"		property="videorecordingNumber"		tag="028" sfcodes="a" ind1="4" group="identifiers"	 	>publisher assigned videorecording number</node>
          <node domain="instance"		property="publisherNumber"				tag="028" sfcodes="a" ind1="5"	 group="identifiers"	>other publisher assigned number</node>
          <node domain="instance"		property="coden"					      	tag="030" sfcodes="a"	     group="identifiers"     >CODEN</node>
-         <node domain="7xx"		   property="systemNumber"					      	tag="776" sfcodes="w"	     group="identifiers"  uri="http://www.worldcat.org/oclc/"   >system number</node>
+         <node domain="7xx"		   property="systemNumber"					      	tag="776" sfcodes="w"	   group="identifiers"    uri="http://www.worldcat.org/oclc/"   >system number</node>
          <node domain="7xx"		property="issn"					      	tag="776" sfcodes="x"	     group="identifiers"     >issn</node>
          <node domain="7xx"		property="coden"					      	tag="776" sfcodes="y"	     group="identifiers"     >CODEN</node>
          <node domain="7xx"		property="isbn"					      	tag="776" sfcodes="z"	     group="identifiers"     >issn</node>
@@ -2635,7 +2635,9 @@ let $typeOf008:=
  	
  	let $complex-notes:=              
  		 for $d in $marcxml/marcxml:datafield[@tag eq "505"][@ind2="0"]
- 		     return mbshared:generate-complex-notes($d)
+ 		     return (mbshared:generate-complex-notes($d),
+ 		              element bf:contentsNote{   fn:string-join($d/marcxml:subfield," ")}
+ 		               )
  	let $standalone-880s:=mbshared:generate-standalone-880( $marcxml ,"work")    
     
  	let $gacs:= 
@@ -3543,7 +3545,7 @@ declare function mbshared:generate-simple-property(
             fn:string($node/@startwith) 
  
     return    
-      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)][@group="identifiers"] ) then
+      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
         let $text:= if (fn:string-length($return-codes) > 1) then 
                         let $stringjoin:= if ($node/@stringjoin) then fn:string($node/@stringjoin) else " "
                         return   element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
@@ -3551,7 +3553,7 @@ declare function mbshared:generate-simple-property(
                         for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
                             return element wrap{ marc2bfutils:clean-string(fn:string($s))}
                  
-       return
+       return 
            for $i in $text
                      return  
                      element {fn:concat("bf:",fn:string($node/@property))} {
@@ -3562,8 +3564,17 @@ declare function mbshared:generate-simple-property(
                                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
                                 else
                                      element bf:Identifier { 
-                                                element bf:identifierValue {fn:normalize-space(fn:concat($startwith,  $i) )},
-                                                element bf:identifierScheme {fn:string($node/@property)}
+                                                element bf:identifierValue {
+                                                  if (fn:starts-with($i, "(DLC)" )) then
+                                                    fn:normalize-space(fn:replace($i,"(\(DLC\))(.+)$","$2" ))
+                                                    else
+                                                      fn:normalize-space(fn:concat($startwith,  $i) )
+                                                      },
+                                                element bf:identifierScheme {
+                                                    if (fn:starts-with($i, "(DLC)" )) then
+                                                        "lccn"
+                                                    else
+                                                        fn:string($node/@property)}
                                                 }                        
                          (:non-identifiers:)
                          else if (fn:not($node/@uri)) then 
@@ -3583,10 +3594,10 @@ declare function mbshared:generate-simple-property(
                          else 
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),$i)}
              	             }
-        
+     
      else (:no matching nodes for this datafield:)
         ()      
-   
+      
 };
 (:~
 :   This is the function generates a literal property or simple uri from a string, using the nodes xml
