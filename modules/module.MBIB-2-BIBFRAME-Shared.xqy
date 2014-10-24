@@ -3472,9 +3472,10 @@ let $title := if (fn:contains($title,"=")) then
             else
                 ""
   let $parallel:= if (fn:contains(fn:string($d/marcxml:subfield[@code="a"]),"=")) then
-                    element   {$element-name} {
+                    element   {$element-name} {   element bf:Title { 
                     element bf:titleValue {fn:normalize-space(marc2bfutils:clean-title-string($d/marcxml:subfield[@code="b"]))},
                     element bf:titleType {"parallel"}
+                    }
                     }
                else
                     ()     
