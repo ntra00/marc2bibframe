@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-24-T13:00:00";
+declare variable $mbshared:last-edit :="2014-10-24-T15:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -3489,8 +3489,10 @@ let $title := if (fn:contains($title,"=")) then
                  
                  if ($d/@tag="245") then element bf:titleValue {$title} else (),
                  if (fn:not(fn:contains($title,"=")) and $d/marcxml:subfield[@code="b"]) then
-                    element bf:subtitle { marc2bfutils:clean-title-string($d/marcxml:subfield[@code="b"])}
-                    else (),
+                    (:$b isn't repeatable but gwu had some!:)
+                    for $sub in $d/marcxml:subfield[@code="b"]
+                        return element bf:subtitle { marc2bfutils:clean-title-string($sub)}
+                 else (),
                  mbshared:generate-simple-property($d,"title"),   
                  mbshared:generate-880-label($d,"title")
                 }
