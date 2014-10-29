@@ -76,7 +76,7 @@
             <!-- <div ex:role="facet" ex:expression=".instance.isbnType" ex:facetLabel="Book Type" ex:sortMode="count"></div> -->
             <div ex:role="facet" ex:expression=".bf-creator.label" ex:facetLabel="Creators" ex:sortMode="count"></div>
             <div ex:role="facet" ex:expression=".bf-subject.label" ex:facetLabel="Subjects" ex:sortMode="count"></div>
-            <div ex:role="facet" ex:expression="!bf-instanceOf.bf-carrierType" ex:facetLabel="Carrier type" ex:sortMode="count"></div>
+          	<div ex:role="facet" ex:expression="!bf-instanceOf.bf-carrierCategory" ex:facetLabel="Carrier type" ex:sortMode="count"></div>
             <!-- <div ex:role="facet" ex:expression="!bf-instanceOf.bf-publication.bf-providerName" ex:facetLabel="Providers/Publishers" ex:sortMode="count"></div> -->
             <!-- <div ex:role="facet" ex:expression=".bf-instance.bf-contributor.label" ex:facetLabel="Contributors" ex:sortMode="count"></div> -->
             <!-- <div ex:role="facet" ex:expression=".bf-instance.bf-publication.bf-providerName" ex:facetLabel="Providers/Publishers" ex:sortMode="count"></div> -->
@@ -160,10 +160,10 @@
 								</ul>
 							</td>
 						</tr>
-					<tr ex:if-exists=".bf-callNumber">
-						<td class="property span2">Call Number</td>
+					<tr ex:if-exists=".bf-shelfMark">
+						<td class="property span2">Shelf Mark</td>
                         <td class="value">
-							<span class="isbn" ex:content=".bf-callNumber"></span></span> 
+                        	<span class="isbn" ex:content=".bf-shelfMark"></span></span> 
 						</td>
 					</tr>
 					<tr ex:if-exists=".identifiers-dewey">
@@ -342,10 +342,10 @@
 										</ul>
 									</td>
 								</tr>
-                                <tr ex:if-exists=".bf-callNumber">
-                                  <td class="property span2">Call Number</td>
+                              	<tr ex:if-exists=".bf-shelfMark">
+                              		<td class="property span2">Shelf Mark</td>
                                   <td class="value">
-                                    <span class="isbn" ex:content=".bf-callNumber"></span></span> 
+                                  	<span class="isbn" ex:content=".bf-shelfMark"></span></span> 
                                   </td>
                                 </tr>
                                 <tr ex:if-exists=".identifiers-dewey">
@@ -485,7 +485,7 @@
     
     <div class="footer">
       <div class="container">
-        <p>BIBFRAME is a collaborative effort of <a href = "http://www.loc.gov/">US Library of Congress</a>, <a href="http://zepheira.com/">Zepheira</a> and, now, you!</p>
+        <p>BIBFRAME is a collaborative effort of <a href = "http://www.loc.gov/">US Library of Congress</a>, <a href="http://zepheira.com/">Zepheira</a> and you!</p>
       </div>
     </div>
     
