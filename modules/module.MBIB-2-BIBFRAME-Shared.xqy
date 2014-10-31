@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-24-T15:00:00";
+declare variable $mbshared:last-edit :="2014-10-31-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -89,7 +89,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance" 	property="lcOverseasAcq"					tag="025" sfcodes="a"		       group="identifiers"   >Library of Congress Overseas Acquisition Program number</node>
          <node domain="instance" 	property="fingerprint"						tag="026" sfcodes="e"		       group="identifiers"   >fingerprint identifier</node>
          <node domain="instance"	property="strn"					        	tag="027" sfcodes="a"		       group="identifiers" >Standard Technical Report Number</node>
-    <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		group="identifiers">sound recording publisher issue number</node>
+           <node domain="instance"	property="issueNumber"						tag="028" sfcodes="a" ind1="0"		group="identifiers">sound recording publisher issue number</node>
          <node domain="instance"	property="matrixNumber"						tag="028" sfcodes="a" ind1="1"		group="identifiers">sound recording publisher matrix master number</node>
          <node domain="instance"	property="musicPlate"					  	tag="028" sfcodes="a" ind1="2"	group="identifiers"	>music publication number assigned by publisher</node>
          <node domain="instance"	property="musicPublisherNumber"		tag="028" sfcodes="a" ind1="3"	  group="identifiers">other publisher number for music</node>
@@ -191,7 +191,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicMediumNote"				tag="730" sfcodes="m"			     	> Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="240" sfcodes="m"			     	> Music medium note </node>
          <node domain="work"				property="musicMediumNote"				tag="243" sfcodes="m"	     			> Music medium note </node>
-         <node domain="instance"		property="dimensions"					    tag="300" sfcodes="c"			     	>Physical Size</node>
+         <node domain="instance"		    property="dimensions"					    tag="300" sfcodes="c"			     	>Physical Size</node>
          <node domain="work"				property="duration"					    tag="306" sfcodes="a"			     	>Playing time</node>
          <node domain="instance"				property="frequencyNote"				tag="310" sfcodes="ab"					>Issue frequency</node>
          <node domain="instance"				property="aspectRatio"				tag="345" sfcodes="a"					>aspect ratio</node>
@@ -202,12 +202,12 @@ declare variable $mbshared:simple-properties:= (
          <node domain="arrangement"			property="materialHierarchicalLevel"	tag="351" sfcodes="c"					>materialHierarchicalLevel</node>
          
          <node domain="contentcategory"		property="carrierCategory"				tag="130" sfcodes="h"					>Nature of content</node>
-         <node domain="contentcategory"				property="carrierCategory"				tag="240" sfcodes="h"						>Nature of content</node>
-         <node domain="contentcategory"				property="carrierCategory"				tag="243" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"		property="carrierCategory"				tag="240" sfcodes="h"						>Nature of content</node>
+         <node domain="contentcategory"		property="carrierCategory"				tag="243" sfcodes="h"						>Nature of content</node>
          
-         <node domain="contentcategory"				property="contentCategory"				tag="245" sfcodes="k"						>Nature of content</node>         
-         <node domain="contentcategory"				property="genre"				tag="513" sfcodes="a"						>Nature of content</node>
-         <node domain="contentcategory"				property="genre"				tag="516" sfcodes="a"						>Nature of content</node>
+         <node domain="contentcategory"		property="contentCategory"				tag="245" sfcodes="k"						>Nature of content</node>         
+         <node domain="contentcategory"		property="genre"				tag="513" sfcodes="a"						>Nature of content</node>
+         <node domain="contentcategory"		property="genre"				tag="516" sfcodes="a"						>Nature of content</node>
          
          <node domain="related"				property="carrierCategory"				tag="730" sfcodes="h"						>Nature of content</node>
          
@@ -218,8 +218,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="related"				property="originDate"					tag="730" sfcodes="f"						>Date of origin</node>
          <node domain="work"				property="originDate"					tag="046" sfcodes="kl" stringjoin="-"					>Date of origin</node>
 
-         <node domain="instance"				property="formDesignation"				tag="245" sfcodes="h"						>Form Designation</node>
-         <node domain="instance"				property="formDesignation"				tag="245" sfcodes="k"						>Form Designation</node>
+         <node domain="instance"			property="formDesignation"				tag="245" sfcodes="h"						>Form Designation</node>
+         <node domain="instance"			property="formDesignation"				tag="245" sfcodes="k"						>Form Designation</node>
          
          <node domain="work"				property="musicNumber"       			tag="130" sfcodes="n"						>Music Number</node>
          <node domain="work"				property="partNumber"					tag="730" sfcodes="n"						>Music Number</node>
@@ -912,7 +912,7 @@ declare function mbshared:generate-identifiers(
                                 or $this-tag/marcxml:subfield[@code="a"][fn:matches(text(),"^.+\(.+\).+$")])
                    	    	    then 
 		                          (element {fn:concat("bf:",fn:string($id/@property)) }{		                              
-               		                       element bf:Identifier{		                          
+               		                       element bf:Identifier{               
                		                            element bf:identifierScheme {				 
                		                                fn:string($id/@property)
                		                            },	                            
@@ -920,8 +920,8 @@ declare function mbshared:generate-identifiers(
                		                                if ( $this-tag/marcxml:subfield[@code="a"][fn:matches(text(),"^.+\(.+\).+$")]) then
                		                                      let $val:=fn:replace($this-tag/marcxml:subfield[@code="a"],"(.+\()(.+)(\).+)","$1")
                		                            	      return  element bf:identifierValue { fn:substring($val,1, fn:string-length($val)-1)}
-               		                            	else
-               		                                    element bf:identifierValue { fn:string($this-tag/marcxml:subfield[@code="a"][1]) }               		                                   
+               		                            	else 
+               		                                    element bf:identifierValue { fn:string($this-tag/marcxml:subfield[fn:matches(@code,$id/@sfcodes)][1]) }               		                                   
                		                            else (),
                		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
                		                            	return element bf:identifierAssigner { 	fn:string($sub)},		
@@ -1062,8 +1062,7 @@ else
 :)
 declare function mbshared:handle-cancels($this-tag, $sf, $scheme) 
 {
- if (($this-tag[fn:matches(@tag,"(010|015|016|017|020|022|024|027|030|035|088)")] and $sf[@code="z"])  or
-        ($this-tag[@tag="022"] and $sf[fn:matches(@code,"m|y")])) then
+ if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|024|027|030|035|088)")] and $sf[@code="z"]) then
          element bf:Identifier {
   		  element bf:identifierScheme { $scheme },
   		  element bf:identifierValue { fn:normalize-space(fn:string($sf))},
@@ -1075,6 +1074,19 @@ declare function mbshared:handle-cancels($this-tag, $sf, $scheme)
                       element bf:identifierStatus {"canceled/invalid"}                
               else if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|024|027|030|035|088)")] and $sf[@code="z"] ) then               
                       element bf:identifierStatus{"canceled/invalid"}                  
+              else
+                  ()
+          }
+        else if ( ($this-tag[@tag="022"] and $sf[fn:matches(@code,"m|y|z")]) ) then  
+        element bf:Identifier {
+  		  element bf:identifierScheme { $scheme },
+  		  element bf:identifierValue { fn:normalize-space(fn:string($sf))},
+              if ($sf[@code="y"]) then                               
+                      element bf:identifierStatus{"incorrect"}          
+              else if ( $sf[@code="z"]) then                 
+                      element bf:identifierStatus{"canceled/invalid"}                
+              else if ( $sf[@code="m"]) then
+                      element bf:identifierStatus {"canceled/invalid"}                              
               else
                   ()
           }
@@ -3585,7 +3597,7 @@ declare function mbshared:generate-simple-property(
        return 
            for $i in $text
                      return  
-                     element {fn:concat("bf:",fn:string($node/@property))} {
+                     element {fn:concat("bf:",fn:string($node/@property))} { 
                                 (:for identifiers, if it's oclc and there's an oclc id (035a) return attribute/uri, else return bf:Id:)
                          if (fn:string($node/@group)="identifiers") then
                                 if (fn:starts-with($i,"(OCoLC)") and fn:contains($node/@uri,"worldcat") ) then
@@ -3595,7 +3607,7 @@ declare function mbshared:generate-simple-property(
                                     let $s :=  marc2bfutils:clean-string(fn:lower-case($i))
                                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)  }
                                 else
-                                     element bf:Identifier { 
+                                     element bf:Identifier {
                                                 element bf:identifierValue {
                                                   if (fn:starts-with($i, "(DLC)" )) then
                                                     fn:normalize-space(fn:replace($i,"(\(DLC\))(.+)$","$2" ))
