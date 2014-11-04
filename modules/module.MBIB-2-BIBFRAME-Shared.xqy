@@ -2900,7 +2900,11 @@ return
 -:34 '650': ('subject', {'bibframeType': 'Topic'}),
 -:35 '651': ('subject', {'bibframeType': 'Geographic'}),
 
-
+: need to add madsscheme:
+:    - Thesaurus specified in 600-651, 655 Ind2.  If Ind2=7, then thesaurus in subfield $2 using MARC code.
+:	- Thesaurus specified only in subfield $2 using MARC code in 654, 656, 657, 658, 662
+:  lcsh:     <madsrdf:isMemberOfMADSScheme rdf:resource="id.loc.gov/authorities/subjects"/>
+:  mesh: nlm.gov/mesh ?
 
 :   @param  $d        element is the marcxml:datafield  
 :   @return bf:subject
@@ -2911,9 +2915,18 @@ declare function mbshared:get-subject(
 {
     let $subjectType := fn:string($marc2bfutils:subject-types/subject[@tag=$d/@tag])
     let $subjectType:= if ($d[@tag="600"][marcxml:subfield[@code="t"]]) then "Work" else $subjectType
+    let $subjectScheme:= if ($d/marcxml:subfield[@code="2"]) then
+                            fn:concat("http://example.org",fn:normalize-space(fn:string($d/@marcxml:subfield[@code="2"])))
+                        else if($d[@ind2="0"]) then "http://id.loc.gov/authorities/subjects"
+                        else if($d[@ind2="1"]) then "http://id.loc.gov/authorities/childrensSubjects"
+                        else if($d[@ind2="2"]) then "http://nlm.example.org/mesh"
+                        else if($d[@ind2="3"]) then "http://nal.example.org/NALSH"
+                        else if($d[@ind2="5"]) then "http://www.collectionscanada.gc.ca/obj/900/f11/040004/canadian-subject-headings"
+                        else if($d[@ind2="6"]) then "http://rvm.example.org/rvm"                                                   
+                        else ()
     let $details :=
 
-	if (fn:matches(fn:string($d/@tag),"(600|610|611|648|650|651|655|751)")) then	
+	if (fn:matches(fn:string($d/@tag),"(600|610|611|648|650|651|655|751)")) then
             let $last2Tag := fn:substring(fn:string($d/@tag), 2)
             (: 
                 The controlfields and the leader are bogus, 
@@ -2949,7 +2962,8 @@ declare function mbshared:get-subject(
                                         fn:concat("http://www.loc.gov/mads/rdf/v1#" , fn:local-name($madsrdf))
                                     }
                                 },                                
-                                $madsrdf/madsrdf:authoritativeLabel                
+                                $madsrdf/madsrdf:authoritativeLabel,
+                                element  madsrdf:isMemberOfMADSScheme {attribute rdf:resource {$subjectScheme}}
                             }
                         },
                          if ($d/marcxml:subfield[@code="2"]) then  element bf:authoritySource {fn:string($d/marcxml:subfield[@code="2"])} else ()
