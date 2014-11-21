@@ -29,7 +29,7 @@ xquery version "1.0";
 module namespace marc2bfutils  = 'info:lc/id-modules/marc2bfutils#';
 declare namespace marcxml      = "http://www.loc.gov/MARC21/slim";
 declare namespace bf           	= "http://bibframe.org/vocab/";
-
+declare namespace rdf           	= "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 (: VARIABLES :)
 declare variable $marc2bfutils:resourceTypes := (
     <resourceTypes>
@@ -3277,11 +3277,11 @@ declare function marc2bfutils:process-language( $lang as xs:string*){
  
         if ($lang) then        
             let $lang:=  (:some have 2 codes german = deu, ger :)
-                    $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation(fn:string($d/marcxml:subfield[@code="l"]),".")]/iso6392[1]
+                    $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation($lang,".")]/iso6392[1]
             return if ($lang!="") then
                         element bf:language { 
                                         attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
                                       }
-                         else element bf:languageNote {marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code="l"]))}
+                         else element bf:languageNote {marc2bfutils:clean-string(fn:string($lang))}
        else ()
 };
