@@ -3267,3 +3267,21 @@ return	if ($len=0) then
 		$str
 
 };
+
+
+(: This function accepts a string language and tries to conver to the marc code
+
+
+:)
+declare function marc2bfutils:process-language( $lang as xs:string*){
+ 
+        if ($lang) then        
+            let $lang:=  (:some have 2 codes german = deu, ger :)
+                    $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation(fn:string($d/marcxml:subfield[@code="l"]),".")]/iso6392[1]
+            return if ($lang!="") then
+                        element bf:language { 
+                                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
+                                      }
+                         else element bf:languageNote {marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code="l"]))}
+       else ()
+};

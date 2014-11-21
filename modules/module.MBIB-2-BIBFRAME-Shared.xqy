@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-10-31-T17:00:00";
+declare variable $mbshared:last-edit :="2014-11-21-T17:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -874,7 +874,7 @@ declare function mbshared:generate-880-label
 :
 ::   @param  $marcxml       element is the marcxml record
 :   @param  $domain      string is the "work" or "instance"
-: skip isbn; do it on generate-instance from isbn, since it's a splitter and yo udon't want multiple per instance
+: skip isbn; do it on generate-instance from isbn, since it's a splitter and you don't want multiple per instance
 :   @return bf:* as element()
 :)
 declare function mbshared:generate-identifiers(
@@ -2256,8 +2256,16 @@ declare function mbshared:generate-related-work
                 mbshared:get-name($d)
         else ()
     let $related-props:=mbshared:generate-simple-property($d,"related")
-    
-        
+    let $language:= marc2bfutils:process-language(fn:string($d/marcxml:subfield[@code="l"]))
+        (:if ($d/marcxml:subfield[@code="l"]) then        
+            let $lang:=  (\:some have 2 codes german = deu, ger :\)
+                    $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation(fn:string($d/marcxml:subfield[@code="l"]),".")]/iso6392[1]
+            return if ($lang!="") then
+                        element bf:language { 
+                                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
+                                      }
+                         else element bf:languageNote {marc2bfutils:clean-string(fn:string($d/marcxml:subfield[@code="l"]))}
+       else ():)
     let $aLabel := 
         fn:concat(
             fn:string(($name//bf:label)[1]),
@@ -2314,6 +2322,7 @@ declare function mbshared:generate-related-work
             mbshared:generate-titleNonsort($d,$title, "bf:title"),            
             $name,
             $related-props,
+            $language,
             $inverse
 			}
 		}
@@ -3722,7 +3731,8 @@ declare function mbshared:get-uniformTitle(
     let $translationOf := 
         if ($d/marcxml:subfield[@code="l"]) then
             (for $s in  $d/marcxml:subfield[@code="l"]
-                  let $lang:= (:some have 2 codes german = deu, ger :)
+             return marc2bfutils:process-language($s),
+             (:let $lang:= 
                     $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation($s,".")]/iso6392[1]
                   return if ($lang!="") 
                             then
@@ -3730,7 +3740,7 @@ declare function mbshared:get-uniformTitle(
                                                 attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
                                               }
                                  else element bf:languageNote {marc2bfutils:clean-string($s)},
-          
+          :)
         mbshared:generate-880-label($d,"title"),
          mbshared:generate-translationOf($d)
         )
