@@ -332,7 +332,7 @@ declare function mbshared:generate-abstract-annotation(
     $workID as xs:string
     ) as element (bf:hasAnnotation)* 
 {
-for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]]
+for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(a|c|u)")]]
     
         let $abstract-type:=
             if ($d/@ind1="") then "Summary" (:Summary:)
@@ -362,7 +362,10 @@ for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@c
                         (:??? annotationbody  and literal aren't right:)
                     for $sf in $d/marcxml:subfield[@code="u"]
                         return element bf:annotationBody { attribute rdf:resource {fn:string($sf)} },
-                                                                
+                    if ( $d/marcxml:subfield[@code="a"] ) then
+                         element bf:annotationBody { fn:string-join($d/marcxml:subfield[@code="a" or @code="b"] ," ") }
+                        else (),
+                                                                                                   
                     let $property-name:= 
                         if  ($abstract-type="Summary") then "bf:summaryOf" 
                          else   if  ($abstract-type="Review") then "bf:reviewOf"
@@ -2641,7 +2644,8 @@ let $typeOf008:=
             return mbshared:generate-simple-property($d,"work")
 	
     let $abstract-annotation:= 
-        if    ($marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] ) then
+        (:if    ($marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]] ) then:)
+        if    ($marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(a|c|u)")]] ) then
          mbshared:generate-abstract-annotation($marcxml,$workID)
             else ()
     
