@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-11-21-T17:14:00";
+declare variable $mbshared:last-edit :="2014-12-01-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -330,7 +330,7 @@ declare variable $mbshared:relationships :=
 declare function mbshared:generate-abstract-annotation(
     $marcxml as element(marcxml:record)   ,
     $workID as xs:string
-    ) as element (bf:hasAnnotation) 
+    ) as element (bf:hasAnnotation)* 
 {
 for $d in  $marcxml/marcxml:datafield[@tag="520"][marcxml:subfield[fn:matches(@code,"(c|u)")]]
     
@@ -2925,7 +2925,7 @@ declare function mbshared:get-subject(
     let $subjectType := fn:string($marc2bfutils:subject-types/subject[@tag=$d/@tag])
     let $subjectType:= if ($d[@tag="600"][marcxml:subfield[@code="t"]]) then "Work" else $subjectType
     let $subjectScheme:= if ($d/marcxml:subfield[@code="2"]) then
-                            fn:concat("http://example.org",fn:normalize-space(fn:string($d/@marcxml:subfield[@code="2"])))
+                            fn:concat("http://example.org/",fn:normalize-space(fn:string($d/marcxml:subfield[@code="2"])))
                         else if($d[@ind2="0"]) then "http://id.loc.gov/authorities/subjects"
                         else if($d[@ind2="1"]) then "http://id.loc.gov/authorities/childrensSubjects"
                         else if($d[@ind2="2"]) then "http://nlm.example.org/mesh"
