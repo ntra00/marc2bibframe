@@ -3224,7 +3224,7 @@ declare function marc2bfutils:generate-carrier-code($carrier-text as xs:string) 
 (: This function matches the content text to the varable containing the content code, returning the code for building a uri
 :)
 declare function marc2bfutils:generate-content-code($content-text as xs:string) as xs:string {
- fn:string( $marc2bfutils:media-types/term[aL=$content-text]/@code)
+ fn:string( $marc2bfutils:content-types/term[aL=$content-text]/@code)
  			
 };
 (: This function matches the mediatype text to the varable containing the mediatype code, returning the code for building a uri

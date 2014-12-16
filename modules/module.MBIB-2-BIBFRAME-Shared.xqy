@@ -44,7 +44,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-12-01-T11:00:00";
+declare variable $mbshared:last-edit :="2014-12-16-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -158,7 +158,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"		property="musicVersion"			     tag="240" sfcodes="s"      >version</node>
          <node domain="instance"	property="titleStatement"		    	tag="245" sfcodes="ab"         >title Statement</node>
          
-         <node domain="instance"	property="responsibilityStatement"		tag="245" sfcodes="c"         >responsibility Statement</node>
+        <!--<node domain="instance"	property="responsibilityStatement"		tag="245" sfcodes="c"         >responsibility Statement</node> -->
          <node domain="work"	    property="treatySignator"		    	tag="710" sfcodes="g"         >treaty Signator</node>
          <node domain="instance"	property="edition"					      tag="250"        sfcodes="a"	             >Edition</node>
          
@@ -534,7 +534,13 @@ declare function mbshared:generate-instance-from260(
             return mbshared:get-title($t,"instance")
             
    let $resp-statement880:= mbshared:generate-880-label($d/../marcxml:datafield[@tag = "245"][marcxml:subfield[@code="c"]],"responsibilityStatement")
-   
+   let $resp-statement:=
+        for $r in $d/../marcxml:datafield[@tag = "245"]/marcxml:subfield[@code="c"]
+            return
+                    if (fn:contains($r,"="))    then
+                        fn:substring-before(fn:normalize-space($r),"=")
+                    else 
+                        fn:normalize-space($r)
     let $edition-instances:= 
     for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
         return 
@@ -1304,7 +1310,7 @@ declare function mbshared:generate-physdesc
         $resource as xs:string
     ) as element ()*
 { 
-        (          
+        (    
              (:---337,338:)
              if ($resource="instance") then 
               (  (:-------------337----------------:)
@@ -1399,7 +1405,7 @@ declare function mbshared:generate-physdesc
               for $d in $marcxml/marcxml:datafield[@tag="336" ]
                 let $src:=fn:string($d/marcxml:subfield[@code="2"])
                
-                return
+                return 
                     if (   $src="rdacontent"  and $d/marcxml:subfield[@code="a"]) then
                     for $s in $d/marcxml:subfield[@code="a"]
                             let $content-code:=marc2bfutils:generate-content-code(fn:string($s))
@@ -1417,7 +1423,7 @@ declare function mbshared:generate-physdesc
                                     for $s in $d/marcxml:subfield[@code="b"]
                                         return element bf:contentCategory {attribute rdf:type {fn:concat("http://id.loc.gov/vocabulary/contentTypes/",fn:encode-for-uri(fn:string($s)))}		
                         } 
-                     else  (),                   
+                     else   ()      ,             
                       for $node in  $mbshared:simple-properties//node[fn:string(@domain)="contentcategory"]
                         let $return-codes:=
  			                    if ($node/@sfcodes) then fn:string($node/@sfcodes) 		else "a"
@@ -2523,11 +2529,6 @@ let $typeOf008:=
                      mbshared:generate-instance-from856($d, $workID)
                 else ()
             
-     (:if ( $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]) then                    
-        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(856|859)")][fn:not(fn:matches(fn:string(marcxml:subfield[@code="3"]),"contributor","i"))]
-            return mbshared:generate-instance-from856($d, $workID)            
-        else 
-            ():)
     let $types := mbshared:get-resourceTypes($marcxml)
         
     let $mainType := "Work"
@@ -2643,7 +2644,7 @@ let $typeOf008:=
         else
             ()
                         
-      let $work3xx := mbshared:generate-physdesc($marcxml,"work") (:336:)
+      let $contentCategory := mbshared:generate-physdesc($marcxml,"work") (:336:)
       let $cartography:=  
                 for $d in $marcxml/marcxml:datafield[@tag="255"] 
       			   return mbshared:generate-simple-property($d,"cartography")      				          
@@ -2722,6 +2723,7 @@ let $typeOf008:=
             (:$addl-names,:)
             $events,
             $work-simples,
+            $contentCategory,
             $aud521,         
             $langs,
             $findaids,
@@ -3517,14 +3519,34 @@ let $title := if (fn:contains($title,"=")) then
                  else ()
             else
                 ""
-  let $parallel:= if (fn:contains(fn:string($d/marcxml:subfield[@code="a"]),"=")) then
+  let $parallel:=
+                if (fn:contains(fn:string($d/marcxml:subfield[@code="a"]),"=")) then
                     element   {$element-name} {   element bf:Title { 
-                    element bf:titleValue {fn:normalize-space(marc2bfutils:clean-title-string($d/marcxml:subfield[@code="b"]))},
+                    element bf:titleValue {marc2bfutils:clean-title-string($d/marcxml:subfield[@code="b"])},
                     element bf:titleType {"parallel"}
                     }
                     }
-               else
-                    ()     
+               else if (fn:contains(fn:string($d/marcxml:subfield[@code="b"]),"=")) then
+               (:$b: parallel title is the part after the = :)
+                    element   {$element-name} {   element bf:Title { 
+                        element bf:titleValue {marc2bfutils:clean-title-string(fn:substring-after($d/marcxml:subfield[@code="b"],"="))},
+                        element bf:titleType {"parallel"}
+                    }
+                    }
+               else if (fn:contains(fn:string($d/marcxml:subfield[@code="c"]),"=")) then
+               (:$c eng stmt resp = foreign title / foreign resp . so the parallel title is after the =, before the / (resp stmt handled elsewhere) :)
+                    element   {$element-name} {   element bf:Title { 
+                        element bf:titleValue {
+                                            if (fn:contains(fn:string($d/marcxml:subfield[@code="c"]),"/")) then
+                                                marc2bfutils:clean-title-string(fn:replace($d/marcxml:subfield[@code="c"],"^.+=(.+)/","$1"))                                                
+                                            else                                        
+                                                marc2bfutils:clean-title-string(fn:substring-after($d/marcxml:subfield[@code="c"],"="))
+                                    },
+                        element bf:titleType {"parallel"}
+                    }
+                    }
+                         
+               else ()     
 
   
   let $constructed-title:=
@@ -3537,8 +3559,11 @@ let $title := if (fn:contains($title,"=")) then
                  if ($d/@tag="245") then element bf:titleValue {$title} else (),
                  if (fn:not(fn:contains($title,"=")) and $d/marcxml:subfield[@code="b"]) then
                     (:$b isn't repeatable but gwu had some!:)
-                    for $sub in $d/marcxml:subfield[@code="b"]
-                        return element bf:subtitle { marc2bfutils:clean-title-string($sub)}
+                    for $sub in $d/marcxml:subfield[@code="b"]                    
+                        return if (fn:not(fn:contains($sub,"="))) then
+                                    element bf:subtitle { marc2bfutils:clean-title-string($sub)}
+                                else 
+                                    element bf:subtitle { fn:substring-after(marc2bfutils:clean-title-string($sub),"=")}
                  else (),
                  mbshared:generate-simple-property($d,"title"),   
                  mbshared:generate-880-label($d,"title")
