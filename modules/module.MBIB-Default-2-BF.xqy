@@ -20,10 +20,12 @@ xquery version "1.0";
 (:~
 :   This module handles transformations of specific types of marc records, starting with Music (audio and notated)
 :   It is called from MarcxmlBib-2-Bibframe, and calls generic functions from that module. 
-:	
+:
+:   Modified to receive $collection, consisting of a bib and it's holdings (optionally)
+:
 :   @author Kevin Ford (kefo@loc.gov)
 :   @author Nate Trail (ntra@loc.gov)
-:   @since January 30, 2014
+:   @since December 16, 2014
 :   @version 1.0
 :)
 
@@ -51,9 +53,9 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 :   @return bf:* as element()
 :)
 declare function bfdefault:generate-default-work(
-    $marcxml as element(marcxml:record),
+    $collection as element(marcxml:collection),
     $workID as xs:string
     ) as element ()  {
-     mbshared:generate-work($marcxml, $workID)
+     mbshared:generate-work($collection, $workID)
    
 };

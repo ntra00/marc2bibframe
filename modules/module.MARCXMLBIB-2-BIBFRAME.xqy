@@ -57,17 +57,20 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
     
 (:~
 :   This is the main function.  It expects a MARCXML record (with embedded hld:holdings optionally) as input.
+:
 :   It generates bibframe RDF data as output.
 :
-:   @param  $marcxml        element is the top  level (may include marcxml and opac  holdings)
+:   Modified to allow marcxml:collection with multiple marcxml:records of type bib and holdings as an alternate holdings package
+:   calling program (ml.xqy, zorba, saxon) makes a package of each bib record plus it's holdings, so there's only one bib.
+:   @param  $collection        element is the top  level (may include marcxml and opac  holdings)
 :   @return rdf:RDF as element()
 :)
 declare function marcbib2bibframe:marcbib2bibframe(
-        $marcxml as element(marcxml:record),
+        $collection as element(marcxml:collection),
         $identifier as xs:string
         ) as element(rdf:RDF) 
 {   
-   
+ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic"]
     let $error := marcerrors:check($marcxml)
     let $out := 
         if ($error) then
@@ -108,9 +111,9 @@ declare function marcbib2bibframe:marcbib2bibframe(
 
             let $work := 
                 if ($musictype = "notation") then
-                    music:generate-notatedmusic-work($marcxml, $about)
+                    music:generate-notatedmusic-work($collection, $about)
                 else
-                    bfdefault:generate-default-work($marcxml, $about) 
+                    bfdefault:generate-default-work($collection, $about) 
             
             return
                <rdf:RDF

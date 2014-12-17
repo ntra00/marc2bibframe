@@ -19,7 +19,9 @@ xquery version "1.0";
    
 (:~
 :   Here are shared functions called by other modules in building bibframe resources
-:	
+:
+:   Modified to receive $collection, consisting of a bib and it's holdings (optionally) 2014-12-16
+:
 :   @author Kevin Ford (kefo@loc.gov)
 :   @author Nate Trail (ntra@loc.gov)
 :   @since January 14, 2014
@@ -44,7 +46,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-12-16-T11:00:00";
+declare variable $mbshared:last-edit :="2014-12-17-T13:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -262,7 +264,11 @@ declare variable $mbshared:simple-properties:= (
          <node domain="related"     	property="note"					      tag="534"        sfcodes="n"	             >Note</node>        
          <node domain="work"			property="geographicCoverageNote"	 	tag="662" sfcodes="abcdefg"  stringjoin="--"	      >geographicCoverage Note</node>
          <node domain="work"			property="geographicCoverageNote"	 	tag="662" sfcodes="h" >geographicCoverage Note</node>
-         
+         <!--holdings-->
+         <node domain="holdings"			property="heldBy"	 	     tag="852" sfcodes="a" >heldBy </node>
+         <node domain="holdings"			property="subLocation"	 	tag="852" sfcodes="b" >subLocation </node>
+         <node domain="holdings"			property="barcode"	 	    tag="852" sfcodes="p" >bar code</node>         
+         <node domain="holdings"			property="shelfMark"	 	tag="852" sfcodes="khlimt" >shelfMark code</node>
 
   </properties>
 	)	;
@@ -682,7 +688,7 @@ let $sound:=
                 return  element bf:soundContent {$s}
         
 
-      let $holdings := mbshared:generate-holdings($d/ancestor::marcxml:record, $workID)
+    let $holdings := mbshared:generate-holdings($d/ancestor::marcxml:record, $workID)
  
     let $instance-identifiers :=
              (                       
@@ -1874,6 +1880,30 @@ for $hold in $holdings/hld:holding
         
 };
 (:~
+:   This is the function generates holdings properties from hld:holdings.
+: 
+:   @param  $marcxml        element is the MARCXML
+:                           may also contain hld:holdings
+:   @return bf:* as element()
+:)
+declare function mbshared:generate-holdings-from-hrecords(
+    $collection as element(marcxml:collection)?,
+    
+    $workId as xs:string
+    
+    ) as element ()* 
+{
+
+
+for $r in $collection/marcxml:record[2](:[fn:string(@type)="Holdings"]:)
+    return element bf:heldItem { element bf:HeldItem {
+            
+            mbshared:generate-simple-property($r/marcxml:datafield,"holdings")
+         }
+         }
+
+};
+(:~
 :   This is the function generates holdings resources.
 : 
 :   @param  $marcxml        element is the MARCXML
@@ -1885,8 +1915,13 @@ declare function mbshared:generate-holdings(
     $workID as xs:string
     ) as element ()* 
 {
-
-let $hld:= if ($marcxml//hld:holdings) then mbshared:generate-holdings-from-hld($marcxml, $workID) else ()
+(:options: marcxml:records contains opacxml in hld:holdings, or marcxml:record/ancestor:collection contains 
+marcxml:record[@type="Holdings"]:)
+let $hld:= if ($marcxml//hld:holdings) then
+                mbshared:generate-holdings-from-hld($marcxml, $workID) 
+            else if ($marcxml/ancestor::marcxml:collection/marcxml:record[@type='Holdings']) then
+                    mbshared:generate-holdings-from-hrecords($marcxml/ancestor::marcxml:collection, $workID)
+            else ()
 
 (:udc is subfields a,b,c; the rest are ab:) 
 (:call numbers: if a is a class and b exists:)
@@ -2485,24 +2520,25 @@ let $xml-lang:=
             if ($script) then fn:concat($xml-lang,"-",$script) else $xml-lang
         };
 (:~
-:   This is the function that generates a work resource.
+:   This is the function that generates a work resource. 
 :
-:   @param  $marcxml        element is the MARCXML  
+:   @param  $collection        element is the MARCXML  (one bib, zero or more holdings in <collection/>
 :   @return bf:* as element()
 :)
 declare function mbshared:generate-work(
-    $marcxml as element(marcxml:record),
+    $collection as element(marcxml:collection),
     $workID as xs:string
     ) as element () 
 { (:2013-05-01 ntra moved instances inside work;  :)
-     
-let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
-let $leader:=fn:string($marcxml/marcxml:leader)
-let $leader6:=fn:substring($leader,7,1)
-let $leader7:=fn:substring($leader,8,1)
-let $leader19:=fn:substring($leader,20,1)
+for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic"]     
 
-let $typeOf008:=
+    let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
+    let $leader:=fn:string($marcxml/marcxml:leader)
+    let $leader6:=fn:substring($leader,7,1)
+    let $leader7:=fn:substring($leader,8,1)
+    let $leader19:=fn:substring($leader,20,1)
+
+    let $typeOf008:=
 			if ($leader6="a") then
 					if (fn:matches($leader7,"(a|c|d|m)")) then
 						"BK"
@@ -3651,7 +3687,11 @@ declare function mbshared:generate-simple-property(
                         return   element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
                     else
                         for $s in $d/marcxml:subfield[fn:contains($return-codes,@code)]
-                            return element wrap{ marc2bfutils:clean-string(fn:string($s))}
+                            return element wrap{ if (fn:matches($s/parent::datafield/@tag,"^5.+$"))then
+                                                    fn:string($s)
+                                                 else
+                                                     marc2bfutils:clean-string(fn:string($s))
+                                                }
                  
        return 
            for $i in $text
