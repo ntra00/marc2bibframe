@@ -17,6 +17,8 @@ xquery version "3.0";
 :       to RDF conforming to the BIBFRAME model.  Outputs RDF/XML,
 :       N-triples, or JSON.
 :
+:  adding holdings capability; allow <marcxml:collection> with multiple records,some holdigns, related to bibs on 004
+:
 :   Run: zorba -i -q file:///location/of/zorba.xqy -e marcxmluri:="http://location/of/marcxml.xml" -e serialization:="rdfxml" -e baseuri:="http://your-base-uri/"
 :   Run: zorba -i -q file:///location/of/zorba.xqy -e marcxmluri:="../location/of/marcxml.xml" -e serialization:="rdfxml" -e baseuri:="http://your-base-uri/"
 :)
@@ -26,8 +28,9 @@ xquery version "3.0";
 :   to RDF conforming to the BIBFRAME model.  Outputs RDF/XML,
 :   N-triples, or JSON.
 :
+:   @author Nate Trail (ntra@loc.gov)
 :   @author Kevin Ford (kefo@loc.gov)
-:   @since December 03, 2012
+:   @since December 17, 2014
 :   @version 1.0
 :)
 
@@ -36,6 +39,8 @@ import module namespace http            =   "http://www.zorba-xquery.com/modules
 import module namespace file            =   "http://expath.org/ns/file";
 import module namespace parsexml        =   "http://www.zorba-xquery.com/modules/xml";
 import schema namespace parseoptions    =   "http://www.zorba-xquery.com/modules/xml-options";
+
+
 
 import module namespace marcbib2bibframe = "info:lc/id-modules/marcbib2bibframe#" at "../modules/module.MARCXMLBIB-2-BIBFRAME.xqy";
 import module namespace rdfxml2nt = "info:lc/id-modules/rdfxml2nt#" at "../modules/module.RDFXML-2-Ntriples.xqy";
@@ -183,7 +188,7 @@ declare %an:sequential function local:resolve-labels(
     
     return <rdf:RDF>{$resources}</rdf:RDF>
 };
-
+let $usebnodes:= if ($usebnodes="") then "false" else $usebnodes
 let $marcxml := 
     if ( fn:starts-with($marcxmluri, "http://" ) or fn:starts-with($marcxmluri, "https://" ) ) then
         let $http-response := http:get-node($marcxmluri) 
@@ -202,10 +207,16 @@ let $marcxml :=
 let $marcxml := $marcxml//marcxml:record
 
 let $resources :=
-    for $r in $marcxml
+    (:for $r in $marcxml:)
+    for $r in $marcxml[@type="Bibliographic" or fn:not(@type)]
     let $controlnum := xs:string($r/marcxml:controlfield[@tag eq "001"][1])
+    let $holds:=
+        for $hold in $marcxml[fn:string(marcxml:controlfield[@tag="004"])=$controlnum]
+            return $hold
+  
     let $httpuri := fn:concat($baseuri , $controlnum)
-    let $bibframe :=  marcbib2bibframe:marcbib2bibframe($r,$httpuri)
+    let $recordset:= element marcxml:collection{$r,$holds}
+    let $bibframe :=  marcbib2bibframe:marcbib2bibframe($recordset,$httpuri)
     return $bibframe/child::node()[fn:name()]
     
 let $rdfxml-raw := 

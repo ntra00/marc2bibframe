@@ -214,7 +214,7 @@ declare %an:sequential function local:resolve-labels(
     
     return <rdf:RDF>{$resources}</rdf:RDF>
 };
-
+let $usebnodes:= if ($usebnodes="") then "false" else $usebnodes
 let $startDT := fn:current-dateTime()
 let $logfilename := fn:replace(fn:substring-before(xs:string($startDT), "."), "-|:", "")
 let $logfilename := fn:concat($logdir, $logfilename, '.log.xml')
@@ -244,7 +244,7 @@ let $result :=
     (:for $r in $marcxml:)
     for $r in $marcxml[@type="Bibliographic" or fn:not(@type)]
     let $controlnum := xs:string($r/marcxml:controlfield[@tag eq "001"][1])
-      let $holds:=
+    let $holds:=
         for $hold in $marcxml[fn:string(marcxml:controlfield[@tag="004"])=$controlnum]
             return $hold
   

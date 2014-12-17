@@ -131,10 +131,10 @@ declare function marcbib2bibframe:marcbib2bibframe(
 };
 
 declare function marcbib2bibframe:marcbib2bibframe(
-        $marcxml as element(marcxml:record)
+        $collection as element(marcxml:collection)
         ) as element(rdf:RDF) 
 {   
     let $identifier := fn:string(fn:current-time())
     let $identifier := fn:replace($identifier, "([:\-]+)", "") 
-    return marcbib2bibframe:marcbib2bibframe($marcxml,$identifier)
+    return marcbib2bibframe:marcbib2bibframe($collection,$identifier)
 };

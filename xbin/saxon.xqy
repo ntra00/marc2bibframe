@@ -24,7 +24,7 @@ xquery version "1.0";
 :   to RDF conforming to the BIBFRAME model.  Outputs RDF/XML,
 :   N-triples, or JSON.
 :
-:  adding holdings capability; allow <marcxml:collection> with multiple records,some holdigns, related to bibs on 004
+:  adding holdings capability; allow <marcxml:collection> with multiple records,some holdings, related to bibs on 004
 
 :   @author Kevin Ford (kefo@loc.gov)
 :   @since December 17, 2014
@@ -88,6 +88,7 @@ let $marcxml :=
     else
         //marcxml:record
 
+let $usebnodes:= if ($usebnodes="") then "false" else $usebnodes
 
 let $resources :=
     (:for $r in $marcxml:)
