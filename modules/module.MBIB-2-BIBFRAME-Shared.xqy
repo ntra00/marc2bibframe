@@ -46,7 +46,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2014-12-17-T13:00:00";
+declare variable $mbshared:last-edit :="2015-01-05-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -873,7 +873,7 @@ declare function mbshared:generate-880-label
                      return
                          element bf:responsibilityStatement {                      
                              attribute xml:lang {$xmllang},   			
-                             marc2bfutils:clean-string(fn:string($sf))
+                             fn:string($sf)
                          }    
           else if ($node-name="providerDate") then
                  for $sf in $match/marcxml:subfield[@code="c"]
@@ -3593,8 +3593,8 @@ let $title := if (fn:contains($title,"=")) then
                  else (),
                  
                  if ($d/@tag="245") then element bf:titleValue {$title} else (),
-                 if (fn:not(fn:contains($title,"=")) and $d/marcxml:subfield[@code="b"]) then
-                    (:$b isn't repeatable but gwu had some!:)
+                 if ($d/@tag!="210" and $d/@tag!="222"  and fn:not(fn:contains($title,"=")) and $d/marcxml:subfield[@code="b"])  then
+                            (:$b isn't repeatable but gwu had some!:)
                     for $sub in $d/marcxml:subfield[@code="b"]                    
                         return if (fn:not(fn:contains($sub,"="))) then
                                     element bf:subtitle { marc2bfutils:clean-title-string($sub)}
