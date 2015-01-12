@@ -46,7 +46,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-01-05-T11:00:00";
+declare variable $mbshared:last-edit :="2015-01-12-T12:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -281,8 +281,9 @@ declare variable $mbshared:relationships :=
         <!-- Work to Work relationships -->
         <work-relateds all-tags="(400|410|411|430|440|490|533|534|630|700|710|711|730|740|760|762|765|767|770|772|773|774|775|777|780|785|787|800|810|811|830)">
             <type tag="(700|710|711|730)" ind2="2" property="hasPart">isIncludedIn</type>            
-            <type tag="(700|710|711|730|787)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
+            <type tag="(700|710|711|730)" ind2="( |0|1)" property="relatedResource">relatedWork</type>        		                        
             <type tag="740" ind2=" " property="relatedWork">relatedWork</type>            
+            
 		    <type tag="740" property="partOf"  ind2="2">hasPart</type>
 		    <type tag="760" property="subseriesOf">hasParts</type>	
 		    <type tag="762" property="subseries">hasParts</type>	
@@ -294,7 +295,7 @@ declare variable $mbshared:relationships :=
 		    <type tag="773" property="partOf">hasConstituent</type>		     
 		    <type tag="774" property="hasPart">has Part</type>
 		    <type tag="775" property="otherEdition" >hasOtherEdition</type>
-		   
+		   <type tag="787"  property="relatedWork">relatedWork</type>
 		   
 		   <!--???the generic preceeding and succeeding may not be here -->
 		    <type tag="780" ind2="0" property="continues">continuationOf</type>		    
@@ -2470,7 +2471,11 @@ declare function mbshared:related-works
      	          for $type in $relateds/type[@tag=$d/@tag]                		
 			         return mbshared:generate-related-reproduction($d,$type)                                         
 			    ,    
-                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|787)")][marcxml:subfield[@code="t"]]                                                       
+			     for $d in $marcxml/marcxml:datafield[@tag="787"][marcxml:subfield[@code="t"]]                                                       
+                  for $type in $relateds/type[fn:matches($d/@tag,@tag)] 
+                     return      mbshared:generate-related-work($d,$type, $workID)                                                 
+                ,            
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")][marcxml:subfield[@code="t"]]                                                       
                   for $type in $relateds/type[fn:matches($d/@tag,@tag)][fn:matches($d/@ind2,@ind2)] 
                      return      mbshared:generate-related-work($d,$type, $workID)                                                 
                 ,                       
@@ -2977,10 +2982,10 @@ declare function mbshared:get-subject(
     let $subjectType := fn:string($marc2bfutils:subject-types/subject[@tag=$d/@tag])
     let $subjectType:= if ($d[@tag="600"][marcxml:subfield[@code="t"]]) then "Work" else $subjectType
     let $subjectScheme:= if ($d/marcxml:subfield[@code="2"]) then
-                            fn:concat("http://example.org/",fn:normalize-space(fn:string($d/marcxml:subfield[@code="2"])))
+                            fn:concat("http://id.loc.gov/vocabulary/subjectSchemes/",fn:normalize-space(fn:string($d/marcxml:subfield[@code="2"])))
                         else if($d[@ind2="0"]) then "http://id.loc.gov/authorities/subjects"
                         else if($d[@ind2="1"]) then "http://id.loc.gov/authorities/childrensSubjects"
-                        else if($d[@ind2="2"]) then "http://nlm.example.org/mesh"
+                        else if($d[@ind2="2"]) then "http://id.loc.gov/vocabulary/subjectSchemes/mesh"
                         else if($d[@ind2="3"]) then "http://nal.example.org/NALSH"
                         else if($d[@ind2="5"]) then "http://www.collectionscanada.gc.ca/obj/900/f11/040004/canadian-subject-headings"
                         else if($d[@ind2="6"]) then "http://rvm.example.org/rvm"                                                   
