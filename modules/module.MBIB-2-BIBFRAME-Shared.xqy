@@ -46,7 +46,7 @@ declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-01-12-T12:00:00";
+declare variable $mbshared:last-edit :="2015-01-16-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -939,7 +939,7 @@ declare function mbshared:generate-identifiers(
 		                          (element {fn:concat("bf:",fn:string($id/@property)) }{		                              
                		                       element bf:Identifier{               
                		                            element bf:identifierScheme {				 
-               		                                fn:string($id/@property)
+               		                               attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/",  fn:string($id/@property))}
                		                            },	                            
                		                            if ($this-tag/marcxml:subfield[@code="a"]) then 
                		                                if ( $this-tag/marcxml:subfield[@code="a"][fn:matches(text(),"^.+\(.+\).+$")]) then
@@ -1010,7 +1010,7 @@ let $id024-028:=
 	                                 return 
 	                                   element {$property-name} {
 	                                    element bf:Identifier{
-       	                                    element bf:identifierScheme {$scheme},
+       	                                    element bf:identifierScheme {  attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/", $scheme)} },
        	                                        $value,
        	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
        	                                       return element bf:identifierAssigner{fn:string($sub)},	        
@@ -1089,7 +1089,7 @@ declare function mbshared:handle-cancels($this-tag, $sf, $scheme)
 {
  if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|024|027|030|035|088)")] and $sf[@code="z"]) then
          element bf:Identifier {
-  		  element bf:identifierScheme { $scheme },
+  		  element bf:identifierScheme { attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/", $scheme)} },
   		  element bf:identifierValue { fn:normalize-space(fn:string($sf))},
               if ($this-tag[@tag="022"] and $sf[@code="y"]) then                               
                       element bf:identifierStatus{"incorrect"}          
@@ -1104,7 +1104,7 @@ declare function mbshared:handle-cancels($this-tag, $sf, $scheme)
           }
         else if ( ($this-tag[@tag="022"] and $sf[fn:matches(@code,"m|y|z")]) ) then  
         element bf:Identifier {
-  		  element bf:identifierScheme { $scheme },
+  		  element bf:identifierScheme { attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/", $scheme)} },
   		  element bf:identifierValue { fn:normalize-space(fn:string($sf))},
               if ($sf[@code="y"]) then                               
                       element bf:identifierStatus{"incorrect"}          
@@ -1573,7 +1573,7 @@ declare function mbshared:generate-instance-fromISBN(
                     element bf:isbn10 {
                         element bf:Identifier {
                             element bf:identifierValue {fn:normalize-space($i)},
-                            element bf:identifierScheme {"isbn"},
+                            element bf:identifierScheme { attribute rdf:resource {"http://id.loc.gov/vocabulary/identifiers/isbn"} },
                             element bf:identifierQualifier {fn:normalize-space($physicalForm)}
                         }                                    
                     }
@@ -2986,7 +2986,7 @@ declare function mbshared:get-subject(
                         else if($d[@ind2="0"]) then "http://id.loc.gov/authorities/subjects"
                         else if($d[@ind2="1"]) then "http://id.loc.gov/authorities/childrensSubjects"
                         else if($d[@ind2="2"]) then "http://id.loc.gov/vocabulary/subjectSchemes/mesh"
-                        else if($d[@ind2="3"]) then "http://nal.example.org/NALSH"
+                        else if($d[@ind2="3"]) then "http://id.loc.gov/vocabulary/subjectSchemes/nal"
                         else if($d[@ind2="5"]) then "http://www.collectionscanada.gc.ca/obj/900/f11/040004/canadian-subject-headings"
                         else if($d[@ind2="6"]) then "http://rvm.example.org/rvm"                                                   
                         else ()
@@ -3032,7 +3032,7 @@ declare function mbshared:get-subject(
                                 element  madsrdf:isMemberOfMADSScheme {attribute rdf:resource {$subjectScheme}}
                             }
                         },
-                         if ($d/marcxml:subfield[@code="2"]) then  element bf:authoritySource {fn:string($d/marcxml:subfield[@code="2"])} else ()
+                         if ($d/marcxml:subfield[@code="2"]) then  element bf:authoritySource {$subjectScheme} else ()
                          )
                 else ()
                                     
@@ -3720,10 +3720,12 @@ declare function mbshared:generate-simple-property(
                                                       },
                                                 element bf:identifierScheme {
                                                     if (fn:starts-with($i, "(DLC)" )) then
-                                                        "lccn"
+                                                        attribute rdf:resource {"http://id.loc.gov/vocabulary/identifiers/lccn"}
                                                     else
-                                                        fn:string($node/@property)}
+                                                        attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/",fn:string($node/@property) ) }}
                                                 }                        
+                         
+                         
                          (:non-identifiers:)
                          else if (fn:not($node/@uri)) then 
                               fn:normalize-space(fn:concat($startwith,  $i) )    	                
@@ -3832,7 +3834,7 @@ declare function mbshared:get-uniformTitle(
                         element bf:identifier {
                             element bf:Identifier {
                                 element bf:identifierValue {fn:string($d/marcxml:subfield[@code = '0' ])},
-                                element bf:identifierScheme {"local"}
+                                element bf:identifierScheme { attribute rdf:resource {"http://id.loc.gov/vocabulary/identifiers/local"} }
                                 }
                         }
                         
@@ -3982,9 +3984,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     if ($this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
                                  	       element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
                                  	else if ($this-tag[@ind1="0"]  ) then  
-                                 	      element bf:classificationScheme {"SUDOC"}
+                                 	      element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/sudocs"}}
                                  	else if ($this-tag[@ind1="1"]  ) then  
-                                 	      element bf:classificationScheme {"Government of Canada classification"}
+                                 	      element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/cacodoc"}}
                                  	  else ()
               let $status:=element bf:classificationStatus  {"canceled/invalid"}                 
              return for $cancel in $this-tag/marcxml:subfield[@code="z"]
@@ -4030,7 +4032,11 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                      			if ($property="classificationLcc" ) then 
                      				attribute rdf:resource {fn:concat( "http://id.loc.gov/authorities/classification/",fn:string($cl ))}                    				                     		
                      		    else	if ($property="classificationDdc" ) then 
-                     		             attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])),"/about")}
+                     		             let $ddc:=fn:normalize-space($this-tag/marcxml:subfield[@code="a"])
+                     		             let $ddc:=fn:replace($ddc,"^(.+) (.+)$", "$1") 
+                     		             return 
+                     		             (:attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])),"/about")}:)
+                     		                  attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:encode-for-uri($ddc),"/about")}
                      		    else element bf:Classification {
                                         element bf:classificationNumber {fn:string($cl)},
                                 if ($this-tag[@tag="086"] and $this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
@@ -4054,10 +4060,10 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                return                       
                        element bf:classification {
                            element bf:Classification {                        
-                                if (fn:matches($this-tag/@tag,"(050|090)"))     then element bf:classificationScheme {"lcc"} 
-                                   else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"nlm"}
-                                   else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {"udc"}                                   
-                                   else if (fn:matches($this-tag/@tag,"082"))      then element bf:classificationScheme {"ddc"}
+                                if (fn:matches($this-tag/@tag,"(050|090)"))     then element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/lcc"} } 
+                                   else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/nlm"}}
+                                   else if (fn:matches($this-tag/@tag,"080"))      then element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/udc"}}                                   
+                                   else if (fn:matches($this-tag/@tag,"082"))      then element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/ddc"}}
                                    (:nal??:)
                                    else if (fn:matches($this-tag/@tag,"(084|086)") and $this-tag/marcxml:subfield[@code="2"] ) then element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
                                    else ()
