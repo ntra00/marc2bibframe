@@ -1010,7 +1010,7 @@ let $id024-028:=
 	                                 return 
 	                                   element {$property-name} {
 	                                    element bf:Identifier{
-       	                                    element bf:identifierScheme {  attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/", $scheme)} },
+       	                                  if ($scheme!="unspecified") then  element bf:identifierScheme {  attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/", $scheme)} } else (),
        	                                        $value,
        	                                    for $sub in $this-tag/marcxml:subfield[@code="b"] 
        	                                       return element bf:identifierAssigner{fn:string($sub)},	        
