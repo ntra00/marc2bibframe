@@ -45,13 +45,14 @@ declare namespace madsrdf       	= "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      	= "http://id.loc.gov/vocabulary/relators/";
 declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
+
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-01-16-T11:00:00";
+declare variable $mbshared:last-edit :="2015-03-16-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
 <rules>
-<rule status="on" id="1" label="isbn" category="instance-splitting">New instances on secondary unique ISBNs</rule>
+<rule status="off" id="1" label="isbn" category="instance-splitting">New instances on secondary unique ISBNs</rule>
 <rule status="on" id="2" label="issn" category="instance-splitting">New instances on secondary unique ISSNs</rule>
 <rule status="on" id="3" label="260" category="instance-splitting">New instances on multiple 260s (not serials)</rule>
 <rule status="on" id="4" label="250" category="instance-splitting">New instances on multiple 250s</rule>
@@ -2762,7 +2763,7 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
        
             $names,            
             (:$addl-names,:)
-            $events,
+            $events,            
             $work-simples,
             $contentCategory,
             $aud521,         
@@ -3709,6 +3710,7 @@ declare function mbshared:generate-simple-property(
                                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
                                 else if (fn:contains($node/@uri,"id.loc.gov/vocabulary/organizations") ) then
                                     let $s :=  marc2bfutils:clean-string(fn:lower-case($i))
+                                    let $s :=  fn:replace ($s,"-","")
                                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)  }
                                 else
                                      element bf:Identifier {
@@ -3732,6 +3734,7 @@ declare function mbshared:generate-simple-property(
                          (:nodes with uris: :)
                          else if (fn:contains(fn:string($node/@uri),"loc.gov/vocabulary/organizations")) then                         
                                 let $s:=fn:lower-case(fn:normalize-space($i))
+                                let $s :=  fn:replace ($s,"-","")
                                  return 
                                     if (fn:string-length($s)  lt 10 and fn:not(fn:contains($s, " "))) then
                                     
