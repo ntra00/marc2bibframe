@@ -170,6 +170,7 @@ declare function marcxml2recordinfo:marcxml2ri(
         }
         
     let $marc040a := $marcxml/marcxml:datafield[@tag='040']/marcxml:subfield[@code='a']
+	let $marc040a := fn:replace($marc040a,"<>-","")
     let $content_source := 
         if ($marc040a) then
             element ri:recordContentSource { 
