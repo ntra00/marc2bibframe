@@ -180,7 +180,7 @@ declare function marcauth2bibframe:marcauth2bibframe(
         $collection as element(),
         $identifier as xs:string
         )  
-{    marcauth2bibframe:marcauth2bibframe($collection/marcxml:record[1], "123") 
+{  $collection
 (: for $marcxml in $collection/marcxml:record
     let $error := marcerrors:check($marcxml)
     let $out := 

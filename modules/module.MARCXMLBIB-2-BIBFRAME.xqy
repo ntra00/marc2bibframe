@@ -36,12 +36,12 @@ xquery version "1.0";
 module namespace marcbib2bibframe  = 'info:lc/id-modules/marcbib2bibframe#';
 
 (: MODULES :)
-import module namespace marcxml2madsrdf = "info:lc/id-modules/marcxml2madsrdf#" at "module.MARCXML-2-MADSRDF.xqy";
+import module namespace marcxml2madsrdf 	= "info:lc/id-modules/marcxml2madsrdf#" at "module.MARCXML-2-MADSRDF.xqy";
 
-import module namespace music = "info:lc/id-modules/marcnotatedmusic2bf#" at "module.MBIB-NotatedMusic-2-BF.xqy";
-import module namespace bfdefault = "info:lc/id-modules/marcdefault2bf#" at "module.MBIB-Default-2-BF.xqy";
-
-import module namespace marcerrors  = 'info:lc/id-modules/marcerrors#' at "module.ErrorCodes.xqy";
+import module namespace music 				= "info:lc/id-modules/marcnotatedmusic2bf#" at "module.MBIB-NotatedMusic-2-BF.xqy";
+import module namespace bfdefault 			= "info:lc/id-modules/marcdefault2bf#" at "module.MBIB-Default-2-BF.xqy";
+import module namespace marcerrors 	 		= 'info:lc/id-modules/marcerrors#' at "module.ErrorCodes.xqy";
+import module namespace modsxml2bibframe    = 'info:lc/id-modules/modsxml2bibframe#' at "module.MODSXML-2-BIBFRAME.xqy";
 
 (: NAMESPACES :)
 declare namespace marcxml       	= "http://www.loc.gov/MARC21/slim";
@@ -69,7 +69,7 @@ declare function marcbib2bibframe:marcbib2bibframe(
         $collection as element(marcxml:collection),
         $identifier as xs:string
         ) as element(rdf:RDF) 
-{   
+{    
  for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic"]
     let $error := marcerrors:check($marcxml)
     let $out := 
@@ -129,12 +129,29 @@ declare function marcbib2bibframe:marcbib2bibframe(
                 </rdf:RDF>
     return $out
 };
-
+(:
+:may be mods:collection, mods:record, marc:collection, marc:record
+:)
 declare function marcbib2bibframe:marcbib2bibframe(
-        $collection as element(marcxml:collection)
+        $collection as element()
         ) as element(rdf:RDF) 
 {   
     let $identifier := fn:string(fn:current-time())
     let $identifier := fn:replace($identifier, "([:\-]+)", "") 
-    return marcbib2bibframe:marcbib2bibframe($collection,$identifier)
+	return	
+	   if ($collection/*[fn:local-name()='mods'] ) then
+			 modsxml2bibframe:modsxml2bibframe($collection)
+	else
+    	 marcbib2bibframe:marcbib2bibframe($collection,$identifier)
 };
+
+declare function marcbib2bibframe:modsbib2bibframe(
+        $collection as element()
+        ) as element(rdf:RDF) 
+{   
+  modsxml2bibframe:modsxml2bibframe($collection)
+
+};
+
+
+
