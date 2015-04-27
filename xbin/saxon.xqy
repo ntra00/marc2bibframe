@@ -87,23 +87,29 @@ let $marcxml :=
         fn:doc($marcxmluri)//marcxml:record
     else
         //marcxml:record
+let $mods:=$doc//mods:mods
 
 let $usebnodes:= if ($usebnodes="") then "false" else $usebnodes
 
 let $resources :=
     (:for $r in $marcxml:)
-    for $r in $marcxml[@type="Bibliographic" or fn:not(@type)]
+    ( for $r in $marcxml[@type="Bibliographic" or fn:not(@type)]
 
-    let $controlnum := xs:string($r/marcxml:controlfield[@tag eq "001"][1])
-    let $holds:=
-        for $hold in $marcxml[fn:string(marcxml:controlfield[@tag="004"])=$controlnum]
-            return $hold
-
-    let $httpuri := fn:concat($baseuri , $controlnum)
-    let $recordset:= element marcxml:collection{$r,$holds}
-    let $bibframe :=  marcbib2bibframe:marcbib2bibframe($recordset,$httpuri)
-    return $bibframe/child::node()[fn:name()]
-    
+            let $controlnum := xs:string($r/marcxml:controlfield[@tag eq "001"][1])
+            let $holds:=
+                for $hold in $marcxml[fn:string(marcxml:controlfield[@tag="004"])=$controlnum]
+                    return $hold
+        
+            let $httpuri := fn:concat($baseuri , $controlnum)
+            let $recordset:= element marcxml:collection{$r,$holds}
+            let $bibframe :=  marcbib2bibframe:marcbib2bibframe($recordset,$httpuri)
+            return $bibframe/child::node()[fn:name()]
+            ,
+      for $r in $mods     
+            let $controlnum := xs:string($r//mods:recordIdentifier[1])
+            let $httpuri := fn:concat($baseuri , $controlnum)
+             return   marcbib2bibframe:modsbib2bibframe(element mods:collection{$r})
+      )
 let $rdfxml-raw := 
         element rdf:RDF {
             $resources
