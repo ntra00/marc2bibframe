@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-03-16-T11:00:00";
+declare variable $mbshared:last-edit :="2015-04-27-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -523,6 +523,7 @@ return element bf:Instance {element bf:instanceTitle{
 :
 :   @param  $d        element is the MARCXML 260 or substitute
 :   @param  $workID   uri for the derivedfrom
+:   @param	$control-fields 008 data converted
 :   @return bf:* as element()
 :)
 declare function mbshared:generate-instance-from260(
@@ -536,6 +537,7 @@ declare function mbshared:generate-instance-from260(
         (:    attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}:)
             attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
         }
+	let $control-fields:= marc2bfutils:generate-controlfields($d/ancestor::marcxml:record)
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|247|222|242|210)")]
             for $t in $titles
@@ -747,6 +749,7 @@ let $sound:=
             element bf:instanceOf {
                 attribute rdf:resource {$workID}
                 }, 
+			(:$control-fields,:)
             $derivedFrom,           
             $holdings
         }
@@ -1635,6 +1638,7 @@ declare function mbshared:generate-instance-from250(
 
     (:get the physical details:)
     (: We only ask for the first 260 :)
+
 	let $instance := mbshared:generate-instance-from260($d/../marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1], $workID)        
         
     let $instanceOf :=  
