@@ -38,7 +38,7 @@ import module namespace rdfxml2nt = "info:lc/id-modules/rdfxml2nt#" at "../modul
 import module namespace rdfxml2json = "info:lc/id-modules/rdfxml2json#" at "../modules/module.RDFXML-2-JSON.xqy";
 import module namespace bfRDFXML2exhibitJSON = "info:lc/bf-modules/bfRDFXML2exhibitJSON#" at "../modules/module.RDFXML-2-ExhibitJSON.xqy";
 import module namespace RDFXMLnested2flat = "info:lc/bf-modules/RDFXMLnested2flat#" at "../modules/module.RDFXMLnested-2-flat.xqy";
-
+import module namespace marcauth2bibframe = "info:lc/id-modules/marcauth2bibframe#" at "../modules/module.MARCXMLAUTH-2-BIBFRAME.xqy";
 (: NAMESPACES :)
 declare namespace xdmp  = "http://marklogic.com/xdmp";
 
@@ -95,11 +95,12 @@ declare variable $logdir as xs:string := xdmp:get-request-field("logdir","");
 
 
 
+
 let $startDT := fn:current-dateTime()
 let $logfilename := fn:replace(fn:substring-before(xs:string($startDT), "."), "-|:", "")
 let $logfilename := fn:concat($logdir, $logfilename, '.log.xml')
 
-let $marcxml := 
+let $doc := 
     xdmp:document-get(
             $marcxmluri, 
             <options xmlns="xdmp:document-get">
@@ -107,20 +108,79 @@ let $marcxml :=
             </options>
         )
        
-let $marcxml := $marcxml//marcxml:record
-
-let $result :=
-    for $r in $marcxml[@type="Bibliographic" or fn:not(@type)]
+let $marcxml := ($doc//marcxml:record)
+let $mods:=$doc//mods:mods 
+let $modsresult:= 
+            for $r in $mods
+	       	      let $controlnum := xs:string($r//mods:recordIdentifier[1])
+		          let $httpuri := fn:concat($baseuri , $controlnum)
+		          return
+		              try {
+		                  let $rdf :=  marcbib2bibframe:modsbib2bibframe(element mods:collection{$r}) (:this version handles mods:)
+		                  let $o := $rdf/child::node()[fn:name()]
+                          let $logmsg := 
+                                element log:success {
+                                    attribute uri {$httpuri},
+                                    attribute datetime { fn:current-dateTime() }
+                                }
+                         return 
+                             element result {
+                                 element logmsg {$logmsg},
+                                 element rdf {$o}
+                             }
+                        } catch ($e) {
+                        (: ML provides the full stack, but for brevity only take the spawning error. :)
+                        let $stack1 := $e/mlerror:stack/mlerror:frame[1]
+                        let $vars := 
+                            for $v in $stack1/mlerror:variables/mlerror:variable
+                            return
+                                element log:error-variable {
+                                    element log:error-name { xs:string($v/mlerror:name) },
+                                    element log:error-value { xs:string($v/mlerror:value) }
+                                }
+                        let $logmsg := 
+                            element log:error {
+                                attribute uri {$httpuri},
+                                attribute datetime { fn:current-dateTime() },
+                                element log:error-details {
+                                    (: ML appears to be the actual err:* code in mlerror:name :)
+                                    element log:error-enginecode { xs:string($e/mlerror:code) },
+                                    element log:error-xcode { xs:string($e/mlerror:name) },
+                                    element log:error-msg { xs:string($e/mlerror:message) },
+                                    element log:error-description { xs:string($e/mlerror:format-string) },
+                                    element log:error-expression { xs:string($e/mlerror:expr) },
+                                    element log:error-file { xs:string($stack1/mlerror:uri) },
+                                    element log:error-line { xs:string($stack1/mlerror:line) },
+                                    element log:error-column { xs:string($stack1/mlerror:column) },
+                                    element log:error-operation { xs:string($stack1/mlerror:operation) }    
+                                },
+                                element log:offending-record {
+                                    $r
+                                }
+                            }
+                        return
+                            element result {
+                                element logmsg {$logmsg}
+                            }        
+		          }
+		 
+let $result :=			 
+    for $r in $marcxml[@type="Bibliographic" or fn:not(@type)] (:ie., not holdings:)
     let $controlnum := xs:string($r/marcxml:controlfield[@tag eq "001"][1])
     let $holds:=
         for $hold in $marcxml[fn:string(marcxml:controlfield[@tag="004"])=$controlnum]
             return $hold
     let $httpuri := fn:concat($baseuri , $controlnum)
-    let $recordset:= element marcxml:collection{$r,$holds}
+    let $recordset:= <marcxml:collection xmlns:marcxml="http://www.loc.gov/MARC21/slim" >{$r,$holds}</marcxml:collection>
     let $r :=  
         try {
             (:let $rdf := marcbib2bibframe:marcbib2bibframe($r,$httpuri):)
-            let $rdf := marcbib2bibframe:marcbib2bibframe($recordset,$httpuri)
+             let $rdf := if (fn:not(fn:matches(fn:normalize-space(fn:string($r/marcxml:controlfield[@tag="001"])),"^n" ))) then
+                            marcbib2bibframe:marcbib2bibframe($recordset,$httpuri)                            
+                        else
+                            marcauth2bibframe:marcauth2bibframe($recordset,$httpuri)
+                            
+                        
             let $o := $rdf/child::node()[fn:name()]
             let $logmsg := 
                 element log:success {
@@ -169,10 +229,13 @@ let $result :=
         }
     return 
         $r
+		
         
 let $rdfxml-raw := 
         element rdf:RDF {
-            $result//rdf/child::node()[fn:name()]
+            ($result//rdf/child::node()[fn:name()]
+            ,$modsresult//rdf/child::node()[fn:name()]
+            )
         }
         
 let $rdfxml := 
@@ -212,7 +275,8 @@ let $logwritten :=
     There are a couple of ways to do it (one is a hack, the other is the right way)
     but 1) will it break anything and 2) is there a need?
 :)
-let $response :=  
+let $response :=
+   
     if ($serialization eq "ntriples") then 
         if (fn:count($result//logmsg/log:error) > 0) then
             fn:concat("# Errors encountered.  View 'log' for details.", fn:codepoints-to-string(10), rdfxml2nt:rdfxml2ntriples($rdfxml))
@@ -233,7 +297,9 @@ let $response :=
         else 
             $rdfxml
 
-return $response
+return ( $response )
+
+
 
 
 
