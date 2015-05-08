@@ -110,6 +110,8 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"	property="reportNumber"						tag="088" sfcodes="a"       	 group="identifiers" >technical report number</node>
          <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
          <node domain="annotation"	property="descriptionModifier"			tag="040" sfcodes="d"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
+         <node domain="annotation"	property="descriptionAuthentication"   tag="042" sfcodes="a"     uri="http://id.loc.gov/vocabulary/descriptionAuthentication/"           >Description conventions</node>
+         
          <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptionConventions/"           >Description conventions</node>
          <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
          
@@ -424,7 +426,7 @@ declare function mbshared:generate-admin-metadata(
       
 let $leader18:=fn:substring($marcxml/marcxml:leader,19,1)
       let $cataloging-meta:=
-            (for $d in $marcxml/marcxml:datafield[@tag="040"]
+            (for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(040|042)")]
                 return mbshared:generate-simple-property($d,"annotation")
                 ,
                 if ($leader18="a") then element bf:descriptionConventions { attribute rdf:resource {"http://id.loc.gov/vocabulary/descriptionConventions/aacr2"} }

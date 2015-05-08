@@ -38,8 +38,10 @@ declare namespace rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 declare namespace rdfs          = "http://www.w3.org/2000/01/rdf-schema#";
 
 declare namespace bf            = "http://bibframe.org/vocab/";
+declare namespace bf2           = "http://bibframe.org/vocab2/";
 declare namespace madsrdf       = "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
+declare namespace skos          = "http://www.w3.org/2004/02/skos/core#";
 
 
 declare variable $RDFXMLnested2flat:resourcesToIgnore := 
@@ -130,6 +132,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             xmlns:rdf           = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
             xmlns:rdfs          = "http://www.w3.org/2000/01/rdf-schema#"
             xmlns:bf            = "http://bibframe.org/vocab/"
+            xmlns:bf2           = "http://bibframe.org/vocab2/"
             xmlns:madsrdf       = "http://www.loc.gov/mads/rdf/v1#"
             xmlns:relators      = "http://id.loc.gov/vocabulary/relators/"                              
             >
