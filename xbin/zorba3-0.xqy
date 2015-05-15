@@ -39,7 +39,8 @@ import module namespace http            =   "http://zorba.io/modules/http-client
 import module namespace file            =   "http://expath.org/ns/file";
 import module namespace parsexml        =   "http://zorba.io/modules/xml";
 import schema namespace parseoptions    =   "http://zorba.io/modules/xml-options";
-import module namespace xslt            = "http://www.zorba-xquery.com/modules/languages/xslt";
+(:import module namespace xslt            = "http://www.zorba-xquery.com/modules/languages/xslt";:)
+(:http://www.zorba.io/documentation/3.0/modules/zorba/languages/xslt/:)
 import module namespace marcbib2bibframe = "info:lc/id-modules/marcbib2bibframe#" at "../modules/module.MARCXMLBIB-2-BIBFRAME.xqy";
 import module namespace rdfxml2nt        = "info:lc/id-modules/rdfxml2nt#" at "../modules/module.RDFXML-2-Ntriples.xqy";
 import module namespace rdfxml2json     = "info:lc/id-modules/rdfxml2json#" at "../modules/module.RDFXML-2-JSON.xqy";
