@@ -131,7 +131,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="title"		property="titleValue"					tag="730" sfcodes="a"          >title itself</node>
          <node domain="title"		property="titleValue"					tag="240" sfcodes="a"          >title itself</node>
          <node domain="title"		property="partNumber"					tag="130" sfcodes="n"          >part number</node>
-         <node domain="title"		property="partNumber"					tag="240" sfcodes="n"          >part number</node>
+         <node domain="title"		property="partNumber"					tag="240" sfcodes="n"          >music number</node>
          
          <node domain="title"		property="titleValue"					tag="210" sfcodes="a"          > title itself</node>
          <node domain="title"		property="titleValue"					tag="222" sfcodes="a"          > title itself</node>
@@ -3993,9 +3993,9 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                     if ($this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
                                  	       element bf:classificationScheme {fn:string($this-tag/marcxml:subfield[@code="2"])}
                                  	else if ($this-tag[@ind1="0"]  ) then  
-                                 	      element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/sudocs"}}
+                                 	      element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/vocabulary/classSchemes/sudocs"}}
                                  	else if ($this-tag[@ind1="1"]  ) then  
-                                 	      element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/authorities/classSchemes/cacodoc"}}
+                                 	      element bf:classificationScheme {attribute rdf:resource{ "http://id.loc.gov/vocabulary/classSchemes/cacodoc"}}
                                  	  else ()
               let $status:=element bf:classificationStatus  {"canceled/invalid"}                 
              return for $cancel in $this-tag/marcxml:subfield[@code="z"]

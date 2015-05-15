@@ -39,6 +39,7 @@ import module namespace rdfxml2json = "info:lc/id-modules/rdfxml2json#" at "../m
 import module namespace bfRDFXML2exhibitJSON = "info:lc/bf-modules/bfRDFXML2exhibitJSON#" at "../modules/module.RDFXML-2-ExhibitJSON.xqy";
 import module namespace RDFXMLnested2flat = "info:lc/bf-modules/RDFXMLnested2flat#" at "../modules/module.RDFXMLnested-2-flat.xqy";
 import module namespace marcauth2bibframe = "info:lc/id-modules/marcauth2bibframe#" at "../modules/module.MARCXMLAUTH-2-BIBFRAME.xqy";
+import module namespace modsxml2bibframe = "info:lc/id-modules/modsxml2bibframe#" at "../modules/module.MODSXML-2-BIBFRAME.xqy";
 (: NAMESPACES :)
 declare namespace xdmp  = "http://marklogic.com/xdmp";
 
@@ -116,7 +117,7 @@ let $modsresult:=
 		          let $httpuri := fn:concat($baseuri , $controlnum)
 		          return
 		              try {
-		                  let $rdf :=  marcbib2bibframe:modsbib2bibframe(element mods:collection{$r}) (:this version handles mods:)
+		                  let $rdf :=  modsxml2bibframe:modsxml2bibframe(element mods:collection{$r}) (:this version handles mods:)
 		                  let $o := $rdf/child::node()[fn:name()]
                           let $logmsg := 
                                 element log:success {

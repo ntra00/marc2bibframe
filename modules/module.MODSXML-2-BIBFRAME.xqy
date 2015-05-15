@@ -1,4 +1,4 @@
-xquery version "1.0-ml";
+xquery version "1.0";
 
 (:
 :   Module Name: Convert MARCXML to MADS/XML

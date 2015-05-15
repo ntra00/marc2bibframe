@@ -41,7 +41,7 @@ import module namespace marcxml2madsrdf 	= "info:lc/id-modules/marcxml2madsrdf#"
 import module namespace music 				= "info:lc/id-modules/marcnotatedmusic2bf#" at "module.MBIB-NotatedMusic-2-BF.xqy";
 import module namespace bfdefault 			= "info:lc/id-modules/marcdefault2bf#" at "module.MBIB-Default-2-BF.xqy";
 import module namespace marcerrors 	 		= 'info:lc/id-modules/marcerrors#' at "module.ErrorCodes.xqy";
-import module namespace modsxml2bibframe    = 'info:lc/id-modules/modsxml2bibframe#' at "module.MODSXML-2-BIBFRAME.xqy";
+
 
 (: NAMESPACES :)
 declare namespace marcxml       	= "http://www.loc.gov/MARC21/slim";
@@ -139,12 +139,12 @@ declare function marcbib2bibframe:marcbib2bibframe(
     let $identifier := fn:string(fn:current-time())
     let $identifier := fn:replace($identifier, "([:\-]+)", "") 
 	return	
-	   if ($collection/*[fn:local-name()='mods'] ) then
+	 (:  if ($collection/*[fn:local-name()='mods'] ) then
 			 modsxml2bibframe:modsxml2bibframe($collection)
-	else
+	else:)
     	 marcbib2bibframe:marcbib2bibframe($collection,$identifier)
 };
-
+(:
 declare function marcbib2bibframe:modsbib2bibframe(
         $collection as element()
         ) as element(rdf:RDF) 
@@ -152,6 +152,6 @@ declare function marcbib2bibframe:modsbib2bibframe(
   modsxml2bibframe:modsxml2bibframe($collection)
 
 };
-
+:)
 
 
