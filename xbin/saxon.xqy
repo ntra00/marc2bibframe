@@ -49,7 +49,8 @@ declare namespace madsrdf       = "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
-
+declare namespace saxon         = "http://icl.com/saxon";
+declare namespace mods         = "http://www.loc.gov/mods/v3";
 declare option saxon:output "indent=yes";
 
 (:~
@@ -85,9 +86,10 @@ declare variable $serialization as xs:string external;
 let $marcxml := 
     if ($marcxmluri ne "NONE") then
         fn:doc($marcxmluri)//marcxml:record
-    else
-        //marcxml:record
-let $mods:=$doc//mods:mods
+    else      
+        (://marcxml:record  ??? :)
+        ()
+(:let $mods:= fn:doc($marcxmluri)//mods:mods:)
 
 let $usebnodes:= if ($usebnodes="") then "false" else $usebnodes
 
@@ -104,11 +106,11 @@ let $resources :=
             let $recordset:= element marcxml:collection{$r,$holds}
             let $bibframe :=  marcbib2bibframe:marcbib2bibframe($recordset,$httpuri)
             return $bibframe/child::node()[fn:name()]
-            ,
+      (:      ,
       for $r in $mods     
             let $controlnum := xs:string($r//mods:recordIdentifier[1])
             let $httpuri := fn:concat($baseuri , $controlnum)
-             return   marcbib2bibframe:modsbib2bibframe(element mods:collection{$r})
+             return   marcbib2bibframe:modsbib2bibframe(element mods:collection{$r}):)
       )
 let $rdfxml-raw := 
         element rdf:RDF {
