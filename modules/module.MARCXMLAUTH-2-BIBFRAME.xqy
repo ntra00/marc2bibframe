@@ -58,7 +58,7 @@ declare namespace skos            = "http://www.w3.org/2004/02/skos/core#";
 declare namespace hld               = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcauth2bibframe:last-edit :="2015-05-15-T11:00:00";
+declare variable $marcauth2bibframe:last-edit :="2015-05-21-T11:00:00";
 declare variable $marcauth2bibframe:seriesPractices:=( 
     <set>
         <term tag="644" code="a" value="f" elname="bf2:seriesAnalysisPractice">Analyzed in full</term>
@@ -680,7 +680,7 @@ declare function marcauth2bibframe:generate-work(
             return 
                 element bf2:seefrom {
                     element bf:Work { 
-                    $title,                    
+                    element bf:title {$title},                    
                     for $lang in $d/marcxml:subfield[@code="l"] 
        	                return marc2bfutils:process-language(fn:string( $lang))
        	                ,	         
@@ -818,7 +818,7 @@ return
             if ($uniformTitle/bf:workTitle) then
                 $uniformTitle/*
             else
-                $titles/*                ,       
+                $titles/* ,       
             $seefromTitle,
             $names,  
             
