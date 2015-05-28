@@ -49,7 +49,7 @@ declare namespace madsrdf       = "http://www.loc.gov/mads/rdf/v1#";
 declare namespace relators      = "http://id.loc.gov/vocabulary/relators/";
 declare namespace identifiers   = "http://id.loc.gov/vocabulary/identifiers/";
 declare namespace notes         = "http://id.loc.gov/vocabulary/notes/";
-declare namespace saxon         = "http://icl.com/saxon";
+declare namespace saxon         = "http://saxon.sf.net/";
 declare namespace mods         = "http://www.loc.gov/mods/v3";
 declare option saxon:output "indent=yes";
 
