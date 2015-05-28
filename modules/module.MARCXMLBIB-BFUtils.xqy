@@ -3276,12 +3276,12 @@ return	if ($len=0) then
 declare function marc2bfutils:process-language( $lang as xs:string*){
  
         if ($lang) then        
-            let $lang:=  (:some have 2 codes german = deu, ger :)
+            let $langcodematch:=  (:some have 2 codes german = deu, ger :)
                     $marc2bfutils:lang-xwalk/language[@language-name=marc2bfutils:chopPunctuation($lang,".")]/iso6392[1]
-            return if ($lang!="") then
+            return if ($langcodematch!="") then
                         element bf:language { 
-                                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$lang)}
+                                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/languages/",$langcodematch)}
                                       }
-                         else element bf:languageNote {marc2bfutils:clean-string(fn:string($lang))}
+                         else element bf:language {element bf:Language {element bf:languageOfPart {marc2bfutils:clean-string(fn:string($lang))}}}
        else ()
 };

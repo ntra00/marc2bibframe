@@ -58,7 +58,7 @@ declare namespace skos            = "http://www.w3.org/2004/02/skos/core#";
 declare namespace hld               = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcauth2bibframe:last-edit :="2015-05-21-T11:00:00";
+declare variable $marcauth2bibframe:last-edit :="2015-05-28-T11:00:00";
 declare variable $marcauth2bibframe:seriesPractices:=( 
     <set>
         <term tag="644" code="a" value="f" elname="bf2:seriesAnalysisPractice">Analyzed in full</term>
@@ -81,11 +81,14 @@ declare variable $marcauth2bibframe:properties:= (
 	<node domain="work" 	property="bf:musicNumber"			   tag="383" sfcodes="b"    group="notes">Library of Congress Control number</node>
 	<node domain="work" 	property="bf:musicNumber"			   tag="383" sfcodes="c"    group="notes">Library of Congress Control number</node>
 	<node domain="work" 	property="bf:musicKey"			       tag="384" sfcodes="a"    group="notes">musical key</node>
-	<node domain="work" 	property="bf2:SystemNumber"			   tag="035" sfcodes="a"   	group="identifiers">System Congress Control number</node>
+	<node domain="work" 	property="bf2:systemNumber"			   tag="035" sfcodes="a"   	group="identifiers" uri="http://www.worldcat.org/oclc/">System Congress Control number</node>
 	<node domain="work"		property="bf:originDate"			   tag="046" sfcodes="kl"   group="notes" stringjoin="-">Date of origin</node>
-	<node domain="work"		property="bf:genre"		   tag="380" sfcodes="a"    group="notes">Form subheading from title</node>
+	<node domain="work"		property="bf:genre"		               tag="380" sfcodes="a"    group="notes">Form subheading from title</node>
+	<node domain="work"		property="bf:originDate"			   tag="100" sfcodes="f"	group="notes"				>Date of origin</node>
+	<node domain="work"		property="bf:originDate"			   tag="110" sfcodes="f"	group="notes"				>Date of origin</node>
+	<node domain="work"		property="bf:originDate"			   tag="111" sfcodes="f"	group="notes"					>Date of origin</node>
 	<node domain="work" 	property="bf2:distinguishingFacet"     tag="381" sfcodes="a"   	group="notes">public note</node>
-	<node domain="work"		property="bf:musicMediumNote"		   tag="382" sfcodes="adp" group="notes"> Music medium note </node>	
+	<node domain="work"		property="bf:musicMediumNote"		   tag="382" sfcodes="adp"  group="notes"> Music medium note </node>	
 	<node domain="work" 	property="bf2:seriesNumbering"         tag="642" sfcodes="a"   	group="notes">data source note</node>
 	<node domain="work" 	property="bf2:seriesProviderStatement" tag="643" sfcodes="ab"   group="notes">seriesproviderstmt</node>	
 	<node domain="work" 	property="bf2:catalogerNote"           tag="667" sfcodes="a"   	group="notes">cataloger note</node>
@@ -93,7 +96,19 @@ declare variable $marcauth2bibframe:properties:= (
     <node domain="work" 	property="bf:note"                     tag="680" sfcodes="ai"   group="notes">public note</node>         
     
     
-    <!--these props are transformed in their own functions: -->
+    <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
+    <node domain="annotation"	property="descriptionModifier"			tag="040" sfcodes="d"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>            
+    <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptionConventions/"           >Description conventions</node>
+    <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
+    <node domain="annotation"	property="descriptionAuthentication"   tag="042" sfcodes="a"     uri="http://id.loc.gov/vocabulary/descriptionAuthentication/"           >Description conventions</node>
+    <node domain="classification"		property="bf:classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
+    <node domain="classification"		property="bf:classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
+    <node domain="classification"		property="bf:classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
+    <node domain="classification"		property="bf:classificationAssigner"   tag="083" sfcodes="q"	        	>various orgs assigner</node><!-- uri="http://id.loc.gov/vocabulary/organizations/"--> 
+         
+    <node domain="classification"		property="bf:classificationLcc"   tag="052" sfcodes="ab"	stringjoin="."  uri="http://id.loc.gov/authorities/classification/G"	>geo class</node>
+    
+    <!--these props are transformed in their own functions:, just listed here by tag to facilitate logging transformed items for bf2:legacydescription -->
     <node domain="complex" 	property="bf:title"                        tag="130" sfcodes="a"   	group="notes">public note</node>
     <node domain="complex" 	property="bf:contentCategory"              tag="336" sfcodes="a"   	group="notes">public note</node>
     <node domain="complex" 	property="bf:lcc"              tag="050" sfcodes="a"   	group="notes">public note</node>
@@ -103,24 +118,15 @@ declare variable $marcauth2bibframe:properties:= (
     <node domain="complex" 	property="bf:audience"              tag="385" sfcodes="a"   	group="notes">public note</node>
     <node domain="complex" 	property="bf:name"              tag="100" sfcodes="a"   	group="notes">public note</node>
     <node domain="complex" 	property="bf:name"              tag="110" sfcodes="a"   	group="notes">public note</node>
-    <node domain="complex" 	property="bf:name"              tag="111" sfcodes="a"   	group="notes">public note</node>
-    
-    
+    <node domain="complex" 	property="bf:name"              tag="111" sfcodes="a"   	group="notes">public note</node>        
     <node domain="complex" 	property="bf:seriesAnalysisPractice"            tag="644" sfcodes="a"   	group="notes">seriesAnalysisPractice</node>
     <node domain="complex" 	property="bf:seriesTracingPractice"            tag="645" sfcodes="a"   	group="notes">seriesTracingPractice</node>
     <node domain="complex" 	property="bf:seriesClassPractice"            tag="646" sfcodes="a"   	group="notes">seriesClassPractice</node>
-    <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
-    <node domain="annotation"	property="descriptionModifier"			tag="040" sfcodes="d"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>            
-    <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptionConventions/"           >Description conventions</node>
-    <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
-    <node domain="annotation"	property="descriptionAuthentication"   tag="042" sfcodes="a"     uri="http://id.loc.gov/vocabulary/descriptionAuthentication/"           >Description conventions</node>
-        <node domain="classification"		property="bf:classificationSpanEnd"	tag="083" sfcodes="c"	          >classification span end for class number</node>
-         <node domain="classification"		property="bf:classificationTableSeq"	tag="083" sfcodes="y"	     	    >DDC table sequence number</node>
-         <node domain="classification"		property="bf:classificationTable"		tag="083" sfcodes="z"	         	>DDC table</node>
-         <node domain="classification"		property="bf:classificationAssigner"   tag="083" sfcodes="q"	        	>various orgs assigner</node><!-- uri="http://id.loc.gov/vocabulary/organizations/"--> 
-         
-         <node domain="classification"		property="bf:classificationLcc"   tag="052" sfcodes="ab"	stringjoin="."  uri="http://id.loc.gov/authorities/classification/G"	>geo class</node>
-     
+    <node domain="complex" 	property="400"            tag="400" sfcodes="a"   	group="notes">seefrom</node>
+    <node domain="complex" 	property="410"            tag="410" sfcodes="a"   	group="notes">seefrom</node>
+    <node domain="complex" 	property="411"            tag="411" sfcodes="a"   	group="notes">seefrom</node>
+     <node domain="complex" 	property="430"            tag="430" sfcodes="a"   	group="notes">seriesClassPractice</node>
+     <node domain="complex" 	property="530"            tag="530" sfcodes="a"   	group="notes">530</node>
   </properties>
 	)	;
 
@@ -167,7 +173,7 @@ declare function marcauth2bibframe:generate-classification(
                                         element bf:Classification {                        
                                           	$scheme,
                                           	$status,
-                                          	element rdf:value {  fn:string($cancel)}					 		        
+                                          	element bf:classificationNumber {  fn:string($cancel)}					 		        
          					 		}
          					}
                  ,
@@ -210,7 +216,7 @@ declare function marcauth2bibframe:generate-classification(
                      		             return                      		             
                      		                  attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:encode-for-uri($ddc),"/about")}
                      		    else element bf:Classification {
-                                        element rdf:value {fn:string($cl)},
+                                        element bf:classificationNumber {fn:string($cl)},
                                 if ($this-tag[@tag="086"] and $this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then                                
                                  	       element  rdf:type { attribute rdf:resource {fn:concat("http://classScheme.example.org/",fn:string($this-tag/marcxml:subfield[@code="2"]))}}
                                  	else if ($this-tag[@tag="086"] and $this-tag[@ind1="0"]  ) then  
@@ -242,17 +248,17 @@ declare function marcauth2bibframe:generate-classification(
                                    else ()
                                ,                        
                                 if ($this-tag/@tag="082" and $this-tag/marcxml:subfield[@code="m"] ) then
-                                    element bf2:designation  {
+                                    element bf:classificationDesignation  {
                                         if ($this-tag/marcxml:subfield[@code="m"] ="a") then "standard" 
                                         else if ($this-tag/marcxml:subfield[@code="m"] ="b") then "optional" 
                                         else ()
                                     }
                                 else (),                                    
-                     	       element rdf:value {fn:string($cl)},
-                     	       element rdfs:label {fn:string($cl)},
+                     	       element bf:classificationNumber {fn:string($cl)},
+                     	       
                       	       if ( $assigner) then 
                       	         (:assigner is string, not uri:)                                  	
-                                  	(element bf2:assigner {fn:concat("http://id.loc.gov/organizations/",$assigner)}                                  	
+                                  	(element bf:classificationAssigner {fn:concat("http://id.loc.gov/organizations/",$assigner)}                                  	
                                   	)
                                 else (),             			
          			            	
@@ -308,7 +314,7 @@ declare function marcauth2bibframe:generate-contentCategory(
                            for $s in $d/marcxml:subfield[@code="a"]
                              return element bf:contentCategory { 
                                  element bf:Category {                                       
-                                         element rdf:value{fn:string($s)},
+                                         element bf:categoryValue{fn:string($s)},
                                          element bf:categoryType{"content category"}
                                          } 
                                      }
@@ -369,10 +375,49 @@ declare function marcauth2bibframe:get-demographic(
             else             
                 element {$property} { 
                     element {$class} { 
-                        element rdfs:label {fn:normalize-space(fn:string($s)) } }
+                        element bf:label {fn:normalize-space(fn:string($s)) } }
                         }
            
-};           
+};         
+(:~
+:   This is the function generates full Identifier classes from m,y,z cancel/invalid identifiers 
+:   @param  $this-tag       element is the marc data field
+:   @param  $sf             subfield element
+:   @param  $scheme         identifier name (lccn etc.)
+:   @return bf:Identifier as element()
+:)
+declare function marcauth2bibframe:handle-cancels($this-tag, $sf, $scheme) 
+{
+ if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|024|027|030|035|088)")] and $sf[@code="z"]) then
+         element bf:Identifier {
+  		  element bf:identifierScheme { attribute rdf:resource {fn:concat("http://bibframe.org/vocab2/", $scheme)} },
+  		  element bf:identifierValue { fn:normalize-space(fn:string($sf))},
+              if ($this-tag[@tag="022"] and $sf[@code="y"]) then                               
+                      element bf:identifierStatus{"incorrect"}          
+              else if ($this-tag[@tag="022"] and $sf[@code="z"]) then                 
+                      element bf:identifierStatus{"canceled/invalid"}                
+              else if ($this-tag[@tag="022"] and $sf[@code="m"]) then
+                      element bf:identifierStatus {"canceled/invalid"}                
+              else if ($this-tag[fn:matches(@tag,"(010|015|016|017|020|024|027|030|035|088)")] and $sf[@code="z"] ) then               
+                      element bf:identifierStatus{"canceled/invalid"}                  
+              else
+                  ()
+          }
+        else if ( ($this-tag[@tag="022"] and $sf[fn:matches(@code,"m|y|z")]) ) then  
+        element bf:Identifier {
+  		  element bf:identifierScheme { attribute rdf:resource {fn:concat("http://id.loc.gov/vocabulary/identifiers/", $scheme)} },
+  		  element bf:identifierValue { fn:normalize-space(fn:string($sf))},
+              if ($sf[@code="y"]) then                               
+                      element bf:identifierStatus{"incorrect"}          
+              else if ( $sf[@code="z"]) then                 
+                      element bf:identifierStatus{"canceled/invalid"}                
+              else if ( $sf[@code="m"]) then
+                      element bf:identifierStatus {"canceled/invalid"}                              
+              else
+                  ()
+          }
+        else ()
+};
 (:~
 :   This is the function generates 0xx  data for instance or work, based on mappings in $work-identifiers 
 :    and $instance-identifiers. Returns subfield $a,y,z,m,l,2,b,q
@@ -400,7 +445,7 @@ declare function marcauth2bibframe:generate-identifiers(
                 (:if contains subprops, build class for $a else just prop w/$a:)
                 	let $cancels:= for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"(m|y|z)")]
                 	                   return element  bf:identifier { 
-		                                      mbshared:handle-cancels($this-tag, $sf, fn:substring-after($id/@property,"bf:"))
+		                                      marcauth2bibframe:handle-cancels($this-tag, $sf, fn:substring-after($id/@property,"bf2:"))
 		                                   }
 		                                   
                    	return  (:need to construct blank node if there's no uri or there are qualifiers/assigners :)
@@ -419,9 +464,9 @@ declare function marcauth2bibframe:generate-identifiers(
                		                            if ($this-tag/marcxml:subfield[@code="a"]) then 
                		                                if ( $this-tag/marcxml:subfield[@code="a"][fn:matches(text(),"^.+\(.+\).+$")]) then
                		                                      let $val:=fn:replace($this-tag/marcxml:subfield[@code="a"],"(.+\()(.+)(\).+)","$1")
-               		                            	      return  element rdf:value { fn:substring($val,1, fn:string-length($val)-1)}
+               		                            	      return  element bf:identifierValue  { fn:substring($val,1, fn:string-length($val)-1)}
                		                            	else 
-               		                                    element rdf:value { fn:string($this-tag/marcxml:subfield[fn:matches(@code,$id/@sfcodes)][1]) }               		                                   
+               		                                    element bf:identifierValue  { fn:string($this-tag/marcxml:subfield[fn:matches(@code,$id/@sfcodes)][1]) }               		                                   
                		                            else (),
                		                            for $sub in $this-tag/marcxml:subfield[@code="b" or @code="2"]
                		                            	return element bf2:source { 	fn:string($sub)},		
@@ -453,7 +498,7 @@ let $id024-028:=
                                 else if ($this-tag/@ind1="8") then 
                                     "unspecified"
                                 else            (:use the $id name:)
-                                    fn:substring-after(fn:string($this-id[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1]/@property),"bf:")
+                                    fn:substring-after(fn:string($this-id[@tag=$this-tag/@tag][@ind1=$this-tag/@ind1]/@property),"bf2:")
                             let $property-name:= 
                                                 (:unmatched scheme in $2:)
                                         if ( ($this-tag/@ind1="7" and fn:not(fn:matches(fn:string($this-tag/marcxml:subfield[@code="2"]),"(ansi|doi|iso|istc|iswc|local)")))
@@ -463,7 +508,7 @@ let $id024-028:=
                                         
                             let $cancels:= 
                                                 for $sf in $this-tag/marcxml:subfield[fn:matches(@code,"z")]                                                
-                                                     return element {$property-name} { mbshared:handle-cancels($this-tag, $sf, $scheme)} 
+                                                     return element {$property-name} { marcauth2bibframe:handle-cancels($this-tag, $sf, $scheme)} 
                                             
                                 (:if  024 has a c, b, q,  it  needs a class  else just prop w/$a Zs are handled in handle-cancels :)
                             return
@@ -478,9 +523,9 @@ let $id024-028:=
         			                 ) then	
         			                 let $value:= if ($this-tag/marcxml:subfield[@code="a"] or $this-tag/marcxml:subfield[@code="d"]) then
         			                                 if ($this-tag/marcxml:subfield[@code="d"]) then 
-        			                                    element rdf:value { fn:string-join($this-tag/marcxml:subfield[fn:matches(@code,"(a|d)")],"-") }
+        			                                    element bf:identifierValue  { fn:string-join($this-tag/marcxml:subfield[fn:matches(@code,"(a|d)")],"-") }
         			                                 else
-        			                                     element rdf:value{ fn:string($this-tag/marcxml:subfield[@code="a"])}        			                      
+        			                                     element bf:identifierValue { fn:string($this-tag/marcxml:subfield[@code="a"])}        			                      
         			                             else ()
 	                                 return 
 	                                   element {$property-name} {
@@ -504,7 +549,7 @@ let $id024-028:=
                                     ( if ( $this-tag/marcxml:subfield[fn:matches(@code,"a")]) then                                        
                                             for $s in $this-tag/marcxml:subfield[fn:matches(@code,"a")]
                                                 return element {$property-name} {element bf:Identifier {
-                                                            element rdf:value { fn:normalize-space(fn:string($s))        }
+                                                            element bf:identifierValue  { fn:normalize-space(fn:string($s))        }
                                                             }
                                                         }
                                         else ()
@@ -570,14 +615,14 @@ declare function marcauth2bibframe:generate-simple-property(
                          if (fn:string($node/@group)="identifiers") then
                                 if (fn:starts-with($i,"(OCoLC)") and fn:contains($node/@uri,"worldcat") ) then
                                     let $s :=  marc2bfutils:clean-string(fn:replace($i, "\(OCoLC\)", ""))
-                                    return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn)",""))  }
+                                    return attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"(^ocm|^ocn|^oca)",""))  }
                                 else if (fn:contains($node/@uri,"id.loc.gov/vocabulary/organizations") ) then
                                     let $s :=  marc2bfutils:clean-string(fn:lower-case($i))
                                     let $s :=  fn:replace ($s,"-","")
                                     return attribute rdf:resource{fn:concat(fn:string($node/@uri),$s)  }
                                 else
                                      element bf:Identifier {
-                                                element rdf:value {
+                                                element bf:identifierValue  {
                                                   if (fn:starts-with($i, "(DLC)" )) then
                                                     fn:normalize-space(fn:replace($i,"(\(DLC\))(.+)$","$2" ))
                                                     else
@@ -604,7 +649,7 @@ declare function marcauth2bibframe:generate-simple-property(
                                     (:if (fn:string-length($s)  lt 10 and fn:not(fn:contains($s, " ")) or fn:not(fn:starts-with($i,"Ca") ) ) then:)
                                         attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($s,"-",""))}
                                     else
-                                        element bf:Organization {element rdfs:label {$s}}
+                                        element bf:Organization {element bf:label {$s}}
                          else if (fn:contains(fn:string($node/@property),"lccn")) then
                                  attribute rdf:resource{fn:concat(fn:string($node/@uri),fn:replace($i," ",""))       }                         
                          else 
@@ -615,12 +660,57 @@ declare function marcauth2bibframe:generate-simple-property(
         ()      
       )
 };
+(:~
+:   This is the function generates a seeFrom references (title variations) and creators from 4xx, 430
+:
+:)
+declare function marcauth2bibframe:generate-seeFroms(
+    $marcxml as element(marcxml:record)
+    
+    ) as element ()*
+{ 
+(for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(400|410|411)")][marcxml:subfield[@code="t"]]            
+            (:put t into a and process as 246 title variant::)
+            let $names:= 
+                if (fn:string( $d/marcxml:subfield[@code="a"]) !=fn:string($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")][1]/marcxml:subfield[@code="a"]) ) then
+                    mbshared:get-name($d)        
+                else
+                ()
+            
+            let $vartitledata:=
+                    element marcxml:datafield { attribute tag {"246"} ,
+                        for $s in $d/marcxml:subfield
+                            return if ($s/@code="t") then 
+                                    element marcxml:subfield{ attribute code {"a"}, $s/*[fn:not(@code)],fn:string($s) }
+                                    else if ($s/@code="a") then () 
+                                    else
+                                        $s
+                }
+                                   
+            return           
+                    (mbshared:get-title($vartitledata,"work"),$names)     		          
+                ,
+            for $d in $marcxml/marcxml:datafield[@tag="430"]
+               let $vartitledata:=
+                    element marcxml:datafield { attribute tag {"246"} ,$d/@ind1, $d/@ind2,
+                        for $s in $d/marcxml:subfield
+                            return 
+                                    $s
+                        }
+                return mbshared:get-title($vartitledata,"work")
+                 (:       
+            return           
+                    element bf:title { element bf:Title  {element bf:titleValue {$title}
+                    }
+                }:)
+               )
+               };
 declare function marcauth2bibframe:generate-work(
     $marcxml as element(marcxml:record),
     $workID as xs:string
     ) as element () 
 { 
-  
+    let $workID:=fn:replace($workID, " ","")
     let $cf008 := fn:string($marcxml/marcxml:controlfield[@tag='008'])
     let $leader:=fn:string($marcxml/marcxml:leader)
     let $leader6:=fn:substring($leader,7,1)
@@ -628,77 +718,85 @@ declare function marcauth2bibframe:generate-work(
     let $leader19:=fn:substring($leader,20,1)
     let $contentCategory := for $d in $marcxml/marcxml:datafield[@tag="336"] return marcauth2bibframe:generate-contentCategory($d,"work") (:336:)
    
-    let $typeOf008:=
-			if ($leader6="a") then
-					if (fn:matches($leader7,"(a|c|d|m)")) then
-						"BK"
-					else if (fn:matches($leader7,"(b|i|s)")) then
-						"SE"
-					else ""					
-					
-			else
-				if ($leader6="t") then "BK" 
-				else if ($leader6="p") then "MM"
-				else if ($leader6="m") then "CF"
-				else if (fn:matches($leader6,"(e|f|s)")) then "MP"
-				else if (fn:matches($leader6,"(g|k|o|r)")) then "VM"
-				else if (fn:matches($leader6,"(c|d|i|j)")) then "MU"
-				else ""
- let $types := mbshared:get-resourceTypes($marcxml)
- let $series:= if         (fn:substring($cf008,15,1)= "a") then
-            "Series"
-            else ()
- let $seriesType:= 
-            if ($series="Series") then
-                    if (fn:substring($cf008,11,1)= "a") then
-                        "Serial"
-                    else if (fn:substring($cf008,11,1)= "b") then
-                        "MultipartMonograph"
-                    else if (fn:substring($cf008,11,1)= "c") then
-                        "Serial"
-                    else 
-                        "Monograph"                        
-            else ()
+  
+ let $seriesType:=           (:008/12 series:)
+            if (fn:matches(fn:substring($cf008,13,1),"(a|c)" )) then
+                "Series"
+            else if (fn:substring($cf008,13,1)= "b") then
+                "MultipartMonograph"          
+            else 
+                "Monograph"                        
+          
+    let $types:=$seriesType
     let $seriesPractices:=for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(644|645|646)")]
             return  marcauth2bibframe:generate-series-practices($d) 
-    let $mainType := "Work"
+    let $langs := (
+            mbshared:get-languages ($marcxml),
+            for $s in $marcxml/marcxml:datafield[@tag="377"]/marcxml:subfield[@code="a"]
+                return  element bf:language { 
+                                        attribute rdf:resource { 
+                                            fn:concat("http://id.loc.gov/vocabulary/languages/",fn:string($s))
+                                            }
+                        },
+            marc2bfutils:process-language(fn:string($marcxml/marcxml:datafield[@tag="377"][@ind2=" "]/marcxml:subfield[@code="l"])),
+            marc2bfutils:process-language(fn:string($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]/marcxml:subfield[@code="l"]))
+            
+            )
+    let $mainType :=  if ($langs) then "Expression" else "Work"
     
     let $uniformTitle :=           
        for $d in $marcxml/marcxml:datafield[@tag eq "130"]
             return mbshared:get-uniformTitle($d)         
     let $names := 
-        (for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
-                return mbshared:get-name($d),
-                (:joined addl-names to names so we can get at least the first 700 if htere are no 1xx's into aap:)
-    (:let $addl-names:= :)
-        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
-            return mbshared:get-name($d)             
-         )
-    let $seefromTitle:=
-        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(400|410|411)")][marcxml:subfield[@code="t"]]
-            let $title:= fn:string-join($d/marcxml:subfield[@code="t" or preceding-sibling::marcxml:subfield[@code="t"]]," ") 
-            return 
-                element bf2:seefrom {
-                    element bf:Work { 
-                    element bf:title {$title},                    
-                    for $lang in $d/marcxml:subfield[@code="l"] 
-       	                return marc2bfutils:process-language(fn:string( $lang))
-       	                ,	         
-                    mbshared:get-name($d)
+        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
+                return mbshared:get-name($d)                                
+    let $seefromTitles:=
+                marcauth2bibframe:generate-seeFroms($marcxml)
+        
+    let $seefromWorks:=
+        (
+        (:for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(500|510|511)")][marcxml:subfield[@code="t"]]            
+            let $title:= fn:string($d/marcxml:subfield[@code="t"])
+            return element bf:relatedResource {element bf:Work {           
+                    element bf:title { element bf:Title  {element bf:titleValue {$title}
+                    }
                 }
-            }
+                }
+                }:)
+                for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(500|510|511)")][marcxml:subfield[@code="t"]] |  $marcxml/marcxml:datafield[@tag="530"]       
+                    (:change 5 to 7 and process related works:)
+                    let $related:= 
+                        element marcxml:record {element marcxml:datafield { attribute tag {fn:concat(fn:replace(fn:substring($d/@tag,1,1), "5","7"),fn:substring($d/@tag,2,2))}, $d/@ind1, $d/@ind2,
+                            for $s in $d/marcxml:subfield
+                                return 
+                                       $s
+                            }
+                        }
+                                   
+            return           
+                    mbshared:related-works($related,$workID,"work")     
+                ,
+            for $d in $marcxml/marcxml:datafield[@tag="530"] (:this is not right !!!! :)
+            let $title:= fn:string($d/marcxml:subfield[preceding-sibling::marcxml:subfield[@code="a"]]) 
+            return   element bf:relatedResource {element bf:Work {            
+                    element bf:title { element bf:Title  {element bf:titleValue {$title}
+                    }
+                }
+                }}
+               )
+            
+            
     let $titles := 
         <titles>{
     	       for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")][marcxml:subfield[@code="t"]]
     	       return element bf:workTitle {
-    	       element bf:Title {element rdf:value { fn:string-join($d/marcxml:subfield[@code= "t" or (
+    	     (:   or (
                                             fn:not(fn:matches(@code,"(e|0|4|6|8|l)" ) ) and 
-                                            preceding-sibling::marcxml:subfield[@code="t"])
-                                    ]
-                                    ," ")      }
-    	               }
+                                            preceding-sibling::marcxml:subfield[@code="t":)
+    	       element bf:Title {element bf:titleValue { fn:string($d/marcxml:subfield[@code= "t"])}
+    	               }    	       
     	       }
-            }</titles>
+            } </titles>
     let $hashable :=  marcauth2bibframe:generate-hashable($marcxml, $mainType, $types)
     
     (: Let's create an authoritativeLabel for this :)
@@ -722,22 +820,12 @@ declare function marcauth2bibframe:generate-work(
         else
             ()
             
-    let $langs := (
-            mbshared:get-languages ($marcxml),
-            for $s in $marcxml/marcxml:datafield[@tag="377"]/marcxml:subfield[@code="a"]
-                return  element bf:language { 
-                                        attribute rdf:resource { 
-                                            fn:concat("http://id.loc.gov/vocabulary/languages/",fn:string($s))
-                                            }
-                        },
-            marc2bfutils:process-language(fn:string($marcxml/marcxml:datafield[@tag="377"][@ind2=" "]/marcxml:subfield[@code="l"])),
-            marc2bfutils:process-language(fn:string($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]/marcxml:subfield[@code="l"]))
-            )
+    
     
     let $origin-place := for $s in $marcxml/marcxml:datafield[@tag="370"]/marcxml:subfield[@code="g"]
                 return element bf:originPlace {
                             element bf:Place {
-                                element rdfs:label {fn:string($s)}
+                                element bf:label {fn:string($s)}
                             }
                        }
      
@@ -770,12 +858,12 @@ declare function marcauth2bibframe:generate-work(
    	       for $s in $marcxml/marcxml:datafield[@tag="380"]/marcxml:subfield[@code="a"]
    	            return element bf:genre {
    	                        element  bf:Category {
-   	                           element rdfs:label{fn:string($s)}
+   	                           element bf:label{fn:string($s)}
    	                            }
    	                   }
    	            
    	       
-    let $admin:= mbshared:generate-admin-metadata($marcxml, $workID)
+    let $admin1:= mbshared:generate-admin-metadata($marcxml, $workID)
     
 	let $subjects:= 		 
  		for $d in $marcxml/marcxml:datafield[fn:matches(fn:string-join($marc2bfutils:subject-types//@tag," "),fn:string(@tag))]		
@@ -784,22 +872,33 @@ declare function marcauth2bibframe:generate-work(
          element bf:derivedFrom {           
             attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
         }:)
+       
     let $changed:=  element bf:generationProcess {fn:concat("DLC authorities transform-tool:",$marcauth2bibframe:last-edit)}
+    let $descriptionConventions:=           (:008/12 series:)
+            if (fn:matches(fn:substring($cf008,11,1),"(b|c|d)" )) then
+                "aacr"
+            else if (fn:substring($cf008,11,1)= "z") then
+                fn:lower-case(fn:string( $marcxml/marcxml:datafield[@tag="040"]/marcxml:subfield[@code="e"]))
+            else 
+                ()
+ 
    let $admin:= 
-        element bf:Annotation {$admin/bf:Annotation/*,               
+        element bf:Annotation {$admin1//bf:Annotation/*,
+                if ($descriptionConventions) then
+                    element bf:descriptionConventions {attribute rdf:resource {fn:concat("http://loc.gov/vocabulary/descriptionConventions/",$descriptionConventions)}}
+                else (),
                 $changed
                }
 return   
 
-        element {fn:concat("bf:" , $mainType)} {
+        element bf:Work  {
+               
             attribute rdf:about {$workID},
-            
-            if ($series) then
-                  element rdf:type {
-                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $series)}
-                    }
-                else ()
-                ,
+            if ($mainType="Expression") then element rdf:type {
+                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $mainType)}
+                    } 
+                    else (),
+                      
              if ($seriesType) then
                   element rdf:type {
                     attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $seriesType)}
@@ -808,22 +907,18 @@ return
                 ,
             
             $contentCategory,
-            for $t in fn:distinct-values($types)
-            return             
-                  element rdf:type {
-                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $t)}
-                },
+          
              $aLabel,
             
             if ($uniformTitle/bf:workTitle) then
-                $uniformTitle/*
+                $uniformTitle/*[fn:not(fn:local-name()="authoritativeLabel")]
             else
-                $titles/* ,       
-            $seefromTitle,
-            $names,  
-            
-            $langs,  
-            
+                $titles/* ,
+                
+            $seefromTitles,
+            $seefromWorks,
+            $names,              
+            $langs,              
             $seriesPractices,
             $subjects,                   
             $work-classes,
@@ -837,10 +932,11 @@ return
             $hashable,
      
             element bf2:hasAdminInfo { $admin},
-            $changed,
+            
+         
             (:        element marctagset {$marctagset},:)
             if ($untransformedMarc) then element bf2:marcDataUntransformed {
-                    element bf:Annotation{ element bf2:motivation{ "bf2:legacydescription"}, $untransformedMarc }
+                    element bf:Annotation{ element bf2:motivation{ "bf2:marcDescription"}, $untransformedMarc }
                 }            
                 else ()
             (:element bfnotfound{$bfnotfound}}:)
@@ -982,11 +1078,8 @@ declare function marcauth2bibframe:marcauth2bibframe(
                     attribute rdf:about { fn:concat("http://id.loc.gov/" , $identifier) }
                 else
                     attribute rdf:about { $identifier }
-           
-        
-            
-         
-            let $workID:=fn:normalize-space(fn:string($marcxml/marcxml:controlfield[@tag="001"]))                                
+                    
+           let $workID:=fn:normalize-space(fn:string($marcxml/marcxml:controlfield[@tag="001"]))                                
            let $work:=marcauth2bibframe:generate-work($marcxml, $workID) 
             return
                <rdf:RDF

@@ -110,8 +110,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="instance"	property="reportNumber"						tag="088" sfcodes="a"       	 group="identifiers" >technical report number</node>
          <node domain="annotation"	property="descriptionSource"			tag="040" sfcodes="a"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
          <node domain="annotation"	property="descriptionModifier"			tag="040" sfcodes="d"  uri="http://id.loc.gov/vocabulary/organizations/" group="identifiers"        >Description source</node>
-         <node domain="annotation"	property="descriptionAuthentication"   tag="042" sfcodes="a"     uri="http://id.loc.gov/vocabulary/descriptionAuthentication/"           >Description conventions</node>
-         
+         <node domain="annotation"	property="descriptionAuthentication"   tag="042" sfcodes="a"     uri="http://id.loc.gov/vocabulary/descriptionAuthentication/"           >Description conventions</node>         
          <node domain="annotation"	property="descriptionConventions"   tag="040" sfcodes="e"     uri="http://id.loc.gov/vocabulary/descriptionConventions/"           >Description conventions</node>
          <node domain="annotation"  property="descriptionLanguage"		tag="040" sfcodes="b"    uri="http://id.loc.gov/vocabulary/languages/"      >Description Language </node>
          
@@ -123,6 +122,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="classification"		property="classificationLcc"   tag="052" sfcodes="ab"	stringjoin="."  uri="http://id.loc.gov/authorities/classification/G"	>geo class</node>
          <node domain="title"		property="titleQualifier"			tag="210" sfcodes="b"          >title qualifier</node>
          <node domain="title"		property="titleQualifier"			tag="222" sfcodes="b"          >title qualifier</node>
+         <node domain="title"		property="titleQualifier"			tag="730" sfcodes="p"          >title qualifier</node>
          <node domain="title"		property="partNumber"					tag="245" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="246" sfcodes="n"          >part number</node>
          <node domain="title"		property="partNumber"					tag="247" sfcodes="n"          >part number</node>
