@@ -190,7 +190,7 @@ declare variable $mbshared:simple-properties:= (
          <node domain="work"				property="musicKey"					      tag="384" sfcodes="a" ind1="0"	    		> Key </node>
          <node domain="work"				property="musicKey"					      tag="130" sfcodes="r"				    > Key </node>
          <node domain="work"				property="musicKey"					      tag="240" sfcodes="r"			 	    > Key </node>
-         <node domain="work"		property="formDesignation"			     tag="130" sfcodes="k"      >Form subheading from title</node>         
+         <node domain="work"		         property="formDesignation"			     tag="130" sfcodes="k"      >Form subheading from title</node>         
          <node domain="work"		property="formDesignation"			     tag="240" sfcodes="k"      >Form subheading from title</node>         
          <node domain="related"				property="formDesignation"				tag="730" sfcodes="k"						>Form Designation</node>
          <node domain="work"				property="musicMediumNote"				tag="382" sfcodes="adp"		    	> Music medium note </node>
@@ -3603,7 +3603,7 @@ let $title := if (fn:contains($title,"=")) then
                  if ($title-type ne "") then                      
                       element bf:titleType {$title-type}                                                      
                  else (),
-                 
+                 element bf:label {fn:string-join($d/*[fn:not(fn:matches(@code,"(0|6|8)"))]," ")},
                  if ($d/@tag="245") then element bf:titleValue {$title} else (),
                  if ($d/@tag!="210" and $d/@tag!="222"  and fn:not(fn:contains($title,"=")) and $d/marcxml:subfield[@code="b"])  then
                             (:$b isn't repeatable but gwu had some!:)
@@ -3853,7 +3853,7 @@ declare function mbshared:get-uniformTitle(
     
         element bf:Work {
                    (:element bf:label {$aLabel},:)
-                     element madsrdf:authoritativeLabel{ fn:string($aLabel)},
+                     element madsrdf:authoritativeLabel{ fn:string($aLabel)},                      
 	  		       $title-nonsort,                      
                    element bf:workTitle {element bf:Title{ mbshared:generate-simple-property($d,"title"),
                                     mbshared:generate-880-label($d,"title")                                    

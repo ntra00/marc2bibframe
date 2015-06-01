@@ -98,6 +98,7 @@ declare variable $RDFXMLnested2flat:inverses :=
         <inverse sourceResource="bf:Work" targetResource="bf:Instance">
             <replace lookForOnSource="bf:hasInstance" enterOnTarget="bf:instanceOf" />
         </inverse>
+           
     </inverses>;
 
 (:~
@@ -154,6 +155,7 @@ declare function RDFXMLnested2flat:RDFXMLnested2flat
             $resources/self::bf:Summary,
             $resources/self::bf:Review,
             $resources/self::bf:TableOfContents,
+            $resources/self::madsrdf:Source,
             $resources/self::bf:*[fn:not(fn:matches(fn:local-name(), "(Work|Instance|Authority|Annotation|Holding|HeldMaterial|HeldItem|Summary|Review|TableOfContents)"))]
           
             }
