@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "3.0";
 
 (:
 :   Module Name: MARC/XML BIB 2 BIBFRAME RDF using Saxon
@@ -58,8 +58,7 @@ declare option saxon:output "indent=yes";
 :   It is the base URI for the rdf:about attribute.
 :   
 :)
-declare option saxon:default """http://example.org/""";
-declare variable $baseuri as xs:string external;
+declare variable $baseuri as xs:string external :="""http://example.org/""";
 
 (:~
 :   This variable determines whether bnodes should identify resources instead of 
@@ -68,20 +67,17 @@ declare variable $baseuri as xs:string external;
 :   above).
 :   
 :)
-declare option saxon:default """false""";
-declare variable $usebnodes as xs:string external;
+declare variable $usebnodes as xs:string external := """false""";
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
 :)
-declare option saxon:default """NONE""";
-declare variable $marcxmluri as xs:string external;
+declare variable $marcxmluri as xs:string external := """NONE""";
 
 (:~
 :   This variable is for desired serialzation.  Expected values are: rdfxml (default), ntriples, json
 :)
-declare option saxon:default """rdfxml""";
-declare variable $serialization as xs:string external;
+declare variable $serialization as xs:string external := """rdfxml""";
 
 let $marcxml := 
     if ($marcxmluri ne "NONE") then

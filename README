@@ -15,12 +15,13 @@ Xquery scripts are provided for MarkLogic, Saxon, and Zorba.
 Parameters (HTTP for ml.xqy; external for saxon.xqy; external for zorba.xqy):
 
 	marcxmluri 	- Path to MARC/XML file.  File can be retrieved over 
-				  HTTP (begin http://) or from the filesystem.
-	baseuri 	- Base URI for generated resources.
+				  HTTP (begin http://) or from the filesystem. 
+	baseuri 	- Base URI for generated resources. Default is http://example.org
 	serialization 	- rdfxml (default), rdfxml-raw, ntriples, json, exhibitJSON
 			  rdfxml=flattened RDF/XML, everything has an identifier
 			  rdfxml-raw=Verbose, cascaded output.
-
+	usebnodes 	- true/false(default). Whether bnodes should identify resources instaed of http URIs. 
+	
 
 
 Specific Processor Notes
@@ -34,15 +35,17 @@ Specific Processor Notes
 	http://hostname:port/ml.xqy?marcxmluri=http://location/of/marcxml.xml&serialization=ntriples&baseuri=http://base-uri/
 
 
-	saxon.xqy can be used with the Saxon XSLT and Xquery Processoer.  This 
-		has been tested using the Saxon processor in Eclipse and Oxygen.  
+	saxon.xqy can be used with the Saxon XSLT and Xquery Processor.  This 
+		has been tested using the Saxon processor in Eclipse and Oxygen. 
+		This requires a saxon9he.jar version 9.5.x or earlier.  
 		Saxon can be run from the command line or through either of the two 
 		previously mentioned applications.  For more about Saxon see 
-		http://saxon.sourceforge.net/  
+		http://saxon.sf.net/  
 	
 	java -cp /path/to/saxon9he.jar net.sf.saxon.Query saxon.xqy marcxmluri=/path/to/marc/xml/file baseuri=http://my-base-uri/ serialization=rdfxml
 
-
+	saxon3.xqy can be used with the Saxon XSLT and XQuery processor version 9.6 or later and supports XQuery 3.0.
+	
 	zorba.xqy can be used with the Zorba Xquery processor.  
 		For more about see http://www.zorba-xquery.com/  Run from the 
 		command line with:
