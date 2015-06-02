@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-04-27-T11:00:00";
+declare variable $mbshared:last-edit :="2015-06-02-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -462,10 +462,7 @@ declare function mbshared:generate-additional-instance(
     ) as element () 
 {
 
-     let $derivedFrom:= 
-        element bf:derivedFrom {                
-            attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
-        }
+   
     let $instance-title := 
        fn:concat(fn:string( $d/../marcxml:datafield[@tag="245"]/marcxml:subfield[@code="a"]), " " ,fn:string($d/marcxml:subfield[@code="3"]))
     let $pub:=          mbshared:generate-publication($d)
@@ -474,8 +471,8 @@ declare function mbshared:generate-additional-instance(
 return element bf:Instance {element bf:instanceTitle{
             element bf:Title{ element bf:titleValue{$instance-title}}},
             $freq,
-            $pub,
-            $derivedFrom
+            $pub
+           
     }
 };
 (:~
@@ -2810,8 +2807,7 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
             $work-identifiers,                        
             $complex-notes,
             $standalone-880s,
-            $work-relateds,      
-            $derivedFrom,
+            $work-relateds,               
             $hashable,
             $admin,
           
