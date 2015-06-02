@@ -647,7 +647,30 @@ let $instance-types:= mbshared:get-instanceTypes($d/ancestor::marcxml:record)
                     else if (fn:contains($form,"lib. bdg.") ) then
                        element bf:format { "library binding"	}		            					           
                     else 
-                        ()
+                        ()                       
+(:isbn if the rule for making single instances from each valid isbn set is on, handle isbns in generate instancefromisbn; if not, just put them here :)           
+  let $isbn-sets:= 
+    if (fn:string($mbshared:transform-rules//rule[@id="1"]/@status)="on" ) then 
+        ()
+        else if ($d/ancestor::marcxml:record/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]) then
+		  mbshared:process-isbns($d/ancestor::marcxml:record) 
+	    else ()
+
+let $isbns:=                  
+          for $i in $isbn-sets/bf:set/bf:isbn
+                (:?? already clean???:)
+                (:let $clean-isbn:= 
+                    for $item in $set/bf:isbn
+                        return marc2bfutils:clean-string(fn:normalize-space(fn:tokenize( fn:string($item),"\(")[1])):)               
+                    let $element-name :=
+                        if (fn:string-length($i) gt 11  ) then 
+                            "bf:isbn13" 
+                        else 
+                            "bf:isbn10" 
+                    return 
+                            element {$element-name} {
+                            attribute rdf:resource {fn:concat("http://isbn.example.org/",fn:normalize-space($i))}
+                            }                                                                                                  
                         
 let $color:= if ($d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"]) then
     for $c in $d/ancestor::marcxml:record/marcxml:controlfield[@tag="007"][fn:matches(fn:substring(marcxml:record/marcxml:controlfield[@tag="007"],1,1) ,"(a|c|d|g|h|k|m|v)")]     
@@ -731,7 +754,8 @@ let $sound:=
         element bf:Instance {        
            $instance-types,                            
             $instance-title,
-      
+            $isbns,
+		  
             $resp-statement880,
             $publication,   
             $edition-880,
@@ -754,8 +778,8 @@ let $sound:=
 			(:$control-fields,:)
             $derivedFrom,           
             $holdings
-        }
-};
+      }     
+} ;
 
 (:~
 :   This is the function generates other language labels from non-parallel 880s
@@ -1468,7 +1492,7 @@ declare function mbshared:generate-physdesc
 declare function mbshared:generate-instance-fromISBN(
     $d as element(marcxml:record),
     $isbn-set as element (bf:set),   
-    (:something needed to be a null instance???:)
+    (:something needed to be a null instance, no pub info  :)
     $instance as element (bf:Instance)?,
     
     $workID as xs:string
@@ -2034,12 +2058,15 @@ let $isbn-sets:=
             let $instance:= 
                 for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1]
           		      return mbshared:generate-instance-from260($i, $workID)        
-                    
-            for $set in $isbn-sets/bf:set
-          	  return mbshared:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
-	   	
-        else 	        (: $isbn-sets//bf:set is false use the first edition, etc:)		
-            (:for $i in $marcxml/marcxml:datafield[@tag eq "260"]|$marcxml/marcxml:datafield[@tag eq "264"]:)
+            return
+                if (fn:string($mbshared:transform-rules//rule[@id="1"]/@status)="on" ) then 
+                    for $set in $isbn-sets/bf:set
+          	         return mbshared:generate-instance-fromISBN($marcxml,$set, $instance, $workID)
+	   	       else (:just return the instance with multiple isbns on it is  handled inside instance-from260:)	   	                                                    
+                      $instance                  
+                                                     
+                  
+        else 	        (: $isbn-sets//bf:set is false use the first edition, etc:)		    
             for $i in $marcxml/marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1]
      	       return mbshared:generate-instance-from260($i, $workID)   
    ,
@@ -2417,11 +2444,7 @@ declare function mbshared:process-isbns (
         let $isbn-set := $isbn-sets[bf:isbn13=$isbn13][1]
 		(: for $isbn-set in $isbn-sets :)
         return 
-            element set {
-                (: 
-                $isbn-set/bf:isbn[1],
-                $isbn-set/bf:isbn[2], 
-                :)
+            element set {               
                 element bf:isbn { fn:string($isbn-set/bf:isbn10) },
                 element bf:isbn { fn:string($isbn-set/bf:isbn13) },
             	for $sfa in $marcxml/marcxml:datafield[@tag eq "020"]/marcxml:subfield[@code eq "a"]

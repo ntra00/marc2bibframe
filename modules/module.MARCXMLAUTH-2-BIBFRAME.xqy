@@ -59,7 +59,7 @@ declare namespace skos              = "http://www.w3.org/2004/02/skos/core#";
 declare namespace hld               = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcauth2bibframe:last-edit :="2015-06-01-T11:00:00";
+declare variable $marcauth2bibframe:last-edit :="2015-06-02-T11:00:00";
 declare variable $marcauth2bibframe:seriesPractices:=( 
     <set>
         <term tag="644" code="a" value="f" elname="bf2:seriesAnalysisPractice">Analyzed in full</term>
