@@ -2688,7 +2688,7 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
                     ):)
                 ) then
                     element bf:intendedAudience {
-                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/targetAudiences/" , fn:lower-case($aud)) }
+                        attribute rdf:resource { fn:concat("http://id.loc.gov/vocabulary/targetAudiences/" ,$aud) }
                     }
                 else ()
         else

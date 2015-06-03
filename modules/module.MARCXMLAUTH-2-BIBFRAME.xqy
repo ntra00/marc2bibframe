@@ -82,7 +82,7 @@ declare variable $marcauth2bibframe:properties:= (
 	<node domain="work" 	property="bf:musicNumber"			   tag="383" sfcodes="b"    group="notes">Library of Congress Control number</node>
 	<node domain="work" 	property="bf:musicNumber"			   tag="383" sfcodes="c"    group="notes">Library of Congress Control number</node>
 	<node domain="work" 	property="bf:musicKey"			       tag="384" sfcodes="a"    group="notes">musical key</node>
-	<node domain="work" 	property="bf2:systemNumber"			   tag="035" sfcodes="a"   	group="identifiers" uri="http://www.worldcat.org/oclc/">System Congress Control number</node>
+	<node domain="work" 	property="bf:systemNumber"			   tag="035" sfcodes="a"   	group="identifiers" uri="http://www.worldcat.org/oclc/">System Congress Control number</node>
 	<node domain="work"		property="bf:originDate"			   tag="046" sfcodes="kl"   group="notes" stringjoin="-">Date of origin</node>
 	<node domain="work"		property="bf:genre"		               tag="380" sfcodes="a"    group="notes">Form subheading from title</node>
 	<node domain="work"		property="bf:originDate"			   tag="100" sfcodes="f"	group="notes">Date of origin</node>
