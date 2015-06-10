@@ -2603,6 +2603,8 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
     let $types := mbshared:get-resourceTypes($marcxml)
         
     let $mainType := "Work"
+	let $expressionType:= if ( $marcxml/marcxml:datafield[@tag="240"]/marcxml:subfield[@code="l"] ) then "Expression" else ""
+    				
     
     let $uniformTitle := (:work title can be from 245 if no 240/130:)           
        for $d in ($marcxml/marcxml:datafield[@tag eq "130"]|$marcxml/marcxml:datafield[@tag eq "240"])[1]
@@ -2621,7 +2623,7 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
     	       for $t in $marcxml/marcxml:datafield[fn:matches(@tag,"(243|245|247)")]
     	       return mbshared:get-title($t, "work")
             }</titles>
-    let $hashable := mbshared:generate-hashable($marcxml, $mainType, $types)     
+    let $hashable := mbshared:generate-hashable($marcxml, $mainType,$expressionType, $types)     
     
     (: Let's create an authoritativeLabel for this :)
     let $aLabel := 
@@ -2775,7 +2777,11 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
     return 
         element {fn:concat("bf:" , $mainType)} {
             attribute rdf:about {$workID},            
-         
+         	if ( $expressionType!="") then                  
+                  element rdf:type {
+                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $expressionType)}
+                }
+				else (),
             for $t in fn:distinct-values($types)
             return             
                   element rdf:type {
@@ -2917,8 +2923,9 @@ declare function mbshared:generate-complex-notes(
 :           it represents a name (name/title 7XX fields, therefore, are not included)
 :       4) Sort all the names alphabetically to help control for variation in how the data were 
 :           originally entered.
-:       5) Include the langauge from the 008.
-:       6) Include the type of MARC resource (Text, Audio, etc)
+:       5) Include the language from the 008.
+:	  5.5) if the Work is an expression, include that
+:       6) Include the 1st type of MARC resource (Text, Audio, etc)
 :       7) Concatenate and normalize.  Normalization includes forcing the string to be all lower 
 :           case, removing spaces, and removing all special characters.
 : 
@@ -2929,6 +2936,7 @@ declare function mbshared:generate-complex-notes(
 declare function mbshared:generate-hashable(
     $marcxml as element(marcxml:record),
     $mainType as xs:string,
+	$expressionType as xs:string,
     $types as item()*
     ) as element( bf:authorizedAccessPoint)
 {
@@ -2937,8 +2945,11 @@ let $hashableTitle :=
         let $primary := $marcxml/marcxml:datafield[@tag eq "245"]
         let $t := 
             if ($uniform/marcxml:subfield[fn:not(fn:matches(@code,"(g|h|k|l|m|n|o|p|r|s|0|6|8)"))]) then
-                (: We have a uniform title that contains /only/ a title and a date of work. :)
-                fn:string-join($uniform/marcxml:subfield, " ")
+                (: We have a uniform title that contains /only/ a title and a date of work. 
+				Suppress the language; it gets added back as code
+				:)
+                
+				fn:string-join($uniform/marcxml:subfield[fn:not(fn:matches(@code,"(0|4|6|8|l)" ))], " ")
             else
                 (:  Otherwise, let's just use the 245 for now.  For example, 
                     we cannot create an uber work for Leaves of Grass. Selections.
@@ -2970,7 +2981,7 @@ let $hashableTitle :=
     let $hashableNames := fn:string-join($hashableNames, " ")
     let $hashableLang := fn:normalize-space(fn:substring(fn:string($marcxml/marcxml:controlfield[@tag='008']), 36, 3))
     (:let $hashableTypes := fn:concat($mainType, fn:string-join($types, "")):)
-    let $hashableTypes := fn:concat($mainType, $types[1])
+    let $hashableTypes := fn:concat($mainType, $expressionType, $types[1])
     
     let $hashableStr := fn:concat($hashableNames, " / ", $hashableTitle, " / ", $hashableLang, " / ", $hashableTypes)
     let $hashableStr := fn:replace($hashableStr, "!|\||@|#|\$|%|\^|\*|\(|\)|\{|\}|\[|\]|:|;|'|&amp;quot;|&amp;|<|>|,|\.|\?|~|`|\+|=|_|\-|/|\\| ", "")
@@ -3494,6 +3505,7 @@ declare function mbshared:get-resourceTypes(
 
     let $leader06 := fn:substring(fn:string($record/marcxml:leader), 7, 1)   
     let $types:=
+
     (	for $cf in $record/marcxml:controlfield[@tag="007"]/fn:substring(text(),1,1)
     (:00 - Category of material :)
     		for $t in $marc2bfutils:resourceTypes/type[@cf007]
@@ -3522,7 +3534,7 @@ declare function mbshared:get-resourceTypes(
     				return fn:string($t)  ,  	    
     	for $t in $marc2bfutils:resourceTypes/type
         		where $t/@leader6 eq $leader06
-        		return fn:string($t)
+        		return fn:string($t)    
         		)
     return $types
     
@@ -3676,7 +3688,7 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
                 if ($d/../marcxml:datafield[@tag="100"]) then
                     element bf:creator{ 
                             element bf:Agent {
-                                element bf:label {fn:string($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[@code="a"])}
+                                element bf:label {fn:string-join($d/../marcxml:datafield[@tag="100"]/marcxml:subfield[fn:not(fn:matches(@code,"(0|4|3|6|8)") ) ]," ")}
                             }
                     }                    
                 else ()
