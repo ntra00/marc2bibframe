@@ -59,7 +59,7 @@ declare namespace skos              = "http://www.w3.org/2004/02/skos/core#";
 declare namespace hld               = "http://www.loc.gov/opacxml/holdings/" ;
 
 (: VARIABLES :)
-declare variable $marcauth2bibframe:last-edit :="2015-06-02-T11:00:00";
+declare variable $marcauth2bibframe:last-edit :="2015-06-03-T11:00:00";
 declare variable $marcauth2bibframe:seriesPractices:=( 
     <set>
         <term tag="644" code="a" value="f" elname="bf2:seriesAnalysisPractice">Analyzed in full</term>
@@ -747,16 +747,19 @@ declare function marcauth2bibframe:generate-work(
        (for $d in $marcxml/marcxml:datafield[@tag eq "130"]            
             return mbshared:get-uniformTitle($d)
                   ,
-             for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")](: ind1 fixes nonfiling treatment in 130 :)
-                let $utdata:=     element marcxml:datafield { attribute tag {"130"} ,attribute ind1{"0"}, $d/@ind2,
-                                        for $s in $d/marcxml:subfield[@code="t" or preceding-sibling::marcxml:subfield[@code="t"]]
-                                    return if ($s/@code="t") then 
-                                            element marcxml:subfield{ attribute code {"a"},fn:string($s) }
-                                            else if ($s/@code="a") then () 
+        for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")](: ind1 fixes nonfiling treatment in 130 :)
+                let $utdata:= (:add 100 to allow translations to create correct aap with name:)                              
+                                element marcxml:datafield { attribute tag {"130"} ,attribute ind1{"0"}, $d/@ind2,
+                                    for $s in $d/marcxml:subfield[@code="t" or preceding-sibling::marcxml:subfield[@code="t"]]
+                                        return if ($s/@code="t") then 
+                                                    element marcxml:subfield{ attribute code {"a"},fn:string($s) }
+                                                else if ($s/@code="a") then 
+                                                    () 
                                                 else
                                                     $s
                                                     }
-                return          mbshared:get-uniformTitle($utdata)
+                           
+                return         ( mbshared:get-uniformTitle($utdata), element bfx{mbshared:get-name($d)} )
          )
             
     let $names := 
@@ -891,13 +894,19 @@ declare function marcauth2bibframe:generate-work(
             else 
                 ()
  
+  let $derived:= element bf:derivedFrom{  				
+                attribute rdf:resource{fn:concat("http://id.loc.gov/authorities/names/",fn:replace($workID,"w","n"))}  				
+				}
    let $admin:= 
-        element bf:Annotation {$admin1//bf:Annotation/*[fn:not(fn:local-name()="descriptionConventions")],
+        element bf:Annotation {$admin1//bf:Annotation/*[fn:not(fn:matches(fn:local-name(),"(descriptionConventions|derivedFrom)"))],
                 if ($descriptionConventions) then
                     element bf:descriptionConventions {attribute rdf:resource {fn:concat("http://loc.gov/vocabulary/descriptionConventions/",$descriptionConventions)}}
                 else (),
-                $changed
+                $changed,
+                $derived
+             
                }
+   
 return   
 
         element bf:Work  {

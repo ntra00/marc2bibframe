@@ -485,7 +485,10 @@ as element(rdf:RDF)
     let $df1xx_sf_two_code := $df1xx/marcxml:subfield[2]/@code
     let $authoritativeLabel := marcxml2madsrdf:generate-label($df1xx,$df1xx_suffix)
                 
-    let $authorityType := marcxml2madsrdf:get-authority-type($df1xx, fn:true())
+    let $authorityType := 
+		if ($scheme="demographicTerms") then "madsrdf:Authority"
+				else
+					marcxml2madsrdf:get-authority-type($df1xx, fn:true())
             
     let $components := 
         if ($deleted) then
