@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-06-02-T11:00:00";
+declare variable $mbshared:last-edit :="2015-06-24-T11:00:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -270,8 +270,14 @@ declare variable $mbshared:simple-properties:= (
          <!--holdings-->
          <node domain="holdings"			property="heldBy"	 	     tag="852" sfcodes="a" >heldBy </node>
          <node domain="holdings"			property="subLocation"	 	tag="852" sfcodes="b" >subLocation </node>
-         <node domain="holdings"			property="barcode"	 	    tag="852" sfcodes="p" >bar code</node>         
+         <node domain="holdings"			property="barcode"	 	    tag="852" sfcodes="p" >bar code</node>
+		 <node domain="holdings"			property="shelfMarkScheme"	 	    tag="852" sfcodes="2" >scheme</node>
+		 
          <node domain="holdings"			property="shelfMark"	 	tag="852" sfcodes="khlimt" >shelfMark code</node>
+		 <node domain="holdings"			property="shelfMark"	 	tag="852" sfcodes="j" >shelfMark code</node>
+		 <node domain="holdings"			property="enumerationAndChrononogy"	 	     tag="866" sfcodes="a" >enum </node>         
+		 <node domain="holdings"			property="enumerationAndChrononogy"	 	     tag="867" sfcodes="a" >enum supplemental </node>         
+		 <node domain="holdings"			property="enumerationAndChrononogy"	 	     tag="868" sfcodes="a" >enum indexes</node>         
 
   </properties>
 	)	;
@@ -1924,7 +1930,9 @@ declare function mbshared:generate-holdings-from-hrecords(
 {
 
 
-for $r in $collection/marcxml:record[2](:[fn:string(@type)="Holdings"]:)
+for $r in $collection/marcxml:record[fn:position() > 1](: not the bib:)
+(:[2]:)
+(:[fn:string(@type)="Holdings"]:)
     return element bf:heldItem { element bf:HeldItem {
             
             mbshared:generate-simple-property($r/marcxml:datafield,"holdings")
@@ -1948,7 +1956,7 @@ declare function mbshared:generate-holdings(
 marcxml:record[@type="Holdings"]:)
 let $hld:= if ($marcxml//hld:holdings) then
                 mbshared:generate-holdings-from-hld($marcxml, $workID) 
-            else if ($marcxml/ancestor::marcxml:collection/marcxml:record[@type='Holdings']) then
+            else if ($marcxml/ancestor::marcxml:collection/marcxml:record[2]) then (: first record is always bib, following recs must be it's holdings:)
                     mbshared:generate-holdings-from-hrecords($marcxml/ancestor::marcxml:collection, $workID)
             else ()
 
