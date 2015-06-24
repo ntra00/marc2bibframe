@@ -275,6 +275,7 @@ declare variable $mbshared:simple-properties:= (
 		 
          <node domain="holdings"			property="shelfMark"	 	tag="852" sfcodes="khlimt" >shelfMark code</node>
 		 <node domain="holdings"			property="shelfMark"	 	tag="852" sfcodes="j" >shelfMark code</node>
+		 <node domain="holdings"			property="note"	 	tag="852" sfcodes="z" >shelfMark code</node>
 		 <node domain="holdings"			property="enumerationAndChrononogy"	 	     tag="866" sfcodes="a" >enum </node>         
 		 <node domain="holdings"			property="enumerationAndChrononogy"	 	     tag="867" sfcodes="a" >enum supplemental </node>         
 		 <node domain="holdings"			property="enumerationAndChrononogy"	 	     tag="868" sfcodes="a" >enum indexes</node>         
