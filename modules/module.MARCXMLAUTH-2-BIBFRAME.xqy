@@ -126,6 +126,7 @@ declare variable $marcauth2bibframe:properties:= (
     <node domain="complex" 	property="400"            tag="400" sfcodes="a"   	group="notes">seefrom</node>
     <node domain="complex" 	property="410"            tag="410" sfcodes="a"   	group="notes">seefrom</node>
     <node domain="complex" 	property="411"            tag="411" sfcodes="a"   	group="notes">seefrom</node>
+	<node domain="complex" 	property="500"            tag="500" sfcodes="a"   	group="notes">see also</node>
      <node domain="complex" 	property="430"            tag="430" sfcodes="a"   	group="notes">seriesClassPractice</node>
      <node domain="complex" 	property="530"            tag="530" sfcodes="a"   	group="notes">530</node>
   </properties>

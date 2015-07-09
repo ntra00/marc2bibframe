@@ -3063,7 +3063,8 @@ declare function mbshared:get-subject(
                                     }
                                 },                                
                                 $madsrdf/madsrdf:authoritativeLabel,
-                                element  madsrdf:isMemberOfMADSScheme {attribute rdf:resource {$subjectScheme}}
+                                element  madsrdf:isMemberOfMADSScheme {attribute rdf:resource {$subjectScheme}},
+								$madsrdf/madsrdf:componentList 
                             }
                         },
                          if ($d/marcxml:subfield[@code="2"]) then  element bf:authoritySource {$subjectScheme} else ()
@@ -3072,6 +3073,7 @@ declare function mbshared:get-subject(
                                     
                 )
             return $details
+			
             
 	   
        else if ($d/@tag="752")  then
