@@ -3279,6 +3279,8 @@ declare function mbshared:get-name(
             "bf:Family"
         else if ( fn:ends-with(fn:string($d/@tag), "00") ) then    
             "bf:Person"
+		else if ( fn:ends-with(fn:string($d/@tag), "10") and fn:string($d/@ind1)="1" ) then
+            "bf:Jurisdiction"
         else if ( fn:ends-with(fn:string($d/@tag), "10") ) then
             "bf:Organization"
         else if ( fn:ends-with(fn:string($d/@tag), "11") ) then
