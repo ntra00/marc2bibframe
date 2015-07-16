@@ -2610,7 +2610,7 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
             return mbshared:get-uniformTitle($d)         
     let $names := 
         (for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
-                return mbshared:get-name($d),
+			return mbshared:get-name($d),			
                 (:joined addl-names to names so we can get at least the first 700 if there are no 1xx's into aap:)
     (:let $addl-names:= :)
         for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711|720)")][fn:not(marcxml:subfield[@code="t"])]                    
@@ -3256,10 +3256,17 @@ declare function mbshared:get-name(
             else 
                 marc2bfutils:generate-role-code(marc2bfutils:clean-string(fn:string($role))) 
     
-    let $label := if ($d/@tag!='534') then
-    	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , " ")    	
-    	else 
-    	fn:string($d/marcxml:subfield[@code='a' ])
+    let $label := 
+			if(fn:string($d/@tag)="100") then
+			    		fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='v' or @code='f' or @code='j' or @code='q'] , " ")    	
+					else if (fn:string($d/@tag)="110") then
+			    		fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c'] , " ")    	
+					else if(fn:string($d/@tag)="111") then
+	    				fn:string-join($d/marcxml:subfield[@code='a' or @code='c' or @code='d' or @code='e' or @code='q'] , " ") 
+					else if ($d/@tag!='534') then
+    					fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , " ")    	
+    				else 
+    					fn:string($d/marcxml:subfield[@code='a' ])
     	
     let $aLabel :=  marc2bfutils:clean-name-string($label)
     
@@ -3851,6 +3858,24 @@ declare function mbshared:get-uniformTitle(
     (:??? filter out nonsorting chars??? 880s?:)
     
     let $aLabel := marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[@code ne '0' and @code!='6' and @code!='8'] , " "))       
+(:
+If there’s a 1XX/240 include:
+100 $a,b,v,f,j,q
+110: $a,b,c
+111: $a,c,d,e,q
+Add:
+240: $a,d,f,g,k,l,m,n,o,p,r,s
+If 130: same subfields as 240
+If only 245:
+245: $a,f,g,k,,n,p,s
+
+
+:)
+let $aLabel := if (fn:string($d/@tag="130" or fn:string($d/@tag)="240")) then
+	marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code ,"(a|d|f|g|k|l|m|n|o|p|r|s)")] , " "))       
+	else (: 245 :)
+	marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code ,"(a|f|g|k|n|p|s)")] , " "))       
+	
     let $translationOf := 
         if ($d/marcxml:subfield[@code="l"]) then
             (for $s in  $d/marcxml:subfield[@code="l"]
