@@ -3674,7 +3674,7 @@ declare function mbshared:generate-translationOf (    $d as element(marcxml:data
       
   let $aLabel :=  marc2bfutils:clean-title-string(fn:string-join($d/marcxml:subfield[fn:matches(@code,"(a|d|f|g|h|k)")  ]," "))
   let $namenode:=  mbshared:get-name($d/ancestor::marcxml:record/marcxml:datafield[fn:matches(@tag, "(100|110|111)")][1])
-  let $name:= fn:string($namenode/bf:*[1]/bf:label)
+  let $name:= fn:string($namenode[1]/bf:*[1]/bf:label)
   return    element bf:translationOf {     
             element bf:Work {
                               
