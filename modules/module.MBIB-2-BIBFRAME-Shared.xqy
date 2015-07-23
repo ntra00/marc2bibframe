@@ -881,7 +881,7 @@ declare function mbshared:generate-880-label
             else if ($node-name="subject") then 
                 element bf:authorizedAccessPoint{
 	                   attribute xml:lang {$xmllang},   
-                        marc2bfutils:clean-string(fn:string-join($match/marcxml:subfield[fn:not(@code="6")], " "))
+                        marc2bfutils:clean-string(fn:string-join($match/marcxml:subfield[fn:not(@code="6") and fn:not(@code="2")], " "))
                 }
             else if ($node-name="place") then 
                 for $sf in $match/marcxml:subfield[@code="a"]
