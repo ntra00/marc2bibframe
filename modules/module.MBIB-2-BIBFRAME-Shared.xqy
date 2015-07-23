@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-07-08-T17:01:00";
+declare variable $mbshared:last-edit :="2015-07-23-T17:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -76,8 +76,8 @@ declare variable $mbshared:addl-880-nodes:= (
     (:these properties are transformed as either literals or appended to the @uri parameter inside their @domain:)
 declare variable $mbshared:simple-properties:= (
 	<properties>
-       	 <node domain="instance"    property="lccn"	   			  	           tag="010" sfcodes="a"		uri="http://id.loc.gov/authorities/test/identifiers/lccn/"	group="identifiers"			>Library of Congress Control Number</node>
-         <node domain="instance" 	property="nbn" 				    	       tag="015" sfcodes="a"		group="identifiers"          >National Bibliography Number</node>
+       	 <node domain="instance"    property="lccn"	   			  	            tag="010" sfcodes="a"		uri="http://id.loc.gov/authorities/test/identifiers/lccn/"	group="identifiers"			>Library of Congress Control Number</node>
+         <node domain="instance" 	property="nbn" 				    	        tag="015" sfcodes="a"		group="identifiers"          >National Bibliography Number</node>
          <node domain="instance" 	property="nban" 			          	    tag="016" sfcodes="a"	    group="identifiers"       	>National bibliography agency control number</node>
          <node domain="instance" 	property="legalDeposit" 		            tag="017" sfcodes="a"		group="identifiers"          >copyright or legal deposit number</node>
          <node domain="instance" 	property="issn" 			    	        tag="022" sfcodes="a"	group="identifiers"	        >International Standard Serial Number</node>
@@ -540,7 +540,8 @@ declare function mbshared:generate-instance-from260(
         (:    attribute rdf:resource{fn:concat($workID,fn:normalize-space(fn:string($d/../marcxml:controlfield[@tag eq "001"])))}:)
             attribute rdf:resource{fn:concat($workID,".marcxml.xml")}
         }
-	let $control-fields:= marc2bfutils:generate-controlfields($d/ancestor::marcxml:record)
+	(:let $control-fields:= marc2bfutils:generate-controlfields($d/ancestor::marcxml:record):)
+
     let $instance-title := 
         for $titles in $d/../marcxml:datafield[fn:matches(@tag,"(245|246|247|222|242|210)")]
             for $t in $titles
@@ -4020,7 +4021,7 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                         attribute rdf:resource {fn:concat( "http://nlm.example.org/classification/",fn:normalize-space($class))
                         }
                     },
-            for $this-tag in $marcxml/marcxml:datafield[@tag="052"] return mbshared:generate-simple-property($this-tag ,"classification")     ,
+            for $this-tag in $marcxml/marcxml:datafield[@tag="052"] return mbshared:generate-simple-property($this-tag ,"classification")     ,			
             for $this-tag in $marcxml/marcxml:datafield[fn:matches(@tag,"086")][marcxml:subfield[@code="z"]]
              let $scheme:=
                     if ($this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then

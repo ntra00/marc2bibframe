@@ -79,8 +79,8 @@ declare variable $marc2bfutils:resourceTypes := (
         <type sf336b="(tdf|tcf|tcm|crf|crn )">ThreeDimensionalObject</type>
         <type leader6="t">Text</type>        
         <type cf007="f">Tactile</type>
-        <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Dataset</type>
-        <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Dataset</type>
+        <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Tactile</type>
+        <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Tactile</type>
     </resourceTypes>
     );
     (:008-20 for MU type of resource:)
