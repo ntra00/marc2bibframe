@@ -512,8 +512,10 @@ declare function mbshared:generate-addl-physical(
         for $i in fn:distinct-values($instance-types1)
                 return    element rdf:type {   attribute rdf:resource { fn:concat("http://bibframe.org/vocab/" ,$i)}}
                 
-return element bf:Instance {element bf:instanceTitle{
-            $instance-types,$instance-types1,
+return element bf:Instance {
+			$instance-types,
+			element bf:instanceTitle{
+            
             element bf:Title{ $instance-title}},
               mbshared:generate-simple-property($d, "instance"),
             $derivedFrom
