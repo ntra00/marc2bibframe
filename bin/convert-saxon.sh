@@ -51,10 +51,12 @@ BN_ARG='usebnodes=false'
 # Note - saxon Xquery changes to xbin sub-directory, so we make all paths absolute
 # readlink also validates the paths
 
-MARCPATH=`readlink -e $1`
+#MARCPATH=`readlink -e $1`
+MARCPATH=$1
 [[ -n "$MARCPATH" ]] || die "marcxml-input-path '$1' must exist"
 
-OUTPUT=`readlink -f $2`
+#OUTPUT=`readlink -f $2`
+OUTPUT=$2
 [[ -n "$OUTPUT" ]] || die "output-path '$2' all directory components must exist"
 
 
