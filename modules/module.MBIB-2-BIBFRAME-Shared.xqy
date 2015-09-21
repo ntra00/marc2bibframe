@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-07-23-T17:01:00";
+declare variable $mbshared:last-edit :="2015-09-21-T11:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -557,7 +557,7 @@ declare function mbshared:generate-instance-from260(
                         fn:substring-before(fn:normalize-space($r),"=")
                     else 
                         fn:normalize-space($r)
-    let $edition-instances:= 
+    (:let $edition-instances:= 
     for $e in $d/../marcxml:datafield[@tag eq "250"][fn:not(1)]
         return 
            (mbshared:generate-instance-from250($e,$workID),
@@ -573,6 +573,7 @@ declare function mbshared:generate-instance-from260(
                 }
             }
             )
+            :)
     let $edition-880:= for $ed in  $d/../marcxml:datafield[@tag = "250"][marcxml:subfield[@code="a"]]
                         return mbshared:generate-880-label($ed,"edition")                
     let $publication:= 
@@ -1654,41 +1655,6 @@ declare function mbshared:generate-instance-fromISBN(
 		}
     
 };
-(:~
-:   This is the function generates edition instance resources.
-: Makes a duplicate? I don't see anything different from the 260
-:   @param  $d        element is each 250 after the first  
-:   @return bf:* as element()
-:)
-declare function mbshared:generate-instance-from250(
-    $d as element(marcxml:datafield),
-    $workID as xs:string
-    ) as element ()*
-{
-
-    (:get the physical details:)
-    (: We only ask for the first 260 :)
-
-	let $instance := mbshared:generate-instance-from260($d/../marcxml:datafield[fn:matches(@tag, "(260|261|262|264|300)")][1], $workID)        
-        
-    let $instanceOf :=  
-        element bf:instanceOf {
-            attribute rdf:resource {$workID}
-        }
-
-    return 
-        element bf:Instance {
-            (if ( fn:exists($instance) ) then
-                (
-                    $instance/@*,
-                    $instance/*    
-                )
-            else 
-                $instanceOf)
-	
-		}
-     
-};
 
 (:~
 :   This is the function generates 856-based instance resources or annotations
@@ -1932,9 +1898,9 @@ declare function mbshared:generate-holdings-from-hrecords(
 
 
 for $r in $collection/marcxml:record[2](:[fn:string(@type)="Holdings"]:)
-    return element bf:heldItem { element bf:HeldItem {
-            
-            mbshared:generate-simple-property($r/marcxml:datafield,"holdings")
+    return element bf:heldItem { element bf:HeldItem { 
+            for $d in $r/marcxml:datafield
+                return    mbshared:generate-simple-property($d,"holdings")
          }
          }
 
@@ -2007,13 +1973,13 @@ let $d852:=
     
 return 
         if (fn:not($hld) and ($shelfmark or $d852  )) then        
-            element bf:heldItem{   
-                element bf:HeldItem {                   
+            element bf:heldItem{  
+                element bf:HeldItem {       
                    (:this is for matching later:)
                     element bf:label{fn:string($shelfmark[1])},
          	    $shelfmark,
          	    $custodialHistory,
-         	    $d852         	     	
+         	    $d852         	   	
                 }
             }
             
@@ -3726,10 +3692,11 @@ declare function mbshared:generate-simple-property(
         if ($d/@tag="511" and $d/@ind1="0") then 
             "" 
         else
-            fn:string($node/@startwith) 
+             fn:string($node/@startwith)
+            
  
-    return    
-      if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
+    return          
+       if ( $d/marcxml:subfield[fn:contains($return-codes,@code)] ) then
         let $text:= if (fn:string-length($return-codes) > 1) then 
                         let $stringjoin:= if ($node/@stringjoin) then fn:string($node/@stringjoin) else " "
                         return   element wrap{ marc2bfutils:clean-string(fn:string-join($d/marcxml:subfield[fn:contains($return-codes,@code)],$stringjoin))}
@@ -3792,7 +3759,7 @@ declare function mbshared:generate-simple-property(
      
      else (:no matching nodes for this datafield:)
         ()      
-      
+     
 };
 (:~
 :   This is the function generates a literal property or simple uri from a string, using the nodes xml
