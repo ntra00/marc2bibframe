@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-09-23-T17:01:00";
+declare variable $mbshared:last-edit :="2015-09-24-T11:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -1278,9 +1278,9 @@ declare function mbshared:generate-publication
 	                    for $pl in $d/marcxml:subfield[@code="c"]
 	                    	return 
 	                        if (fn:starts-with($pl,"c")) then				
+				                element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}
+	                        else 				                
 				                element bf:providerDate {marc2bfutils:chopPunctuation($pl,".")}
-	                        else 
-				                element bf:copyrightDate {marc2bfutils:chopPunctuation($pl,".")}		
 		      }
 	        }
 	    else (),    
@@ -3234,7 +3234,7 @@ declare function mbshared:get-name(
         for $role in $d/marcxml:subfield[@code = "4" or @code = "e"]
           return 
             if (fn:string($role/@code) = "4" and fn:string($role)!="") then            
-                marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:string($role)),".")
+                fn:string($role)
             else 
                 marc2bfutils:generate-role-code(marc2bfutils:clean-string(fn:string($role))) 
     

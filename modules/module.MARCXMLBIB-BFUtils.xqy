@@ -3238,7 +3238,7 @@ declare function marc2bfutils:generate-mediatype-code($media-text as xs:string) 
 :)
 declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:string {
  let $role:= marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:lower-case($role-text)),".")
- return fn:string( $marc2bfutils:role-xwalk//*[@roletext=$role]/@rolecode)			
+ return fn:string( $marc2bfutils:role-xwalk//*[@roletext=$role][1]/@rolecode)			
 };
 (: This function matches the soundcontent code to the varable containing the sound content code, returning the text for now
 :)
