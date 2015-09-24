@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-09-21-T11:01:00";
+declare variable $mbshared:last-edit :="2015-09-23-T17:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -1196,7 +1196,6 @@ declare function mbshared:generate-26x-pub
 : abc are repeatable!!! each repetition of b or c is another publication; should it be another instance????
 abc and def are parallel, so a and d are treated the same, etc, except the starting property name publication vs manufacture
 :   @param  $d       element is the datafield 260 or 264 
-:   @param  $resource      string is the "work" or "instance"
 :   @return bf:* 	   element()
 
 !!! work on ab abc bibid 468476
@@ -2895,7 +2894,11 @@ declare function mbshared:generate-complex-notes(
 :       7) Concatenate and normalize.  Normalization includes forcing the string to be all lower 
 :           case, removing spaces, and removing all special characters.
 : 
-
+:           2015 09 23 lc Merge decisions  changing names to 1xx if present, (if add 7xx back, suppress $2,7xx with $t)
+:           also suppress object type since matching to name/title for now (no resource types in them)
+:           however, last pass auth2bibframe 20150723 boilerplated "work" in  there, so I'm leaving it in here
+:           if language in 008 is eng, drop it, since name/titles are defaulting to eng
+:
 :   @param  $marcxml        element is the marcxml:datafield  
 :   @return bf:authorizedAccessPoint
 :)
@@ -2926,14 +2929,14 @@ let $hashableTitle :=
                 return $tstr
         let $t := marc2bfutils:clean-title-string($t)    
         return $t
-    let $hashableNames := 
+    (:let $hashableNames := 
         (
-            let $n := (:fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " "):)
-            fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))] , " ")
-            return marc2bfutils:clean-name-string($n),
+            let $n := 
+                   fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))] , " ")
+                        return marc2bfutils:clean-name-string($n),
             
-            let $n :=(: fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " "):)
-                    fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))], " ")
+            let $n :=
+                    fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")][fn:not(marcxml:subfield[@code="t"])]/marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))], " ")
             return marc2bfutils:clean-name-string($n)
         )
     let $hashableNames := 
@@ -2941,9 +2944,16 @@ let $hashableTitle :=
         order by $n
         return $n
     let $hashableNames := fn:string-join($hashableNames, " ")
+    :) 
+    let $hashableNames := for $n in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
+                              return marc2bfutils:clean-name-string(fn:string-join($n/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)") )] , " "))
+            
     let $hashableLang := fn:normalize-space(fn:substring(fn:string($marcxml/marcxml:controlfield[@tag='008']), 36, 3))
-    (:let $hashableTypes := fn:concat($mainType, fn:string-join($types, "")):)
-    let $hashableTypes := fn:concat($mainType, $types[1])
+    
+    let $hashableLang:= if ($hashableLang="eng") then  () else $hashableLang
+    
+    (:let $hashableTypes := fn:concat($mainType, $types[1]):)
+    let $hashableTypes := $mainType
     
     let $hashableStr := fn:concat($hashableNames, " / ", $hashableTitle, " / ", $hashableLang, " / ", $hashableTypes)
     let $hashableStr := fn:replace($hashableStr, "!|\||@|#|\$|%|\^|\*|\(|\)|\{|\}|\[|\]|:|;|'|&amp;quot;|&amp;|<|>|,|\.|\?|~|`|\+|=|_|\-|/|\\| ", "")
@@ -2954,6 +2964,7 @@ return
             attribute xml:lang { "x-bf-hash"},
             $hashableStr
         }
+        
 };
 (:~
 :   This function generates a subject.
@@ -3363,9 +3374,11 @@ declare function mbshared:get-521audience(
     $tag as element(marcxml:datafield)
     ) as item()*
 {
-element bf:intendedAudience {
+for $sf in $tag/marcxml:subfield[@code="a"]
+return
+    element bf:intendedAudience {
 		  element bf:IntendedAudience {
-		      	   element bf:audience {fn:string($tag/marcxml:subfield[@code="a"])},
+		      	   element bf:audience {fn:string($sf)},
 			     if ($tag/marcxml:subfield[@code="b"]) then  element bf:audienceAssigner{fn:string($tag/marcxml:subfield[@code="b"])} else ()	
 	       }
 	}
@@ -4047,8 +4060,8 @@ expression: "^[a-zA-Z]{1,3}[1-9].*$". For DDC we filter out the truncation symbo
                      		             let $ddc:=fn:normalize-space($this-tag/marcxml:subfield[@code="a"])
                      		             let $ddc:=fn:replace($ddc,"^(.+) (.+)$", "$1") 
                      		             return 
-                     		             (:attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])),"/about")}:)
-                     		                  attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:encode-for-uri($ddc),"/about")}
+                     		             (:attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:normalize-space(fn:encode-for-uri($this-tag/marcxml:subfield[@code="a"])))}:)
+                     		                  attribute rdf:resource {fn:concat("http://dewey.info/class/",fn:encode-for-uri($ddc))}
                      		    else element bf:Classification {
                                         element bf:classificationNumber {fn:string($cl)},
                                 if ($this-tag[@tag="086"] and $this-tag[@ind1=" "] and $this-tag/marcxml:subfield[@code="2"] ) then
