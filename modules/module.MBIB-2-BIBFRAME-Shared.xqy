@@ -2509,7 +2509,7 @@ declare function mbshared:generate-xml-lang(
 { 
 let $xml-lang:=
          $marc2bfutils:lang-xwalk/language[iso6392=$lang]/@xmllang 
-let $xml-lang:= if ($xml-lang) then $xml-lang else ""
+let $xml-lang:= if ($xml-lang!="") then $xml-lang else ""
     
         let $script:=
 	       if ($scr="(3" ) then "arab"
@@ -2996,6 +2996,7 @@ declare function mbshared:get-subject(
 {
     let $subjectType := fn:string($marc2bfutils:subject-types/subject[@tag=$d/@tag])
     let $subjectType:= if ($d[@tag="600"][marcxml:subfield[@code="t"]]) then "Work" else $subjectType
+	let $subjectType:= if ($d[@tag="600"][@ind1="3"]) then "Family" else $subjectType
     let $subjectScheme:= if ($d/marcxml:subfield[@code="2"]) then
                             fn:concat("http://id.loc.gov/vocabulary/subjectSchemes/",fn:normalize-space(fn:string($d/marcxml:subfield[@code="2"])))
                         else if($d[@ind2="0"]) then "http://id.loc.gov/authorities/subjects"
