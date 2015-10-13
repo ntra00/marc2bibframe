@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-09-24-T11:01:00";
+declare variable $mbshared:last-edit :="2015-10-13-T11:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
