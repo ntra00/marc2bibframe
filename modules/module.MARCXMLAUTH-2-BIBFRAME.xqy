@@ -59,7 +59,7 @@ declare namespace skos              = "http://www.w3.org/2004/02/skos/core#";
 declare namespace hld               = "http://www.loc.gov/opacxml/holdings/" ;
 declare namespace xdmp              = "http://marklogic.com/xdmp";
 (: VARIABLES :)
-declare variable $marcauth2bibframe:last-edit :="2015-07-08-T11:00:00";
+declare variable $marcauth2bibframe:last-edit :="2015-07-22-T11:00:00";
 declare variable $marcauth2bibframe:seriesPractices:=( 
     <set>
         <term tag="644" code="a" value="f" elname="bf2:seriesAnalysisPractice">Analyzed in full</term>
@@ -123,11 +123,13 @@ declare variable $marcauth2bibframe:properties:= (
     <node domain="complex" 	property="bf:seriesAnalysisPractice"            tag="644" sfcodes="a"   	group="notes">seriesAnalysisPractice</node>
     <node domain="complex" 	property="bf:seriesTracingPractice"            tag="645" sfcodes="a"   	group="notes">seriesTracingPractice</node>
     <node domain="complex" 	property="bf:seriesClassPractice"            tag="646" sfcodes="a"   	group="notes">seriesClassPractice</node>
-    <node domain="complex" 	property="400"            tag="400" sfcodes="a"   	group="notes">seefrom</node>
-    <node domain="complex" 	property="410"            tag="410" sfcodes="a"   	group="notes">seefrom</node>
-    <node domain="complex" 	property="411"            tag="411" sfcodes="a"   	group="notes">seefrom</node>
-     <node domain="complex" 	property="430"            tag="430" sfcodes="a"   	group="notes">seriesClassPractice</node>
-     <node domain="complex" 	property="530"            tag="530" sfcodes="a"   	group="notes">530</node>
+	<node domain="complex" 	property="377"            tag="377" sfcodes="a"   	>lang</node>
+    <node domain="complex" 	property="400"            tag="400" sfcodes="a"   	>seefrom</node>
+    <node domain="complex" 	property="410"            tag="410" sfcodes="a"   	>seefrom</node>
+    <node domain="complex" 	property="411"            tag="411" sfcodes="a"   	>seefrom</node>
+	<node domain="complex" 	property="500"            tag="500" sfcodes="a"   	>see also</node>
+     <node domain="complex" 	property="430"            tag="430" sfcodes="a" >seriesClassPractice</node>
+     <node domain="complex" 	property="530"            tag="530" sfcodes="a" >530</node>
   </properties>
 	)	;
 
@@ -809,7 +811,7 @@ declare function marcauth2bibframe:generate-work(
             
     let $names := 
         for $d in $marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]
-        let $dummyrecord:= 
+       (: let $dummyrecord:= 
                 <marcxml:record>
                     <marcxml:leader>01243cz  a2200253n  4500</marcxml:leader>
                     <marcxml:controlfield tag="001">n0000000</marcxml:controlfield>
@@ -825,7 +827,7 @@ declare function marcauth2bibframe:generate-work(
                         }
                     }
                 </marcxml:record>
-            let $madsrdf := marcxml2madsrdf:marcxml2madsrdf($dummyrecord)
+            let $madsrdf := marcxml2madsrdf:marcxml2madsrdf($dummyrecord):)
                 return mbshared:get-name($d)                                
     let $seefromTitles:=
                 marcauth2bibframe:generate-seeFroms($marcxml)
@@ -956,7 +958,7 @@ return
         element bf:Work  {               
             attribute rdf:about {$workID},        
             if ($mainType="Expression") then element rdf:type {
-                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab/", $mainType)}
+                    attribute rdf:resource {fn:concat("http://bibframe.org/vocab2/", $mainType)}
                     } 
                     else (),
              if ( $expressionType!="") then                  
@@ -987,6 +989,7 @@ return
             $seefromWorks,
 (:			translations: name is on translationOf:)
             if ($expressionType!="") then  $names             else (),
+			$names,
             $langs,              
             $seriesPractices,
             $subjects,                   
@@ -1068,13 +1071,15 @@ let $hashableTitle :=
         return $t
     let $hashableNames := 
         (
-            let $n := (:fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)"))]][1]/marcxml:subfield, " "):)
+            let $n :=
             fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(100|110|111)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|0|4|6|8)")) and following-sibling::marcxml:subfield[@code="t"]] , " ")
-            return marc2bfutils:clean-name-string($n),
+            return marc2bfutils:clean-name-string($n)
+            (:,
             
-            let $n :=(: fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)") and marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))]]/marcxml:subfield, " "):)
+            let $n :=
                     fn:string-join($marcxml/marcxml:datafield[fn:matches(@tag,"(700|710|711)")]/marcxml:subfield[fn:not(fn:matches(@code,"(e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|x|0|3|4|5|6|8)"))], " ")
             return marc2bfutils:clean-name-string($n)
+            :)
         )
     let $hashableNames := 
         for $n in $hashableNames

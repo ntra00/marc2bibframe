@@ -79,8 +79,8 @@ declare variable $marc2bfutils:resourceTypes := (
         <type sf336b="(tdf|tcf|tcm|crf|crn )">ThreeDimensionalObject</type>
         <type leader6="t">Text</type>        
         <type cf007="f">Tactile</type>
-        <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Dataset</type>
-        <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Dataset</type>
+        <type sf336a="(cartographic tactile image|cartographic tactile three-dimensional form|tactile image|tactile notated music|tactile notated movement|tactile text|tactile three-dimensional form)">Tactile</type>
+        <type sf336b="(crt|crn|tci|tcm|tcn|tct|tcf)">Tactile</type>
     </resourceTypes>
     );
     (:008-20 for MU type of resource:)
@@ -3080,7 +3080,7 @@ let $check008-29:=
 let $form008:=
 	if ( ($check008-23 and $cf008-23="f") or ($check008-29 and $cf008-29='f') ) then 			"braille"
 				else if (($cf008-23=" " and ($leader6="c" or $leader6="d")) or (($leader67type="BK" or $leader67type="SE") and ($cf008-23=" " or $cf008="r"))) then "print"
-				else if ($leader6 = 'm' or ($check008-23 and $cf008-23='s') or ($check008-29 and $cf008-29='s')) then "electronic"				
+				else if ($leader6 = 'm' or ($check008-23 and $cf008-23='s') or ($check008-29 and $cf008-29='s') or ($check008-29 and $cf008-29='q')) then "electronic"				
 				else if ($leader6 = "o") then "kit"
 				else if (($check008-23 and $cf008-23='b') or ($check008-29 and $cf008-29='b')) then "microfiche"
 				else if (($check008-23 and $cf008-23='a') or ($check008-29 and $cf008-29='a')) then "microfilm"
@@ -3238,7 +3238,7 @@ declare function marc2bfutils:generate-mediatype-code($media-text as xs:string) 
 :)
 declare function marc2bfutils:generate-role-code($role-text as xs:string) as xs:string {
  let $role:= marc2bfutils:chopPunctuation(marc2bfutils:clean-string(fn:lower-case($role-text)),".")
- return fn:string( $marc2bfutils:role-xwalk//*[@roletext=$role]/@rolecode)			
+ return fn:string( $marc2bfutils:role-xwalk//*[1][@roletext=$role]/@rolecode)			
 };
 (: This function matches the soundcontent code to the varable containing the sound content code, returning the text for now
 :)

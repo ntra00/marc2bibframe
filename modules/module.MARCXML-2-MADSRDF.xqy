@@ -1604,6 +1604,7 @@ declare function marcxml2madsrdf:create-variant($df as element()) as element() {
 declare function marcxml2madsrdf:get-authority-type($df as element(), $authority as xs:boolean) as xs:string {
     let $df_suffix := fn:substring($df/@tag, 2, 2)
     let $df_sf_two_code := $df/marcxml:subfield[fn:matches(@code , "[tvxyz]")][1]/@code
+	let $df_ind1 := fn:string($df/@ind1)
     let $df682 := $df/parent::node()/marcxml:datafield[@tag='682'][1] (: only one, no? :)
     let $authority_test :=
         if ($df682) then
@@ -1647,7 +1648,10 @@ declare function marcxml2madsrdf:get-authority-type($df as element(), $authority
             $type_element/authority/text()
         else
             $type_element/variant/text()
-            
+	let $type:= if ($type= "madsrdf:PersonalName" and $df_ind1="3") then
+	 			"madsrdf:FamilyName"
+	 			else
+	 				$type            
     return $type
 
 };
