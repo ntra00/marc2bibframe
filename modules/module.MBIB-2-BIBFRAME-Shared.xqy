@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-10-13-T11:01:00";
+declare variable $mbshared:last-edit :="2015-10-28-T11:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -2704,7 +2704,9 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
             else ()
     
 	let $work-identifiers := mbshared:generate-identifiers($marcxml,"work")
+(:	notes not on work:
 	let $general-notes := mbshared:generate-500notes($marcxml, "work")
+	:)
 	let $work-classes := mbshared:generate-classification($marcxml,"work")
 	
  	let $subjects:= 		 
@@ -2775,7 +2777,7 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
             $abstract-annotation,
             $audience,         
             $genre,       
-            $general-notes,
+            (:$general-notes,:)
             $cartography,
             $subjects,
             $gacs,            
@@ -3240,16 +3242,26 @@ declare function mbshared:get-name(
             else 
                 marc2bfutils:generate-role-code(marc2bfutils:clean-string(fn:string($role))) 
     
-    let $label := if ($d/@tag!='534') then
-    	fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , " ")    	
-    	else 
-    	fn:string($d/marcxml:subfield[@code='a' ])
+ 	let $label :=  (: updated : 100--/a+b+c+d+j+q; 110--/a+b+c; 111--/a+c+d+e+q; :)
+			(:if ($d/@tag!='534') then
+				fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , " ")    						
+			:)
+		if ($d/@tag="100" or $d/@tag="700") then
+    		
+			fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or  @code='j' or @code='q' ] , " ")    	
+		else if ($d/@tag="110" or $d/@tag="710") then
+			fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' ] , " ")    	
+    	else if ($d/@tag="111" or $d/@tag="711") then
+			fn:string-join($d/marcxml:subfield[@code='a' or @code='c' or @code='d' or  @code='e' or @code='q'  ] , " ")    	
+		else 
+    		fn:string($d/marcxml:subfield[@code='a' ])
     	
+    
     let $aLabel :=  marc2bfutils:clean-name-string($label)
     
     let $elementList := if ($d/@tag!='534'
-    and   
-    fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
+    							and   
+    					fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
     (:if there's a $0 uri, then we don't need the madsrdf:)
       element bf:hasAuthority{
          element madsrdf:Authority {
