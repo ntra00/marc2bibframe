@@ -47,7 +47,7 @@ declare namespace hld              = "http://www.loc.gov/opacxml/holdings/" ;
 
 
 (: VARIABLES :)
-declare variable $mbshared:last-edit :="2015-09-24-T11:01:00";
+declare variable $mbshared:last-edit :="2015-10-28-T11:01:00";
 
 (:rules have a status of "on" or "off":)
 declare variable $mbshared:transform-rules :=(
@@ -818,7 +818,7 @@ if ($marcxml/marcxml:datafield[@tag='880'][fn:matches(marcxml:subfield[@code="6"
  			            if ($node880/@sfcodes) then fn:string($node880/@sfcodes) 		else "a"
                         
                 return element {fn:concat("bf:",fn:string($node880/@property))} {
-                                    if ($xmllang) then         attribute xml:lang {$xmllang} else (),                    
+                                    if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                                     fn:string($d/marcxml:subfield[fn:matches(@code,$return-codes)]),
                                     fn:string($d/marcxml:subfield[@code="a"])
                                 } 
@@ -863,7 +863,7 @@ declare function mbshared:generate-880-label
        
             if ($node-name="name") then
                 element bf:authorizedAccessPoint {
-                    attribute xml:lang {$xmllang},
+                      if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                     
                      if ($d/@tag!="534") then   
                     marc2bfutils:clean-string(fn:string-join($match/marcxml:subfield[@code="a" or @code="b" or @code="c" or @code="d" or @code="q"] , " "))
@@ -878,12 +878,12 @@ declare function mbshared:generate-880-label
                         "(t|f|k|m|n|p|s)"
                 return
                     element bf:titleValue {
-                        attribute xml:lang {$xmllang},                                                   
+                          if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                         marc2bfutils:clean-title-string(fn:replace(fn:string-join($match/marcxml:subfield[fn:matches(@code,$subfs)] ," "),"^(.+)/$","$1"))
                     }
             else if ($node-name="subject") then 
                 element bf:authorizedAccessPoint{
-	                   attribute xml:lang {$xmllang},   
+	                     if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                         marc2bfutils:clean-string(fn:string-join($match/marcxml:subfield[fn:not(@code="6") and fn:not(@code="2")], " "))
                 }
             else if ($node-name="place") then 
@@ -892,7 +892,7 @@ declare function mbshared:generate-880-label
                 
                 return (:inside bf:Place:)
                             element bf:label { 
-                                     attribute xml:lang {$xmllang} ,
+                                       if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                                     $text
                             }                        
                     
@@ -900,7 +900,7 @@ declare function mbshared:generate-880-label
                 for $sf in $match/marcxml:subfield[@code="b"]
                 return                 
                             element bf:label {
-                                attribute xml:lang {$xmllang},   			
+                                if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                                 marc2bfutils:clean-string(fn:string($sf))
                             }
                  
@@ -908,18 +908,18 @@ declare function mbshared:generate-880-label
                  for $sf in $match/marcxml:subfield[@code="c"]
                      return
                          element bf:responsibilityStatement {                      
-                             attribute xml:lang {$xmllang},   			
+                             if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                              fn:string($sf)
                          }    
           else if ($node-name="providerDate") then
                  for $sf in $match/marcxml:subfield[@code="c"]
                      return
                          element bf:providerDate {  
-                            attribute xml:lang {$xmllang},   			
+                            if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                              marc2bfutils:clean-string(fn:string($sf))
                          }                        
         else 
-            element { fn:concat("bf:",$node-name)} {  attribute xml:lang {$xmllang} ,
+            element { fn:concat("bf:",$node-name)} { if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                 fn:string($match/marcxml:subfield[@code="a"])					
             }				
 	(:not 880:)
@@ -2509,6 +2509,7 @@ declare function mbshared:generate-xml-lang(
 { 
 let $xml-lang:=
          $marc2bfutils:lang-xwalk/language[iso6392=$lang]/@xmllang 
+let $xml-lang:= if ($xml-lang!="") then $xml-lang else ""
     
         let $script:=
 	       if ($scr="(3" ) then "arab"
@@ -2703,7 +2704,9 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
             else ()
     
 	let $work-identifiers := mbshared:generate-identifiers($marcxml,"work")
+(:	notes not on work:
 	let $general-notes := mbshared:generate-500notes($marcxml, "work")
+	:)
 	let $work-classes := mbshared:generate-classification($marcxml,"work")
 	
  	let $subjects:= 		 
@@ -2774,7 +2777,7 @@ for $marcxml in $collection/marcxml:record[fn:not(@type) or @type="Bibliographic
             $abstract-annotation,
             $audience,         
             $genre,       
-            $general-notes,
+            (:$general-notes,:)
             $cartography,
             $subjects,
             $gacs,            
@@ -2818,7 +2821,7 @@ declare function mbshared:generate-complex-notes(
                             let $scr := fn:tokenize($vernacular/marcxml:subfield[@code="6"],"/")[2]
                             let $xmllang:= mbshared:generate-xml-lang($scr, $lang)
                            
-                            return element bf:title {if ($xmllang) then attribute xml:lang{$lang} else (),
+                            return element bf:title {if ($xmllang!="") then         attribute xml:lang {$xmllang} else (),                    
                                         fn:string($vernacular/marcxml:subfield[@code="t"][fn:position()=$x])
                                         }
                         else ()
@@ -2995,6 +2998,7 @@ declare function mbshared:get-subject(
 {
     let $subjectType := fn:string($marc2bfutils:subject-types/subject[@tag=$d/@tag])
     let $subjectType:= if ($d[@tag="600"][marcxml:subfield[@code="t"]]) then "Work" else $subjectType
+	let $subjectType:= if ($d[@tag="600"][@ind1="3"]) then "Family" else $subjectType
     let $subjectScheme:= if ($d/marcxml:subfield[@code="2"]) then
                             fn:concat("http://id.loc.gov/vocabulary/subjectSchemes/",fn:normalize-space(fn:string($d/marcxml:subfield[@code="2"])))
                         else if($d[@ind2="0"]) then "http://id.loc.gov/authorities/subjects"
@@ -3248,13 +3252,13 @@ declare function mbshared:get-name(
 					else if ($d/@tag!='534') then
     					fn:string-join($d/marcxml:subfield[@code='a' or @code='b' or @code='c' or @code='d' or @code='q' or @code='n'] , " ")    	
     				else 
-    					fn:string($d/marcxml:subfield[@code='a' ])
-    	
+    					fn:string($d/marcxml:subfield[@code='a' ])  	
+    
     let $aLabel :=  marc2bfutils:clean-name-string($label)
     
     let $elementList := if ($d/@tag!='534'
-    and   
-    fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
+    							and   
+    					fn:not(fn:matches(fn:string-join($d/marcxml:subfield[@code="0"]," "),"(http://|\(uri\)|\(DE-588\))" ) ) ) then
     (:if there's a $0 uri, then we don't need the madsrdf:)
       element bf:hasAuthority{
          element madsrdf:Authority {
