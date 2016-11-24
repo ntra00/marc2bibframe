@@ -56,37 +56,37 @@ declare option saxon:output "indent=yes";
 (:~
 :   This variable is for the base uri for your Authorites/Concepts.
 :   It is the base URI for the rdf:about attribute.
-:   
+:
 :)
-declare option saxon:default """http://example.org/""";
+(:declare option saxon:default """http://example.org/""";:)
 declare variable $baseuri as xs:string external;
 
 (:~
-:   This variable determines whether bnodes should identify resources instead of 
-:   http URIs, except for the "main" Work derived from each MARC record.  At this time, 
+:   This variable determines whether bnodes should identify resources instead of
+:   http URIs, except for the "main" Work derived from each MARC record.  At this time,
 :   the "main" Work must be identified by HTTP URI (using the $baseuri variable
 :   above).
-:   
+:
 :)
-declare option saxon:default """false""";
+(:declare option saxon:default """false""";:)
 declare variable $usebnodes as xs:string external;
 
 (:~
 :   This variable is for the MARCXML location - externally defined.
 :)
-declare option saxon:default """NONE""";
+(:declare option saxon:default """NONE""";:)
 declare variable $marcxmluri as xs:string external;
 
 (:~
 :   This variable is for desired serialzation.  Expected values are: rdfxml (default), ntriples, json
 :)
-declare option saxon:default """rdfxml""";
+(:declare option saxon:default """rdfxml""";:)
 declare variable $serialization as xs:string external;
 
-let $marcxml := 
+let $marcxml :=
     if ($marcxmluri ne "NONE") then
         fn:doc($marcxmluri)//marcxml:record
-    else      
+    else
         (://marcxml:record  ??? :)
         ()
 (:let $mods:= fn:doc($marcxmluri)//mods:mods:)
@@ -101,32 +101,32 @@ let $resources :=
             let $holds:=
                 for $hold in $marcxml[fn:string(marcxml:controlfield[@tag="004"])=$controlnum]
                     return $hold
-        
+
             let $httpuri := fn:concat($baseuri , $controlnum)
             let $recordset:= element marcxml:collection{$r,$holds}
             let $bibframe :=  marcbib2bibframe:marcbib2bibframe($recordset,$httpuri)
             return $bibframe/child::node()[fn:name()]
       (:      ,
-      for $r in $mods     
+      for $r in $mods
             let $controlnum := xs:string($r//mods:recordIdentifier[1])
             let $httpuri := fn:concat($baseuri , $controlnum)
              return   marcbib2bibframe:modsbib2bibframe(element mods:collection{$r}):)
       )
-let $rdfxml-raw := 
+let $rdfxml-raw :=
         element rdf:RDF {
             $resources
         }
-        
-let $rdfxml := 
+
+let $rdfxml :=
     if ( $serialization ne "rdfxml-raw" ) then
         RDFXMLnested2flat:RDFXMLnested2flat($rdfxml-raw, $baseuri, $usebnodes)
     else
-        $rdfxml-raw 
-        
-let $response :=  
-    if ($serialization eq "ntriples") then 
+        $rdfxml-raw
+
+let $response :=
+    if ($serialization eq "ntriples") then
         rdfxml2nt:rdfxml2ntriples($rdfxml)
-    else if ($serialization eq "json") then 
+    else if ($serialization eq "json") then
         rdfxml2json:rdfxml2json($rdfxml)
     else if ($serialization eq "exhibitJSON") then
         bfRDFXML2exhibitJSON:bfRDFXML2exhibitJSON($rdfxml, $baseuri)
